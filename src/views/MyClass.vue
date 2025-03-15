@@ -20,8 +20,6 @@
 
 <script>
 import CourseCard2 from '@/components/CourseCard2.vue';
-import { ElMessage } from 'element-plus';
-import axios from 'axios';
  //import Sidebar from '@/components/Sidebar.vue';
 export default {
   name: 'MyClass',
@@ -30,52 +28,26 @@ export default {
   },
   data() {
     return {
-      courses: []
+      courses: [
+        {
+          id: 1,
+          title: '课程1',
+          description: '这是课程1的描述。',
+        },
+        {
+          id: 2,
+          title: '课程2',
+          description: '这是课程2的描述。',
+        },
+        // 添加更多课程
+      ],
     };
   },
-  async created() {
-    await this.fetchCourses();
-  },
   methods: {
-    async fetchCourses() {
-      try {
-        // 从 localStorage 获取用户角色和 ID
-        const userRole = localStorage.getItem('userRole');
-        const userId = localStorage.getItem('userId');
-        
-        let endpoint = '/api/courses';
-        if (userRole === 'student') {
-          endpoint = `/api/students/${userId}/courses`;
-        } else if (userRole === 'teacher') {
-          endpoint = `/api/teachers/${userId}/courses`;
-        }
-        
-        const response = await axios.get(endpoint);
-        if (!response.data || !Array.isArray(response.data)) {
-          throw new Error('Invalid response format');
-        }
-        
-        this.courses = response.data.map(course => ({
-          ...course,
-          title: course.title || course.name, // 兼容不同的属性名
-          description: course.description || '',
-          teacher: course.teacher || '未分配教师',
-          location: course.location || '待定'
-        }));
-      } catch (error) {
-        console.error('获取课程列表失败:', error);
-        ElMessage.error('获取课程列表失败，请稍后重试');
-        this.courses = []; // 清空课程列表
-      }
-    },
     handleViewCourse(courseId) {
-      // 从 localStorage 获取用户角色
-      const userRole = localStorage.getItem('userRole');
-      if (userRole === 'student') {
-        this.$router.push(`/student-class-info/${courseId}`);
-      } else {
-        this.$router.push(`/class-info/${courseId}`);
-      }
+      console.log('查看课程:', courseId);
+      // 这里可以跳转到课程详情页
+      this.$router.push(`/myclass/course/${courseId}`);
     },
   },
 };

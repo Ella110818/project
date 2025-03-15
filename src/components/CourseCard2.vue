@@ -25,15 +25,14 @@ export default {
     },
   },
   methods: {
-    viewCourse() {
-      // 从 localStorage 获取用户角色
-      const userRole = localStorage.getItem('userRole');
-      if (userRole === 'student') {
-        this.$router.push(`/student-class-info/${this.course.id}`);
-      } else {
-        this.$router.push(`/class-info/${this.course.id}`);
-      }
-    },
+     viewCourse() {
+    const userRole = localStorage.getItem('userRole');
+    if (userRole === 'student') {
+      this.$router.push(`/student-class-info/${this.course.id}`);
+    } else {
+      this.$router.push(`/class-info/${this.course.id}`);
+    }
+  },
   },
 };
 </script>

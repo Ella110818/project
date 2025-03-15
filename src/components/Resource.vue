@@ -110,11 +110,12 @@
       <el-upload
         class="upload-demo"
         drag
-        :action="`/api/courses/${courseId}/resources/upload`"
-        :on-success="handleUploadSuccess"
-        :on-error="handleUploadError"
-        :before-upload="beforeUpload"
+        action="/api/upload"
         multiple
+        :on-preview="handlePreview"
+        :on-remove="handleRemove"
+        :before-remove="beforeRemove"
+        :on-success="handleUploadSuccess"
       >
         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
         <div class="el-upload__text">
@@ -122,7 +123,7 @@
         </div>
         <template #tip>
           <div class="el-upload__tip">
-            支持任意类型文件，单个文件不超过100MB
+            支持任意格式文件，单个文件不超过100MB
           </div>
         </template>
       </el-upload>
@@ -150,10 +151,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import axios from 'axios'
 import {
   Document,
   Folder,
@@ -166,9 +165,7 @@ import {
   UploadFilled
 } from '@element-plus/icons-vue'
 
-const route = useRoute()
-const courseId = route.params.id
-
+// 状态
 const searchText = ref('')
 const activeCategory = ref('all')
 const currentFolder = ref('')
@@ -176,18 +173,33 @@ const uploadDialogVisible = ref(false)
 const folderDialogVisible = ref(false)
 const folderForm = ref({ name: '' })
 
-const resources = ref([])
-
-// 获取资源列表
-const fetchResources = async () => {
-  try {
-    const response = await axios.get(`/api/courses/${courseId}/resources`)
-    resources.value = response.data
-  } catch (error) {
-    console.error('获取资源列表失败:', error)
-    ElMessage.error('获取资源列表失败，请稍后重试')
+// 模拟资源数据
+const resources = ref([
+  {
+    id: 1,
+    name: '第一章课件.pptx',
+    type: 'courseware',
+    size: 2048576, // 2MB
+    uploadTime: '2024-03-20 10:00:00',
+    uploader: '张老师'
+  },
+  {
+    id: 2,
+    name: '实验指导.pdf',
+    type: 'document',
+    size: 1048576, // 1MB
+    uploadTime: '2024-03-19 15:30:00',
+    uploader: '张老师'
+  },
+  {
+    id: 3,
+    name: '课程介绍视频.mp4',
+    type: 'video',
+    size: 104857600, // 100MB
+    uploadTime: '2024-03-18 09:15:00',
+    uploader: '张老师'
   }
-}
+])
 
 // 计算属性：过滤后的资源列表
 const filteredResources = computed(() => {
@@ -266,22 +278,22 @@ const handleDelete = (file) => {
   }).catch(() => {})
 }
 
-const handleUploadSuccess = (response) => {
-  ElMessage.success('上传成功')
-  fetchResources()
+const handleRemove = (file, fileList) => {
+  console.log(file, fileList)
 }
 
-const handleUploadError = () => {
-  ElMessage.error('上传失败，请重试')
+const beforeRemove = (uploadFile) => {
+  return ElMessageBox.confirm(
+    `确定移除 ${uploadFile.name} ？`
+  ).then(
+    () => true,
+    () => false
+  )
 }
 
-const beforeUpload = (file) => {
-  const maxSize = 100 * 1024 * 1024 // 100MB
-  if (file.size > maxSize) {
-    ElMessage.error('文件大小不能超过100MB')
-    return false
-  }
-  return true
+const handleUploadSuccess = (response, uploadFile) => {
+  ElMessage.success(`${uploadFile.name} 上传成功`)
+  uploadDialogVisible.value = false
 }
 
 // 工具方法
@@ -303,11 +315,6 @@ const formatFileSize = (bytes) => {
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
-
-// 组件挂载时获取资源列表
-onMounted(() => {
-  fetchResources()
-})
 </script>
 
 <style scoped>

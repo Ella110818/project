@@ -76,41 +76,52 @@
 </template>
 
 <script>
-import axios from 'axios';
-import { ElMessage } from 'element-plus';
-
 export default {
   name: 'StudentAssignments',
   data() {
     return {
       activeTab: 'homework',
-      assignments: [],
-      exams: []
+      assignments: [
+        {
+          id: 1,
+          title: '第一次作业',
+          description: '完成教材第一章的练习题1-5',
+          deadline: '2024-03-20 23:59',
+          score: 100,
+          status: '未提交'
+        },
+        {
+          id: 2,
+          title: '第二次作业',
+          description: '完成课后实验报告',
+          deadline: '2024-03-25 23:59',
+          score: 100,
+          status: '已提交'
+        }
+      ],
+      exams: [
+        {
+          id: 1,
+          title: '期中考试',
+          description: '本次考试范围为第1-5章',
+          examTime: '2024-04-15 14:00',
+          duration: 120,
+          totalScore: 100,
+          status: '未开始'
+        },
+        {
+          id: 2,
+          title: '第一次测验',
+          description: '本次测验范围为第1-2章',
+          examTime: '2024-03-10 10:00',
+          duration: 60,
+          totalScore: 100,
+          status: '已完成'
+        }
+      ]
     }
   },
-  async created() {
-    await this.fetchAssignments();
-    await this.fetchExams();
-  },
   methods: {
-    async fetchAssignments() {
-      try {
-        const response = await axios.get('/api/student/assignments');
-        this.assignments = response.data;
-      } catch (error) {
-        console.error('获取作业列表失败:', error);
-        ElMessage.error('获取作业列表失败，请稍后重试');
-      }
-    },
-    async fetchExams() {
-      try {
-        const response = await axios.get('/api/student/exams');
-        this.exams = response.data;
-      } catch (error) {
-        console.error('获取考试列表失败:', error);
-        ElMessage.error('获取考试列表失败，请稍后重试');
-      }
-    },
     getStatusType(status) {
       const statusMap = {
         '未提交': 'warning',

@@ -113,52 +113,46 @@
 </template>
 
 <script>
-import axios from 'axios';
-import { ElMessage } from 'element-plus';
-
 export default {
   name: 'StudentGrades',
   data() {
     return {
-      averageScore: 0,
-      highestScore: 0,
-      lowestScore: 0,
-      totalCourses: 0,
+      averageScore: 88.5,
+      highestScore: 95,
+      lowestScore: 82,
+      totalCourses: 5,
       selectedSemester: '2023-2024-2',
       semesters: [
         { value: '2023-2024-2', label: '2023-2024学年第二学期' },
         { value: '2023-2024-1', label: '2023-2024学年第一学期' }
       ],
-      gradeList: []
+      gradeList: [
+        {
+          courseName: '脑机接口导论',
+          courseType: '专业必修',
+          credit: 3,
+          composition: [
+            { name: '平时成绩', score: 90 },
+            { name: '实验', score: 85 },
+            { name: '期末考试', score: 88 }
+          ],
+          finalScore: 88
+        },
+        {
+          courseName: '人工智能基础',
+          courseType: '专业选修',
+          credit: 2,
+          composition: [
+            { name: '平时成绩', score: 92 },
+            { name: '项目', score: 95 },
+            { name: '期末考试', score: 89 }
+          ],
+          finalScore: 92
+        }
+      ]
     }
   },
-  async created() {
-    await this.fetchGradeOverview();
-    await this.fetchGradeList();
-  },
   methods: {
-    async fetchGradeOverview() {
-      try {
-        const response = await axios.get('/api/student/grades/overview');
-        const data = response.data;
-        this.averageScore = data.averageScore;
-        this.highestScore = data.highestScore;
-        this.lowestScore = data.lowestScore;
-        this.totalCourses = data.totalCourses;
-      } catch (error) {
-        console.error('获取成绩概览失败:', error);
-        ElMessage.error('获取成绩概览失败，请稍后重试');
-      }
-    },
-    async fetchGradeList() {
-      try {
-        const response = await axios.get(`/api/student/grades/list?semester=${this.selectedSemester}`);
-        this.gradeList = response.data;
-      } catch (error) {
-        console.error('获取成绩列表失败:', error);
-        ElMessage.error('获取成绩列表失败，请稍后重试');
-      }
-    },
     getProgressColor(score) {
       if (score >= 90) return '#67C23A'
       if (score >= 80) return '#409EFF'
@@ -170,12 +164,6 @@ export default {
       if (score >= 80) return 'score-good'
       if (score >= 60) return 'score-pass'
       return 'score-fail'
-    }
-  },
-  watch: {
-    selectedSemester: {
-      handler: 'fetchGradeList',
-      immediate: false
     }
   }
 }

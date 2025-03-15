@@ -1,176 +1,211 @@
 <template>
-  <div class="announcement-form">
-    <el-form :model="form" label-width="80px">
-      <el-form-item label="标题">
-        <el-input v-model="form.title" placeholder="请输入公告标题" />
-      </el-form-item>
-      <el-form-item label="内容">
-        <el-input
-          v-model="form.content"
-          type="textarea"
-          :rows="4"
-          placeholder="请输入公告内容"
-        />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="submitForm">发布公告</el-button>
-      </el-form-item>
-    </el-form>
+  <div class="announce-form">
+    <div class="content-wrapper" :class="{ 'show-form': showPublishForm }">
+      <el-card class="announcement-list" :class="{ 'slide-left': showPublishForm }">
+        <template #header>
+          <div class="card-header">
+            <el-input
+              v-model="input3"
+              style="max-width: 350px; margin-right: 40px;"
+              placeholder="请输入你要搜索的公告"
+              class="input-with-select"
+            >
+              <template #append>
+                <el-button :icon="Search" style="color: #007bff;"/>
+              </template>
+            </el-input>
+            <el-button type="primary" @click="showPublishForm = true">发布公告</el-button>
+          </div>
+        </template>
+        <div class="page-content">
+          <div v-for="(announcement, index) in announcements" :key="index" class="announcement-item">
+            <TextScroll 
+              :title="announcement.title"
+              :content="announcement.content"
+              :type="announcement.type"
+            />
+          </div>
+        </div>
+      </el-card>
 
-    <!-- 已发布的公告列表 -->
-    <div class="announcement-list">
-      <h3>已发布公告</h3>
-      <el-timeline>
-        <el-timeline-item
-          v-for="item in announcements"
-          :key="item.id"
-          :timestamp="item.createTime"
-          placement="top"
-        >
-          <el-card>
-            <h4>{{ item.title }}</h4>
-            <p>{{ item.content }}</p>
-          </el-card>
-        </el-timeline-item>
-      </el-timeline>
+      <!-- 右侧发布公告表单 -->
+      <el-card v-show="showPublishForm" class="publish-form" :class="{ 'slide-in': showPublishForm }">
+        <template #header>
+          <div class="form-header">
+            <span class="title">发布公告</span>
+            <el-button type="text" @click="showPublishForm = false">
+              <el-icon><Close /></el-icon>
+            </el-button>
+          </div>
+        </template>
+        <el-form :model="form" label-position="top">
+          <el-form-item label="公告标题">
+            <el-input v-model="form.title" placeholder="请输入公告标题" />
+          </el-form-item>
+          <el-form-item label="公告类型">
+            <el-select v-model="form.type" placeholder="请选择公告类型" style="width: 100%">
+              <el-option label="普通公告" value="info" />
+              <el-option label="重要公告" value="warning" />
+              <el-option label="紧急公告" value="danger" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="公告内容">
+            <el-input
+              v-model="form.content"
+              type="textarea"
+              :rows="8"
+              placeholder="请输入公告内容"
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="handlePublish" style="width: 100%">发布</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+<script>
+import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import axios from 'axios';
+import TextScroll from '@/components/TextScroll.vue';
+import { Search, Close } from '@element-plus/icons-vue';
 
-const route = useRoute();
-const courseId = route.params.id;
-
-const form = ref({
-  title: '',
-  content: ''
-});
-
-const announcements = ref([]);
-
-// 获取公告列表
-const fetchAnnouncements = async () => {
-  try {
-    const response = await axios.get(`/api/courses/${courseId}/announcements`);
-    announcements.value = response.data;
-  } catch (error) {
-    console.error('获取公告列表失败:', error);
-    ElMessage.error('获取公告列表失败，请稍后重试');
-  }
-};
-
-// 提交公告
-const submitForm = async () => {
-  if (!form.value.title || !form.value.content) {
-    ElMessage.warning('请填写完整的公告信息');
-    return;
-  }
-
-  try {
-    await axios.post(`/api/courses/${courseId}/announcements`, {
-      title: form.value.title,
-      content: form.value.content
+export default {
+  name: 'AnnouncementForm',
+  components: {
+    TextScroll
+  },
+  setup() {
+    const input3 = ref('');
+    const showPublishForm = ref(false);
+    const form = ref({
+      title: '',
+      content: '',
+      type: 'info'
     });
-    
-    ElMessage.success('公告发布成功！');
-    form.value.title = '';
-    form.value.content = '';
-    
-    // 重新获取公告列表
-    fetchAnnouncements();
-  } catch (error) {
-    console.error('发布公告失败:', error);
-    ElMessage.error('发布公告失败，请稍后重试');
+    const announcements = ref([
+      { 
+        title: '关于期中考试的通知',
+        content: '各位同学请注意，期中考试将于下周三进行，请做好准备。',
+        type: 'info' 
+      },
+      { 
+        title: '课程调整通知',
+        content: '由于特殊原因，本周五的课程将调整到下周一。',
+        type: 'warning' 
+      }
+    ]);
+
+    const handlePublish = () => {
+      if (form.value.title && form.value.content) {
+        announcements.value.unshift({
+          title: form.value.title,
+          content: form.value.content,
+          type: form.value.type
+        });
+        form.value.title = '';
+        form.value.content = '';
+        form.value.type = 'info';
+        showPublishForm.value = false;
+        ElMessage.success('公告发布成功');
+      } else {
+        ElMessage.error('标题和内容不能为空');
+      }
+    };
+
+    return {
+      input3,
+      form,
+      announcements,
+      handlePublish,
+      showPublishForm,
+      Search,
+      Close
+    };
   }
 };
-
-// 组件挂载时获取公告列表
-onMounted(() => {
-  fetchAnnouncements();
-});
 </script>
 
 <style scoped>
-.announcement-form {
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+.announce-form {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.content-wrapper {
+  display: flex;
+  gap: 20px;
+  height: 100%;
+  position: relative;
+  justify-content: center;
+  transition: all 0.3s ease-in-out;
+}
+
+.content-wrapper.show-form {
+  justify-content: flex-start;
 }
 
 .announcement-list {
-  margin-top: 30px;
+  width: 680px;
+  min-height: 600px;
+  transition: transform 0.3s ease-in-out;
 }
 
-.el-timeline {
-  margin-top: 20px;
-  padding: 20px;
+.announcement-list.slide-left {
+  transform: translateX(0);
 }
 
-.el-timeline-item {
-  position: relative;
+.publish-form {
+  width: 450px;
+  min-height: 600px;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s ease-in-out;
 }
 
-.el-card {
-  margin-bottom: 10px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+.publish-form.slide-in {
+  opacity: 1;
+  transform: translateX(0);
 }
 
-.el-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-h4 {
-  margin: 0 0 10px 0;
-  color: #303133;
+.form-header .title {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
-p {
-  margin: 0;
-  color: #606266;
-  line-height: 1.6;
-  font-size: 14px;
+.input-with-select {
+  width: 350px;
 }
 
-:deep(.el-timeline-item__timestamp) {
-  color: #909399;
-  font-size: 13px;
+.card-header {
+  display: flex;
 }
 
-:deep(.el-timeline-item__node) {
-  background-color: #409EFF;
+.page-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-:deep(.el-timeline-item__wrapper) {
-  padding-left: 28px;
+.announcement-item {
+  padding: 15px 0;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-.el-form {
-  max-width: 600px;
-  margin: 0 auto;
+.announcement-item:last-child {
+  border-bottom: none;
 }
 
-.el-form-item:last-child {
-  margin-bottom: 0;
-  text-align: right;
-}
-
-h3 {
-  color: #303133;
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #EBEEF5;
+:deep(.el-form-item__label) {
+  font-weight: 500;
 }
 </style>

@@ -27,9 +27,7 @@
 
 <script>
 import CourseCard1 from '@/components/CourseCard1.vue';
-import { ElMessage } from 'element-plus';
-import axios from 'axios';
-//import Sidebar from '@/components/Sidebar.vue';
+ //import Sidebar from '@/components/Sidebar.vue';
 export default {
   name: 'StartClass',
   components: {
@@ -37,24 +35,26 @@ export default {
   },
   data() {
     return {
-      courses: []
+      courses: [
+        {
+          id: 1,
+          title: '课程',
+          description: '这是课程1的描述。',
+        },
+        {
+          id: 2,
+          title: '课程2',
+          description: '这是课程2的描述。',
+        },
+        // 添加更多课程
+      ],
     };
   },
-  async created() {
-    await this.fetchCourses();
-  },
   methods: {
-    async fetchCourses() {
-      try {
-        const response = await axios.get('/api/courses');
-        this.courses = response.data;
-      } catch (error) {
-        console.error('获取课程列表失败:', error);
-        ElMessage.error('获取课程列表失败，请稍后重试');
-      }
-    },
     handleViewCourse(courseId) {
-      this.$router.push(`/class-info/${courseId}`);
+      console.log('查看课程:', courseId);
+      // 这里可以跳转到课程详情页
+      this.$router.push(`/course/${courseId}`);
     },
   },
 };

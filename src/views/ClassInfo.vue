@@ -7,7 +7,7 @@
             <el-icon><Document /></el-icon>
           </div>
           <div class="stat-info">
-            <div class="stat-value">{{ courseInfo.name }}</div>
+            <div class="stat-value">脑机接口</div>
             <div class="stat-label">课程名称</div>
           </div>
         </div>
@@ -17,7 +17,7 @@
             <el-icon><User /></el-icon>
           </div>
           <div class="stat-info">
-            <div class="stat-value">{{ courseInfo.studentCount }}</div>
+            <div class="stat-value">35</div>
             <div class="stat-label">班级人数</div>
           </div>
         </div>
@@ -27,8 +27,8 @@
             <el-icon><Location /></el-icon>
           </div>
           <div class="stat-info">
-            <div class="stat-value">{{ courseInfo.location }}</div>
-            <div class="stat-label">上课地点</div>
+            <div class="stat-value">主教学楼</div>
+            <div class="stat-label">301</div>
           </div>
         </div>
       </div>
@@ -146,11 +146,10 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed, nextTick, reactive } from 'vue';
+import { onMounted, ref, computed, nextTick } from 'vue';
 import * as echarts from 'echarts';
 import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import axios from 'axios';
 import Exam from '@/components/Exam.vue';
 import Group from '@/components/Group.vue';
 import AnnouncementForm from '@/components/AnnouncementForm.vue';
@@ -160,34 +159,6 @@ import { Document, User, Location } from '@element-plus/icons-vue';
 const route = useRoute();
 const courseId = computed(() => route.params.id);
 
-// 课程基本信息
-const courseInfo = reactive({
-  name: '',
-  studentCount: 0,
-  location: ''
-})
-
-// 从后端API获取课程信息
-const fetchCourseInfo = async () => {
-  try {
-    const response = await axios.get(`/api/courses/${courseId.value}`);
-    const courseData = response.data;
-    
-    courseInfo.name = courseData.title || courseData.name;
-    courseInfo.studentCount = courseData.studentCount;
-    courseInfo.location = courseData.location;
-  } catch (error) {
-    console.error('获取课程信息失败:', error);
-    ElMessage.error('获取课程信息失败，请稍后重试');
-  }
-}
-
-// 在组件挂载时获取课程信息
-onMounted(() => {
-  console.log('Course ID:', courseId.value);
-  fetchCourseInfo();
-})
-
 // 表单数据
 const form = ref({
   title: '',
@@ -196,58 +167,27 @@ const form = ref({
 
 const activeTab = ref('announce');
 // 成绩相关数据
-const averageScore = ref(0);
+const averageScore = ref(85);
 const maxScore = ref(100);
-const highestScore = ref(0);
-const lowestScore = ref(0);
-const gradeList = ref([]);
-
-// 获取成绩数据
-const fetchGradeData = async () => {
-  try {
-    const response = await axios.get(`/api/courses/${courseId.value}/grades`);
-    const data = response.data;
-    
-    // 更新成绩列表
-    gradeList.value = data.gradeList;
-    
-    // 更新成绩统计数据
-    averageScore.value = data.statistics.average;
-    highestScore.value = data.statistics.highest;
-    lowestScore.value = data.statistics.lowest;
-  } catch (error) {
-    console.error('获取成绩数据失败:', error);
-    ElMessage.error('获取成绩数据失败，请稍后重试');
+const highestScore = ref(98);
+const lowestScore = ref(60);
+const gradeList = ref([
+  {
+    index: 1,
+    name: '张三',
+    studentId: '2021001',
+    classScore: 28,
+    rainScore: 18,
+    examScore: 45,
+    totalScore: 91
   }
-}
+]);
 
-// 获取成绩分布数据
-const fetchGradeDistribution = async () => {
-  try {
-    const response = await axios.get(`/api/courses/${courseId.value}/grade-distribution`);
-    const data = response.data;
-    
-    initGradeDistChart(data);
-  } catch (error) {
-    console.error('获取成绩分布数据失败:', error);
-    ElMessage.error('获取成绩分布数据失败，请稍后重试');
-  }
-}
-
-// 发布公告
-const publishAnnouncement = async () => {
-  try {
-    await axios.post(`/api/courses/${courseId.value}/announcements`, {
-      title: form.value.title,
-      content: form.value.content
-    });
-    
-    ElMessage.success('公告发布成功！');
-    resetForm();
-  } catch (error) {
-    console.error('发布公告失败:', error);
-    ElMessage.error('发布公告失败，请稍后重试');
-  }
+// 方法
+const publishAnnouncement = () => {
+  console.log('发布公告：', form.value);
+  ElMessage.success('公告发布成功！');
+  resetForm();
 };
 
 const resetForm = () => {
@@ -259,13 +199,12 @@ const handleTabClick = (tab) => {
   console.log(tab, activeTab.value);
   if(activeTab.value === 'grade'){
     nextTick(() => {
-      fetchGradeData();
-      fetchGradeDistribution();
+      initGradeDistChart();
     });
   }
 };
 
-const initGradeDistChart = (distributionData) => {
+const initGradeDistChart = () => {
   const chartDom = document.querySelector('#gradeDistChart');
   const myChart = echarts.init(chartDom);
   const option = {
@@ -303,7 +242,7 @@ const initGradeDistChart = (distributionData) => {
       itemStyle: {
         color: '#409EFF'
       },
-      data: distributionData
+      data: [7, 5, 15, 8]
     }]
   };
   myChart.setOption(option);
@@ -313,6 +252,10 @@ const initGradeDistChart = (distributionData) => {
     myChart.resize();
   });
 };
+
+onMounted(() => {
+  console.log('Course ID:', courseId.value);
+});
 </script>
 
 <style scoped>

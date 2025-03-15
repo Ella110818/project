@@ -66,89 +66,22 @@
   </div>
 </template>
 
-<script>
-import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import { ElMessage } from 'element-plus';
-import axios from 'axios';
+<script setup>
+import { ref } from 'vue';
 
-export default {
-  setup() {
-    const route = useRoute();
-    const studentId = route.params.id;
-    
-    const currentDate = ref(new Date().toISOString().split('T')[0]);
-    
-    const studentInfo = ref({
-      name: '',
-      className: '',
-      studentId: '',
-      college: '',
-      avatar: ''
-    });
-    
-    const studentMetrics = ref({
-      attention: 0,
-      headDown: 0,
-      confusion: 0,
-      overall: 0
-    });
-    
-    const evaluations = ref({
-      homework: '',
-      exam: ''
-    });
-    
-    // 获取学生基本信息
-    const fetchStudentInfo = async () => {
-      try {
-        const response = await axios.get(`/api/students/${studentId}`);
-        studentInfo.value = response.data;
-      } catch (error) {
-        console.error('获取学生信息失败:', error);
-        ElMessage.error('获取学生信息失败，请稍后重试');
-      }
-    };
-    
-    // 获取学生状态指标
-    const fetchStudentMetrics = async () => {
-      try {
-        const response = await axios.get(`/api/students/${studentId}/metrics`);
-        studentMetrics.value = response.data;
-      } catch (error) {
-        console.error('获取学生状态指标失败:', error);
-        ElMessage.error('获取学生状态指标失败，请稍后重试');
-      }
-    };
-    
-    // 获取学生评价信息
-    const fetchEvaluations = async () => {
-      try {
-        const response = await axios.get(`/api/students/${studentId}/evaluations`);
-        evaluations.value = response.data;
-      } catch (error) {
-        console.error('获取学生评价信息失败:', error);
-        ElMessage.error('获取学生评价信息失败，请稍后重试');
-      }
-    };
-    
-    // 组件挂载时获取所有数据
-    onMounted(async () => {
-      await Promise.all([
-        fetchStudentInfo(),
-        fetchStudentMetrics(),
-        fetchEvaluations()
-      ]);
-    });
+const currentDate = ref('2024-03-12');
 
-    return {
-      currentDate,
-      studentInfo,
-      studentMetrics,
-      evaluations
-    };
-  }
-};
+const studentMetrics = ref({
+  attention: 85,
+  headDown: 30,
+  confusion: 45,
+  overall: 75
+});
+
+const evaluations = ref({
+  homework: '按时完成作业，认真负责。',
+  exam: '考试成绩优秀，理解能力强。'
+});
 </script>
 
 <style scoped>

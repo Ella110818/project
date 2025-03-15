@@ -10,7 +10,6 @@ import CourseCard2 from '@/components/CourseCard2.vue'
 import MyClass from '@/views/MyClass.vue'
 import StartClass from '@/views/StartClass.vue'
 import ClassInfo from '@/views/ClassInfo.vue'
-import StudentClassInfo from '@/views/StudentClassInfo.vue'
 import StudentManage from '@/views/StudentManage.vue'
 import Score from '@/components/Score.vue'
 import Record from '@/views/Record.vue'
@@ -73,24 +72,16 @@ const sharedRoutes = [
     component: () => import('@/views/Assistant.vue'),
   },
   {
-    path: '/class-info/:id',
+    path: 'class-info/:id',  // 移除开头的斜杠
     name: 'class-info',
     component: ClassInfo,
     props: true,
-    beforeEnter: (to, from, next) => {
-      const userRole = localStorage.getItem('userRole');
-      if (userRole === 'student') {
-        next({ name: 'student-class-info', params: { id: to.params.id } });
-      } else {
-        next();
-      }
-    }
   },
   {
-    path: '/student-class-info/:id',
+    path: 'student-class-info/:id',
     name: 'student-class-info',
-    component: StudentClassInfo,
-    props: true
+    component: () => import('@/views/StudentClassInfo.vue'),
+    props: true,
   },
   {
     path: '/student/:id',
