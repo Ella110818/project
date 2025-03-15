@@ -1,0 +1,33 @@
+{
+  "name": "projext",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "axios": "^1.8.1",
+    "core-js": "^3.8.3",
+    "echarts": "^5.6.0",
+    "element-plus": "^2.9.5",
+    "express": "^4.21.2",
+    "vue": "^3.2.13",
+    "vue-router": "^4.0.3",
+    "vuex": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "@types/web": "^0.0.208",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/cli-plugin-babel": "~5.0.0",
+    "@vue/cli-plugin-router": "~5.0.0",
+    "@vue/cli-plugin-vuex": "~5.0.0",
+    "@vue/cli-service": "~5.0.0",
+    "less-loader": "^6.0.0",
+    "sass": "^1.85.1",
+    "sass-loader": "^16.0.5",
+    "vite": "^6.2.0"
+  }
+}
