@@ -250,7 +250,7 @@ export default {
               username: registerForm.value.username,
               password: registerForm.value.password,
               email: registerForm.value.email,
-              userId: registerForm.value.userId,
+              name: registerForm.value.userId,
               role: registerForm.value.role
             });
             

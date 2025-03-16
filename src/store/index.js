@@ -43,6 +43,10 @@ export default createStore({
       localStorage.removeItem('name')
       localStorage.removeItem('userRole')
       localStorage.removeItem('isAuthenticated')
+    },
+    UPDATE_TOKEN(state, newToken) {
+      state.token = newToken
+      localStorage.setItem('token', newToken)
     }
   },
   actions: {
@@ -77,6 +81,23 @@ export default createStore({
         await api.logout()
         commit('CLEAR_AUTH')
         return Promise.resolve()
+      } catch (error) {
+        return Promise.reject(error)
+      }
+    },
+
+    // 刷新Token
+    async refreshToken({ commit }, refreshToken) {
+      try {
+        const response = await api.refreshToken(refreshToken)
+        if (response && response.access) {
+          // 更新token
+          const newToken = response.access
+          commit('UPDATE_TOKEN', newToken)
+          return Promise.resolve(newToken)
+        } else {
+          return Promise.reject(new Error('获取新token失败'))
+        }
       } catch (error) {
         return Promise.reject(error)
       }

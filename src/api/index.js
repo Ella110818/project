@@ -166,7 +166,7 @@ const productionApi = {
     // 用户注册
     register: async (registerData) => {
         try {
-            const response = await request.post('/user_management/register/', registerData);
+            const response = await request.post('/api/register/', registerData);
             return response;
         } catch (error) {
             throw error;
@@ -176,7 +176,7 @@ const productionApi = {
     // 用户登录
     login: async (loginData) => {
         try {
-            const response = await request.post('/user_management/login/', loginData);
+            const response = await request.post('/api/login/', loginData);
             return response;
         } catch (error) {
             throw error;
@@ -186,7 +186,17 @@ const productionApi = {
     // 用户登出
     logout: async () => {
         try {
-            const response = await request.post('/user_management/logout/');
+            const response = await request.post('/api/logout/');
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    // 刷新Token
+    refreshToken: async (refreshToken) => {
+        try {
+            const response = await request.post('/api/token/refresh/', { refresh: refreshToken });
             return response;
         } catch (error) {
             throw error;

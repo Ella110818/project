@@ -119,7 +119,7 @@ export default {
               username: registerForm.username,
               password: registerForm.password,
               email: registerForm.email,
-              userId: registerForm.userId,
+              name: registerForm.userId,
               role: registerForm.role
             })
             
