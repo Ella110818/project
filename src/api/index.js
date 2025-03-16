@@ -89,6 +89,7 @@ const mockApi = {
                 const newUser = {
                     username: registerData.username,
                     userId: registerData.userId,
+                    name: registerData.name || registerData.userId,
                     email: registerData.email || '',
                     password: registerData.password,
                     role: registerData.role
