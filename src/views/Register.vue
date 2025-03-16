@@ -4,14 +4,20 @@
       <template #header>
         <div class="card-header">
           <h2>用户注册</h2>
+          <div v-if="isLocalEnv" class="env-tip">
+            <el-tag type="info" effect="plain" size="small">本地模拟环境</el-tag>
+          </div>
         </div>
       </template>
       <el-form :model="registerForm" :rules="rules" ref="registerFormRef" label-width="80px">
         <el-form-item label="学工号" prop="userId">
           <el-input v-model="registerForm.userId" placeholder="请输入学工号"></el-input>
         </el-form-item>
-        <el-form-item label="用户名" prop="name">
-          <el-input v-model="registerForm.name" placeholder="请输入用户名"></el-input>
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="registerForm.username" placeholder="请输入用户名"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="registerForm.email" placeholder="请输入邮箱"></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="password">
           <el-input v-model="registerForm.password" type="password" placeholder="请输入密码"></el-input>
@@ -35,18 +41,25 @@
 </template>
 
 <script>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { useStore } from 'vuex'
+import api, { ApiEnv } from '@/api'
 
 export default {
   setup() {
     const router = useRouter()
+    const store = useStore()
     const registerFormRef = ref(null)
+
+    // 判断当前环境
+    const isLocalEnv = computed(() => api.getCurrentEnvironment() === ApiEnv.LOCAL);
 
     const registerForm = reactive({
       userId: '',
-      name: '',
+      username: '',
+      email: '',
       password: '',
       confirmPassword: '',
       role: 'student'
@@ -78,9 +91,13 @@ export default {
         { required: true, message: '请输入学工号', trigger: 'blur' },
         { min: 5, message: '学工号长度不能小于5位', trigger: 'blur' }
       ],
-      name: [
+      username: [
         { required: true, message: '请输入用户名', trigger: 'blur' },
         { min: 3, max: 20, message: '长度在 3 到 20 个字符', trigger: 'blur' }
+      ],
+      email: [
+        { required: true, message: '请输入邮箱', trigger: 'blur' },
+        { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
       ],
       password: [
         { validator: validatePass, trigger: 'blur' },
@@ -95,36 +112,27 @@ export default {
     }
 
     const handleRegister = () => {
-      registerFormRef.value?.validate((valid) => {
+      registerFormRef.value?.validate(async (valid) => {
         if (valid) {
-          // 获取已注册用户列表
-          const users = JSON.parse(localStorage.getItem('users') || '[]')
-          
-          // 检查学工号是否已存在
-          if (users.some(user => user.userId === registerForm.userId)) {
-            ElMessage.error('该学工号已被注册')
-            return
+          try {
+            const response = await store.dispatch('register', {
+              username: registerForm.username,
+              password: registerForm.password,
+              email: registerForm.email,
+              userId: registerForm.userId,
+              role: registerForm.role
+            })
+            
+            if (response.code === 200) {
+              ElMessage.success('注册成功，请登录')
+              router.push('/login')
+            } else {
+              ElMessage.error(response.message || '注册失败')
+            }
+          } catch (error) {
+            console.error('注册失败:', error)
+            ElMessage.error(error.message || '注册失败，请稍后再试')
           }
-
-          // 检查用户名是否已存在
-          if (users.some(user => user.name === registerForm.name)) {
-            ElMessage.error('用户名已存在')
-            return
-          }
-
-          // 添加新用户
-          users.push({
-            userId: registerForm.userId,
-            name: registerForm.name,
-            password: registerForm.password,
-            role: registerForm.role
-          })
-
-          // 保存到 localStorage
-          localStorage.setItem('users', JSON.stringify(users))
-          
-          ElMessage.success('注册成功')
-          router.push('/login')
         }
       })
     }
@@ -138,7 +146,8 @@ export default {
       registerFormRef,
       rules,
       handleRegister,
-      goToLogin
+      goToLogin,
+      isLocalEnv
     }
   }
 }
@@ -159,6 +168,13 @@ export default {
 
 .card-header {
   text-align: center;
+  position: relative;
+}
+
+.env-tip {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 .card-header h2 {

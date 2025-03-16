@@ -31,17 +31,34 @@ nav a.router-link-exact-active {
 
 <template>
   <div id="app" style="height: 100%;">
-    <router-view></router-view> 
+    <router-view></router-view>
+    <env-switcher v-if="showEnvSwitcher"></env-switcher>
   </div>
 </template>
 
 <script>
 import Welcome from './components/Welcome.vue';
+import EnvSwitcher from './components/EnvSwitcher.vue';
+import { ref, onMounted } from 'vue';
 
 export default {
   name: 'App',
   components: {
-    Welcome
+    Welcome,
+    EnvSwitcher
+  },
+  setup() {
+    const showEnvSwitcher = ref(false);
+    
+    onMounted(() => {
+      // 判断是否显示环境切换器
+      // 在生产环境可以设置为false，或通过配置控制
+      showEnvSwitcher.value = true;
+    });
+    
+    return {
+      showEnvSwitcher
+    };
   }
 }
 </script>

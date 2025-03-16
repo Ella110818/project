@@ -6,6 +6,11 @@
         <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" label-width="80px">
           <h1>欢迎回来</h1>
           <p>还没有账号？ <span class="link" @click="toggleForm(true)">立即注册</span></p>
+          <div v-if="isLocalEnv" class="env-tip">
+            <el-alert type="info" :closable="false" show-icon>
+              当前使用本地模拟环境
+            </el-alert>
+          </div>
           <el-form-item label="学工号" prop="userId">
             <el-input v-model="loginForm.userId" placeholder="请输入学号/工号">
               <template #prefix>
@@ -100,192 +105,187 @@
   </div>
 </template>
 
-<script setup>
+<script>
 import { ref, computed } from 'vue';
-import { User, Lock, Message, Document } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
+import { Lock, User, Message, Document } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
+import { useStore } from 'vuex';
+import api, { ApiEnv } from '@/api';
 
-// 登录表单数据
-const loginForm = ref({
-  userId: '',
-  password: '',
-});
+export default {
+  name: 'LoginView',
+  components: {
+    Lock,
+    User,
+    Message,
+    Document
+  },
+  setup() {
+    const store = useStore();
+    const router = useRouter();
 
-// 注册表单数据
-const registerForm = ref({
-  username: '',
-  userId: '',
-  email: '',
-  password: '',
-  confirmPassword: '',
-  agreement: false,
-  role: '',
-});
+    // 判断当前环境
+    const isLocalEnv = computed(() => api.getCurrentEnvironment() === ApiEnv.LOCAL);
 
-// 登录表单验证规则
-const loginRules = ref({
-  userId: [
-    { required: true, message: '请输入学号/工号', trigger: 'blur' },
-    { min: 5, message: '学号/工号长度不能少于5位', trigger: 'blur' }
-  ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, message: '密码长度不能少于6位', trigger: 'blur' }
-  ]
-});
+    // 登录表单数据
+    const loginForm = ref({
+      userId: '',
+      password: ''
+    });
 
-// 注册表单验证规则
-const registerRules = ref({
-  username: [
-    { required: true, message: '请输入姓名', trigger: 'blur' },
-    { min: 2, message: '姓名长度不能少于2位', trigger: 'blur' }
-  ],
-  userId: [
-    { required: true, message: '请输入学号/工号', trigger: 'blur' },
-    { min: 5, message: '学号/工号长度不能少于5位', trigger: 'blur' }
-  ],
-  email: [
-    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
-    { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
-  ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, message: '密码长度不能少于6位', trigger: 'blur' }
-  ],
-  confirmPassword: [
-    { required: true, message: '请确认密码', trigger: 'blur' },
-    {
-      validator: (rule, value, callback) => {
-        if (value !== registerForm.value.password) {
-          callback(new Error('两次输入的密码不一致'));
-        } else {
-          callback();
-        }
-      },
-      trigger: 'blur'
-    }
-  ],
-  role: [
-    { required: true, message: '请选择角色', trigger: 'change' },
-  ],
-});
+    // 注册表单数据
+    const registerForm = ref({
+      username: '',
+      userId: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      agreement: false,
+      role: ''
+    });
 
-// 表单引用
-const loginFormRef = ref(null);
-const registerFormRef = ref(null);
+    // 登录表单验证规则
+    const loginRules = {
+      userId: [
+        { required: true, message: '请输入学号/工号', trigger: 'blur' }
+      ],
+      password: [
+        { required: true, message: '请输入密码', trigger: 'blur' }
+      ]
+    };
 
-// 是否显示注册表单
-const isRegister = ref(false);
-
-// 计算当前显示的图片
-const currentImage = computed(() => {
-  return isRegister.value ? require('@/assets/back3.png') : require('@/assets/login.png');
-});
-
-// 切换登录和注册表单
-const toggleForm = (isRegisterMode) => {
-  isRegister.value = isRegisterMode;
-};
-
-// 提交注册表单
-const submitRegisterForm = () => {
-  console.log('开始注册验证');
-  registerFormRef.value.validate((valid) => {
-    console.log('注册表单验证结果:', valid);
-    if (valid) {
-      // 获取已注册用户列表
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      
-      // 检查学工号是否已存在
-      if (users.some(user => user.userId === registerForm.value.userId)) {
-        ElMessage.error('该学工号已被注册');
-        return;
-      }
-
-      // 添加新用户
-      const newUser = {
-        username: registerForm.value.username,
-        userId: registerForm.value.userId,
-        email: registerForm.value.email,
-        password: registerForm.value.password,
-        role: registerForm.value.role
-      };
-
-      users.push(newUser);
-
-      // 保存到 localStorage
-      localStorage.setItem('users', JSON.stringify(users));
-      
-      console.log('注册成功，用户信息:', newUser);
-      console.log('当前所有用户:', users);
-      
-      ElMessage.success('注册成功');
-      toggleForm(false); // 切换到登录表单
-      
-      // 清空注册表单
-      registerForm.value = {
-        username: '',
-        userId: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        agreement: false,
-        role: ''
-      };
-    } else {
-      console.log('注册表单验证失败');
-    }
-  });
-};
-
-// 提交登录表单
-const submitLoginForm = () => {
-  console.log('开始登录验证');
-  loginFormRef.value.validate((valid) => {
-    console.log('登录表单验证结果:', valid);
-    if (valid) {
-      // 获取用户列表
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      
-      // 打印调试信息
-      console.log('当前登录信息:', {
-        userId: loginForm.value.userId,
-        password: loginForm.value.password
-      });
-      console.log('已注册用户列表:', users);
-      
-      // 查找用户
-      const user = users.find(u => u.userId === loginForm.value.userId && u.password === loginForm.value.password);
-      
-      if (user) {
-        // 登录成功，保存用户信息
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('name', user.username);
-        localStorage.setItem('userId', user.userId);
-        localStorage.setItem('email', user.email);
-        localStorage.setItem('userRole', user.role);
-        
-        console.log('登录成功，用户信息:', user);
-        
-        ElMessage.success('登录成功');
-        router.push('/');
+    // 注册表单验证规则
+    const validatePass = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入密码'));
+      } else if (value.length < 6) {
+        callback(new Error('密码长度不能小于6位'));
       } else {
-        // 打印更详细的错误信息
-        const foundUser = users.find(u => u.userId === loginForm.value.userId);
-        if (foundUser) {
-          ElMessage.error('密码错误');
-        } else {
-          ElMessage.error('该学工号未注册');
+        if (registerForm.value.confirmPassword !== '') {
+          registerFormRef.value.validateField('confirmPassword');
         }
+        callback();
       }
-    } else {
-      console.log('登录表单验证失败');
-    }
-  });
-};
+    };
 
-const router = useRouter();
+    const validatePass2 = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请确认密码'));
+      } else if (value !== registerForm.value.password) {
+        callback(new Error('两次输入密码不一致'));
+      } else {
+        callback();
+      }
+    };
+
+    const registerRules = {
+      username: [
+        { required: true, message: '请输入姓名', trigger: 'blur' },
+        { min: 2, message: '姓名长度不能小于2位', trigger: 'blur' }
+      ],
+      userId: [
+        { required: true, message: '请输入学号/工号', trigger: 'blur' }
+      ],
+      email: [
+        { required: true, message: '请输入邮箱', trigger: 'blur' },
+        { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
+      ],
+      password: [
+        { validator: validatePass, trigger: 'blur' }
+      ],
+      confirmPassword: [
+        { validator: validatePass2, trigger: 'blur' }
+      ],
+      role: [
+        { required: true, message: '请选择角色', trigger: 'change' },
+      ],
+    };
+
+    // 表单引用
+    const loginFormRef = ref(null);
+    const registerFormRef = ref(null);
+
+    // 是否显示注册表单
+    const isRegister = ref(false);
+
+    // 计算当前显示的图片
+    const currentImage = computed(() => {
+      return isRegister.value ? require('@/assets/back3.png') : require('@/assets/login.png');
+    });
+
+    // 切换登录和注册表单
+    const toggleForm = (isRegisterMode) => {
+      isRegister.value = isRegisterMode;
+    };
+
+    // 登录表单提交方法
+    const submitLoginForm = () => {
+      loginFormRef.value?.validate(async (valid) => {
+        if (valid) {
+          try {
+            const response = await store.dispatch('login', {
+              username: loginForm.value.userId,
+              password: loginForm.value.password
+            });
+            
+            ElMessage.success('登录成功');
+            router.push('/');
+          } catch (error) {
+            console.error('登录失败:', error);
+            ElMessage.error(error.message || '用户名或密码错误');
+          }
+        } else {
+          console.log('登录表单验证失败');
+        }
+      });
+    };
+
+    // 注册表单提交方法
+    const submitRegisterForm = () => {
+      registerFormRef.value?.validate(async (valid) => {
+        if (valid) {
+          try {
+            const response = await store.dispatch('register', {
+              username: registerForm.value.username,
+              password: registerForm.value.password,
+              email: registerForm.value.email,
+              userId: registerForm.value.userId,
+              role: registerForm.value.role
+            });
+            
+            if (response.code === 200) {
+              ElMessage.success('注册成功，请登录');
+              toggleForm(false); // 切换到登录表单
+            } else {
+              ElMessage.error(response.message || '注册失败');
+            }
+          } catch (error) {
+            console.error('注册失败:', error);
+            ElMessage.error(error.message || '注册失败，请稍后再试');
+          }
+        } else {
+          console.log('注册表单验证失败');
+        }
+      });
+    };
+
+    return {
+      loginForm,
+      registerForm,
+      loginRules,
+      registerRules,
+      loginFormRef,
+      registerFormRef,
+      isRegister,
+      currentImage,
+      toggleForm,
+      submitLoginForm,
+      submitRegisterForm,
+      isLocalEnv
+    };
+  }
+};
 </script>
 
 <style scoped>
@@ -630,5 +630,10 @@ p {
   font-size: 12px;
   margin-top: 5px;
   text-align: left;
+}
+
+.env-tip {
+  margin-bottom: 15px;
+  width: 100%;
 }
 </style>
