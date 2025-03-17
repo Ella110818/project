@@ -115,13 +115,13 @@ export default {
         <h3 class="course-title">{{ course.title }}</h3>
       </div>
       <el-button type="primary" @click="viewCourse">开始上课</el-button>
-      </div>
+    </div>
   </el-card>
 </template>
 
 <script>
 export default {
-  name: 'CourseCard2',
+  name: 'CourseCard1',
   props: {
     course: {
       type: Object,
@@ -130,7 +130,8 @@ export default {
   },
   methods: {
     viewCourse() {
-      this.$router.push('/new-class-page');
+      // 触发自定义事件，将课程ID传递给父组件
+      this.$emit('view-course', this.course.id);
     },
   },
 };
@@ -144,8 +145,7 @@ export default {
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-   height:260px; 
-
+  height: auto;
 }
 
 .course-card:hover {
@@ -174,26 +174,26 @@ export default {
 }
 
 .course-info {
-  padding: 15px;
+  padding: 12px;
   text-align: left;
+  display: flex;
+  flex-direction: column;
 }
 
 .course-header {
-  margin-bottom: 20px;
+  margin-bottom: 8px;
 }
 
-
 .course-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   margin: 0;
   color: #333;
 }
 
-
-
-
 .el-button {
   width: 100%;
+  margin-top: 5px;
+  height: 36px;
 }
 </style>

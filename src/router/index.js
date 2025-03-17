@@ -24,6 +24,7 @@ import DataListCard from '@/components/DataListCard.vue'
 import ImageCard from '@/components/ImageCard.vue'
 import NewClassPage from '@/views/NewClassPage.vue'
 import Register from '@/views/Register.vue'
+import LiveClassPage from '@/views/LiveClassPage.vue'
 
 // 教师路由
 const teacherRoutes = [
@@ -81,6 +82,12 @@ const sharedRoutes = [
     path: 'student-class-info/:id',
     name: 'student-class-info',
     component: () => import('@/views/StudentClassInfo.vue'),
+    props: true,
+  },
+  {
+    path: 'live-class/:id',
+    name: 'live-class',
+    component: LiveClassPage,
     props: true,
   },
   {

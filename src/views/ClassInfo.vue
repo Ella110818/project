@@ -7,7 +7,7 @@
             <el-icon><Document /></el-icon>
           </div>
           <div class="stat-info">
-            <div class="stat-value">脑机接口</div>
+            <div class="stat-value">{{ courseName }}</div>
             <div class="stat-label">课程名称</div>
           </div>
         </div>
@@ -66,7 +66,7 @@
               </div>
               <div class="scheme-item">
                 <div class="scheme-info">
-                  <span class="scheme-name">雨课堂课件</span>
+                  <span class="scheme-name">作业</span>
                   <span class="scheme-score">20分</span>
                 </div>
                 <el-progress :percentage="20" :show-text="false" />
@@ -91,7 +91,16 @@
             <div class="statistics">
               <div class="statistics-left">
                 <div class="chart-container">
-                  <el-progress type="dashboard" :percentage="averageScore" :width="150" :stroke-width="10" />
+                  <div class="dashboard-wrapper">
+                    <el-progress 
+                      type="dashboard" 
+                      :percentage="averageScore" 
+                      :width="150" 
+                      :stroke-width="10"
+                      :show-text="false"
+                    />
+                    <div class="central-score">{{ averageScore }}</div>
+                  </div>
                   <div class="chart-label">班级平均分</div>
                 </div>
                 <div class="score-details">
@@ -121,17 +130,97 @@
             <template #header>
               <div class="card-header">
                 <span>成绩列表</span>
+                <div class="header-right">
+                  <el-input
+                    v-model="searchGradeText"
+                    placeholder="搜索学生姓名或学号"
+                    prefix-icon="Search"
+                    clearable
+                    style="width: 220px; margin-right: 16px;"
+                  />
+                  <el-button type="primary" @click="exportGrades">
+                    <el-icon><Download /></el-icon>导出成绩单
+                  </el-button>
+                </div>
               </div>
             </template>
-            <el-table :data="gradeList" style="width: 100%">
-              <el-table-column prop="index" label="序号" width="80" />
-              <el-table-column prop="name" label="姓名" width="120" />
-              <el-table-column prop="studentId" label="学号" width="120" />
-              <el-table-column prop="classScore" label="课堂(30%)" width="120" />
-              <el-table-column prop="rainScore" label="雨课堂课件(20%)" width="150" />
-              <el-table-column prop="examScore" label="考试(50%)" width="120" />
-              <el-table-column prop="totalScore" label="总成绩" width="120" />
+            <el-table 
+              :data="filteredGradeList" 
+              style="width: 100%"
+              :default-sort="{ prop: 'totalScore', order: 'descending' }"
+              border
+              stripe
+              row-key="index"
+              highlight-current-row
+              :header-cell-style="{
+                backgroundColor: '#f5f7fa',
+                color: '#606266',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                padding: '12px 0'
+              }"
+              :cell-style="{
+                textAlign: 'center',
+                padding: '8px 0'
+              }"
+            >
+              <el-table-column prop="index" label="序号" width="70" sortable align="center" />
+              <el-table-column prop="name" label="姓名" width="120" sortable align="center" />
+              <el-table-column prop="studentId" label="学号" width="120" sortable align="center" />
+              <el-table-column prop="classScore" label="课堂(30%)" width="140" sortable align="center">
+                <template #default="scope">
+                  <el-progress 
+                    :percentage="Math.round(scope.row.classScore / 30 * 100)" 
+                    :format="() => scope.row.classScore"
+                    :status="getScoreStatus(scope.row.classScore, 30)"
+                    :text-inside="true"
+                    :stroke-width="14"
+                  ></el-progress>
+                </template>
+              </el-table-column>
+              <el-table-column prop="rainScore" label="作业(20%)" width="170" sortable align="center">
+                <template #default="scope">
+                  <el-progress 
+                    :percentage="Math.round(scope.row.rainScore / 20 * 100)" 
+                    :format="() => scope.row.rainScore"
+                    :status="getScoreStatus(scope.row.rainScore, 20)"
+                    :text-inside="true"
+                    :stroke-width="14"
+                  ></el-progress>
+                </template>
+              </el-table-column>
+              <el-table-column prop="examScore" label="考试(50%)" width="140" sortable align="center">
+                <template #default="scope">
+                  <el-progress 
+                    :percentage="Math.round(scope.row.examScore / 50 * 100)" 
+                    :format="() => scope.row.examScore"
+                    :status="getScoreStatus(scope.row.examScore, 50)"
+                    :text-inside="true"
+                    :stroke-width="14"
+                  ></el-progress>
+                </template>
+              </el-table-column>
+              <el-table-column prop="totalScore" label="总成绩" width="100" sortable align="center">
+                <template #default="scope">
+                  <span :class="getTotalScoreClass(scope.row.totalScore)">{{ scope.row.totalScore }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column label="操作" width="130" fixed="right" align="center">
+                <template #default="scope">
+                  <el-button link type="primary" @click="editGrade(scope.row)">编辑</el-button>
+                  <el-button link type="primary" @click="viewDetail(scope.row)">查看详情</el-button>
+                </template>
+              </el-table-column>
             </el-table>
+            <div class="table-pagination">
+              <el-pagination
+                v-model:current-page="currentPage"
+                v-model:page-size="pageSize"
+                :page-sizes="[10, 20, 50, 100]"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="gradeList.length"
+              />
+            </div>
           </el-card>
         </div>
       </el-tab-pane>
@@ -154,10 +243,11 @@ import Exam from '@/components/Exam.vue';
 import Group from '@/components/Group.vue';
 import AnnouncementForm from '@/components/AnnouncementForm.vue';
 import Resource from '@/components/Resource.vue';
-import { Document, User, Location } from '@element-plus/icons-vue';
+import { Document, User, Location, Download } from '@element-plus/icons-vue';
 
 const route = useRoute();
 const courseId = computed(() => route.params.id);
+const courseName = ref('');
 
 // 表单数据
 const form = ref({
@@ -171,6 +261,9 @@ const averageScore = ref(85);
 const maxScore = ref(100);
 const highestScore = ref(98);
 const lowestScore = ref(60);
+const searchGradeText = ref('');
+const currentPage = ref(1);
+const pageSize = ref(10);
 const gradeList = ref([
   {
     index: 1,
@@ -180,8 +273,96 @@ const gradeList = ref([
     rainScore: 18,
     examScore: 45,
     totalScore: 91
+  },
+  {
+    index: 2,
+    name: '李四',
+    studentId: '2021002',
+    classScore: 26,
+    rainScore: 15,
+    examScore: 43,
+    totalScore: 84
+  },
+  {
+    index: 3,
+    name: '王五',
+    studentId: '2021003',
+    classScore: 22,
+    rainScore: 19,
+    examScore: 38,
+    totalScore: 79
+  },
+  {
+    index: 4,
+    name: '赵六',
+    studentId: '2021004',
+    classScore: 29,
+    rainScore: 16,
+    examScore: 41,
+    totalScore: 86
+  },
+  {
+    index: 5,
+    name: '钱七',
+    studentId: '2021005',
+    classScore: 25,
+    rainScore: 17,
+    examScore: 47,
+    totalScore: 89
   }
 ]);
+
+// 筛选成绩列表数据
+const filteredGradeList = computed(() => {
+  if (!searchGradeText.value) {
+    return gradeList.value;
+  }
+  
+  const searchQuery = searchGradeText.value.toLowerCase();
+  return gradeList.value.filter(item => 
+    item.name.toLowerCase().includes(searchQuery) || 
+    item.studentId.toLowerCase().includes(searchQuery)
+  );
+});
+
+// 获取成绩状态（优/良/及格/不及格）
+const getScoreStatus = (score, fullScore) => {
+  const percentage = score / fullScore * 100;
+  if (percentage >= 90) return 'success';
+  if (percentage >= 75) return '';
+  if (percentage >= 60) return 'warning';
+  return 'exception';
+};
+
+// 获取总成绩的CSS类
+const getTotalScoreClass = (score) => {
+  if (score >= 90) return 'score-excellent';
+  if (score >= 80) return 'score-good';
+  if (score >= 70) return 'score-medium';
+  if (score >= 60) return 'score-pass';
+  return 'score-fail';
+};
+
+// 编辑学生成绩
+const editGrade = (row) => {
+  console.log('编辑学生成绩:', row);
+  ElMessage.info(`正在编辑 ${row.name} 的成绩`);
+  // 实际开发中这里应该弹出编辑对话框
+};
+
+// 查看学生详情
+const viewDetail = (row) => {
+  console.log('查看学生详情:', row);
+  ElMessage.info(`正在查看 ${row.name} 的详细信息`);
+  // 实际开发中这里应该跳转到详情页或显示详情弹窗
+};
+
+// 导出成绩单
+const exportGrades = () => {
+  console.log('导出成绩单');
+  ElMessage.success('成绩单导出成功');
+  // 实际开发中这里应该调用导出API
+};
 
 // 方法
 const publishAnnouncement = () => {
@@ -255,6 +436,8 @@ const initGradeDistChart = () => {
 
 onMounted(() => {
   console.log('Course ID:', courseId.value);
+  // 从localStorage获取课程名称
+  courseName.value = localStorage.getItem('currentCourseName') || '脑机接口';
 });
 </script>
 
@@ -345,6 +528,11 @@ onMounted(() => {
 .card-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+}
+
+.header-right {
+  display: flex;
   align-items: center;
 }
 
@@ -635,5 +823,148 @@ onMounted(() => {
 .info-value,
 .info-divider {
   display: none;
+}
+
+.score-excellent {
+  color: #67C23A;
+  font-weight: bold;
+}
+
+.score-good {
+  color: #409EFF;
+  font-weight: bold;
+}
+
+.score-medium {
+  color: #E6A23C;
+  font-weight: bold;
+}
+
+.score-pass {
+  color: #F56C6C;
+  font-weight: bold;
+}
+
+.score-fail {
+  color: #F56C6C;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.table-pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+:deep(.el-table) {
+  --el-table-header-bg-color: #f5f7fa;
+  --el-table-border-color: #e4e7ed;
+  --el-table-row-hover-bg-color: #f5f7fa;
+  --el-table-header-text-color: #606266;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+:deep(.el-table th) {
+  font-weight: 500;
+}
+
+:deep(.el-table--border th),
+:deep(.el-table--border td) {
+  border-right: 1px solid var(--el-table-border-color);
+}
+
+:deep(.el-table--border::after),
+:deep(.el-table--border::before) {
+  background-color: var(--el-table-border-color);
+}
+
+:deep(.el-table__body tr:hover > td) {
+  background-color: #ecf5ff;
+}
+
+:deep(.el-table .cell) {
+  padding: 0 8px;
+  line-height: 23px;
+  text-align: center;
+}
+
+:deep(.el-table .is-leaf) {
+  padding: 12px 8px;
+  text-align: center;
+}
+
+:deep(.el-progress) {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+:deep(.el-progress-bar__outer) {
+  border-radius: 4px;
+}
+
+:deep(.el-progress-bar__inner) {
+  border-radius: 4px;
+}
+
+:deep(.el-progress__text) {
+  font-size: 13px !important;
+  font-weight: 500;
+  color: #fff;
+}
+
+:deep(.el-progress-bar__innerText) {
+  font-size: 12px;
+  color: #fff;
+}
+
+:deep(.el-table) {
+  border-collapse: collapse;
+}
+
+:deep(.el-table__header-wrapper) {
+  width: 100% !important;
+}
+
+:deep(.el-table__body-wrapper) {
+  width: 100% !important;
+}
+
+:deep(.el-table__header) {
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+:deep(.el-table__body) {
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+:deep(.el-table .cell) {
+  padding: 0 8px;
+  line-height: 23px;
+  text-align: center;
+}
+
+:deep(.el-table .is-leaf) {
+  text-align: center;
+}
+
+.dashboard-wrapper {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.central-score {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 30px;
+  font-weight: bold;
+  color: #409EFF;
 }
 </style>

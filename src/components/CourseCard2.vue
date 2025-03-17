@@ -25,14 +25,14 @@ export default {
     },
   },
   methods: {
-     viewCourse() {
-    const userRole = localStorage.getItem('userRole');
-    if (userRole === 'student') {
-      this.$router.push(`/student-class-info/${this.course.id}`);
-    } else {
-      this.$router.push(`/class-info/${this.course.id}`);
-    }
-  },
+    viewCourse() {
+      // 在路由跳转前，保存课程信息到localStorage，以便在详情页面访问
+      localStorage.setItem('currentCourseName', this.course.title);
+      localStorage.setItem('currentCourseId', this.course.id);
+      
+      // 触发自定义事件，将课程ID传递给父组件
+      this.$emit('view-course', this.course.id);
+    },
   },
 };
 </script>
@@ -45,7 +45,7 @@ export default {
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  height: 260px;
+  height: auto;
 }
 
 .course-card:hover {
@@ -56,7 +56,7 @@ export default {
 .image-wrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 16/9; /* 图片宽高比 16:10 */
+  aspect-ratio: 16/9;
   overflow: hidden;
 }
 
@@ -74,16 +74,18 @@ export default {
 }
 
 .course-info {
-  padding: 15px;
+  padding: 12px;
   text-align: left;
+  display: flex;
+  flex-direction: column;
 }
 
 .course-header {
-  margin-bottom: 20px;
+  margin-bottom: 8px;
 }
 
 .course-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   margin: 0;
   color: #333;
@@ -91,5 +93,7 @@ export default {
 
 .el-button {
   width: 100%;
+  margin-top: 5px;
+  height: 36px;
 }
 </style> 
