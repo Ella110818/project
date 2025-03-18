@@ -249,12 +249,44 @@
           </div>
         </div>
       </el-tab-pane>
+
+      <el-tab-pane label="学情回顾" name="learning-review">
+        <div class="learning-review-container">
+          <!-- 课程日历选择器 -->
+          <el-card class="calendar-card">
+            <template #header>
+              <div class="card-header">
+                <span>课程日历</span>
+                <el-select v-model="selectedMonth" placeholder="选择月份" @change="updateCalendarDays">
+                  <el-option v-for="month in availableMonths" :key="month.value" :label="month.label" :value="month.value"></el-option>
+                </el-select>
+              </div>
+            </template>
+            <div class="calendar-container">
+              <div class="calendar-days">
+                <div v-for="day in calendarDays" :key="day.date" 
+                     class="calendar-day" 
+                     :class="{ 'has-class': day.hasClass, 'selected': selectedDate === day.date }"
+                     @click="day.hasClass && selectDate(day.date)">
+                  <span class="day-number">{{ new Date(day.date).getDate() }}</span>
+                  <div v-if="day.hasClass" class="day-indicator"></div>
+                </div>
+              </div>
+            </div>
+          </el-card>
+
+          <!-- 用户自定义图表区域 -->
+          <div class="user-custom-charts">
+            <!-- 用户自行实现的可视化内容将放置在这里 -->
+          </div>
+        </div>
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 import { 
   Document, 
   User, 
@@ -286,16 +318,126 @@ const activeCategory = ref('all')
 const currentFolder = ref('')
 const searchText = ref('')
 
-// 计算总分百分比，最大为100
-const finalGradePercentage = computed(() => {
-  const finalGrade = Number(calculateFinalGrade())
-  return Math.min(Math.round(finalGrade), 100)
-})
+// 学情回顾相关数据
+const attendanceRate = ref(85)
+const totalClasses = ref(15)
+const attendedClasses = ref(13)
+const performanceRate = ref(78)
+const classInteraction = ref(25)
+const questionCount = ref(8)
+const answerCount = ref(17)
+const homeworkCompletionRate = ref(90)
+const totalHomeworks = ref(10)
+const completedHomeworks = ref(9)
+const averageHomeworkScore = ref(88)
+const trendTimeRange = ref('month')
+const trendChartRef = ref(null)
+const learningTips = ref([
+  {
+    title: '继续保持良好的出勤率',
+    content: '你的出勤情况非常好，这对学习成果有积极影响。建议继续保持。',
+    type: 'success'
+  },
+  {
+    title: '可以提高课堂互动',
+    content: '尝试在课堂上更多地参与讨论和提问，这将有助于加深对知识的理解。',
+    type: 'warning'
+  },
+  {
+    title: '作业完成度高',
+    content: '你的作业完成度很高，说明学习态度认真。可以尝试在完成作业的同时更深入地思考问题。',
+    type: 'success'
+  },
+  {
+    title: '关注学习效率',
+    content: '你的整体学习表现良好，但学习效率还有提升空间。建议合理规划时间，保证充足的课前预习和课后复习。',
+    type: 'info'
+  }
+])
+
+// 日历和选择日期相关
+const selectedMonth = ref('2025-03')
+const calendarDays = ref([])
+const selectedDate = ref(null) // 当前选择的日期，为null表示未选择
+const availableMonths = ref([
+  { label: '2025年03月', value: '2025-03' },
+  { label: '2025年02月', value: '2025-02' },
+  { label: '2025年01月', value: '2025-01' }
+])
+
+// 学生基本信息
+const studentAvatar = ref(require('@/assets/touxiang.jpg')) // 使用已存在的头像图片
+const studentName = ref('朱嘉怡')
+const studentId = ref('202301001129')
+const studentDepartment = ref('计算机与信息技术学院')
+const studentMajor = ref('计算机科学与技术')
+const studentPhone = ref('123456789')
+
+// 详细学情数据相关引用
+const knowledgeGaugeRef = ref(null)
+const homeworkGaugeRef = ref(null)
+const examGaugeRef = ref(null)
+const classStatusChartRef = ref(null)
+const pkRadarChartRef = ref(null)
+
+// 待办清单数据
+const todoTasks = ref([
+  { title: '第二章 线性表mooc作业', completed: true },
+  { title: '第一章 章节测试', completed: true },
+  { title: '第一章 笔记提交', completed: true },
+  { title: '第三章 栈和队列预习', completed: false },
+  { title: '第二章 线性表上机作业', completed: false }
+])
+
+// 更新日历数据
+const updateCalendarDays = () => {
+  const [year, month] = selectedMonth.value.split('-').map(Number)
+  const daysInMonth = new Date(year, month, 0).getDate()
+  const days = []
+  
+  // 生成当月所有日期，并随机标记有课的日期
+  for(let i = 1; i <= daysInMonth; i++) {
+    const date = `${year}-${month.toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`
+    // 模拟数据：周一到周五的日期有60%几率有课
+    const dayOfWeek = new Date(date).getDay()
+    const hasClass = dayOfWeek >= 1 && dayOfWeek <= 5 ? Math.random() < 0.6 : false
+    days.push({ date, hasClass })
+  }
+  
+  calendarDays.value = days
+}
+
+// 选择日期
+const selectDate = (date) => {
+  selectedDate.value = date
+  // 选择日期后的逻辑，不需要详细的可视化初始化
+  console.log('选择日期:', date)
+}
+
+// 简化详细数据的图表初始化逻辑，只保留函数结构
+const initDetailedCharts = () => {
+  console.log('图表初始化会由用户自行实现')
+  // 图表初始化逻辑由用户自行实现
+}
+
+// 简化学习趋势图表初始化
+const initTrendChart = () => {
+  console.log('趋势图初始化会由用户自行实现')
+  // 趋势图初始化逻辑由用户自行实现
+}
 
 // 处理标签页切换
-    const handleTabClick = (tab) => {
-      console.log('切换到:', tab.props.name)
-    }
+const handleTabClick = (tab) => {
+  console.log('切换到:', tab.props.name)
+  // 如果切换到学情回顾标签页
+  if (tab.props.name === 'learning-review') {
+    // 使用nextTick确保DOM已经更新
+    nextTick(() => {
+      updateCalendarDays() // 初始化日历数据
+      // 可视化初始化由用户自行实现
+    })
+  }
+}
 
 // 获取状态对应的类型
     const getStatusType = (status) => {
@@ -594,11 +736,28 @@ const loadClassInfo = async () => {
         size: '120MB',
         uploadTime: '2023-03-30',
         uploader: '张教授'
-      }
-    ]
-  } catch (error) {
-    console.error('获取数据失败:', error)
+          }
+        ]
+      } catch (error) {
+        console.error('获取数据失败:', error)
     ElMessage.error('加载课程信息失败')
+  }
+}
+
+// 计算总分百分比，最大为100
+const finalGradePercentage = computed(() => {
+  const finalGrade = Number(calculateFinalGrade())
+  return Math.min(Math.round(finalGrade), 100)
+})
+
+// 根据进度获取对应的颜色
+const getProgressColor = (percentage) => {
+  if (percentage < 60) {
+    return '#F56C6C'  // 红色
+  } else if (percentage < 80) {
+    return '#E6A23C'  // 橙色
+  } else {
+    return '#67C23A'  // 绿色
   }
 }
 </script>
@@ -957,5 +1116,284 @@ const loadClassInfo = async () => {
   font-size: 18px !important;
   font-weight: bold;
   color: #409EFF;
+}
+
+/* 学情回顾样式 */
+.learning-review-container {
+  margin-top: 20px;
+}
+
+.review-card {
+  margin-bottom: 20px;
+  height: 100%;
+}
+
+.review-chart-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+/* 日历样式 */
+.calendar-card {
+  margin-bottom: 20px;
+}
+
+.calendar-container {
+  padding: 10px 0;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+.calendar-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+  border-radius: 5px;
+  cursor: default;
+  position: relative;
+}
+
+.calendar-day.has-class {
+  background-color: rgba(64, 158, 255, 0.1);
+  cursor: pointer;
+}
+
+.calendar-day.has-class:hover {
+  background-color: rgba(64, 158, 255, 0.2);
+}
+
+.calendar-day.selected {
+  background-color: rgba(64, 158, 255, 0.3);
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
+}
+
+.day-number {
+  font-size: 14px;
+}
+
+.day-indicator {
+  width: 5px;
+  height: 5px;
+  background-color: #409EFF;
+  border-radius: 50%;
+  margin-top: 3px;
+}
+
+/* 详细学情样式 */
+.daily-learning-detail {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.student-info-section {
+  grid-column: span 3;
+  display: flex;
+  background-color: #001529;
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.student-avatar {
+  margin-right: 20px;
+}
+
+.avatar-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 3px solid #00a8ff;
+}
+
+.student-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.detail-row {
+  margin-bottom: 5px;
+}
+
+.detail-label {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.data-card {
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.completion-card {
+  grid-column: span 3;
+}
+
+.gauges-container {
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+}
+
+.gauge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gauge-chart {
+  width: 200px;
+  height: 150px;
+}
+
+.gauge-label {
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.todo-card {
+  grid-column: span 1;
+}
+
+.todo-list {
+  padding: 15px;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.todo-item:hover {
+  background-color: #f5f7fa;
+}
+
+.todo-text {
+  margin-left: 8px;
+}
+
+.class-status-card {
+  grid-column: span 1;
+}
+
+.pie-chart-container {
+  height: 300px;
+  width: 100%;
+}
+
+.comparison-card {
+  grid-column: span 1;
+}
+
+.metrics-comparison {
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+}
+
+.metric-circle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.metric-value {
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.percentage-value {
+  display: block;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.growth-indicator {
+  display: block;
+  font-size: 12px;
+  color: #67C23A;
+}
+
+.pk-card {
+  grid-column: span 3;
+}
+
+.radar-chart-container {
+  height: 400px;
+  width: 100%;
+}
+
+.semester-overview {
+  margin-top: 20px;
+}
+
+.progress-value {
+  display: block;
+  font-size: 28px;
+  font-weight: bold;
+  color: #303133;
+}
+
+.progress-label {
+  display: block;
+  font-size: 14px;
+  color: #909399;
+  margin-top: 5px;
+}
+
+.review-metrics {
+  margin-top: 15px;
+}
+
+.metric-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.metric-label {
+  color: #606266;
+}
+
+.metric-value {
+  font-weight: 500;
+  color: #303133;
+}
+
+.trend-card {
+  margin-bottom: 20px;
+}
+
+.trend-chart {
+  height: 350px;
+  width: 100%;
+}
+
+.suggestion-card {
+  margin-bottom: 20px;
+}
+
+.suggestion-content {
+  margin-top: 15px;
+}
+
+.suggestion-item {
+  margin-bottom: 15px;
 }
 </style>
