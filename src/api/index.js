@@ -75,21 +75,10 @@ const mockApi = {
                     return;
                 }
 
-                // 检查用户名是否已存在
-                if (users.some(user => user.username === registerData.username)) {
-                    resolve({
-                        code: 400,
-                        message: '用户名已存在',
-                        data: null
-                    });
-                    return;
-                }
-
                 // 添加新用户
                 const newUser = {
                     username: registerData.username,
                     userId: registerData.userId,
-                    name: registerData.name || registerData.userId,
                     email: registerData.email || '',
                     password: registerData.password,
                     role: registerData.role
@@ -120,7 +109,7 @@ const mockApi = {
                 const users = JSON.parse(localStorage.getItem('users') || '[]');
 
                 // 查找用户
-                const user = users.find(u => u.userId === loginData.username && u.password === loginData.password);
+                const user = users.find(u => u.userId === loginData.userId && u.password === loginData.password);
 
                 if (user) {
                     // 生成模拟token
@@ -140,7 +129,7 @@ const mockApi = {
                 } else {
                     resolve({
                         code: 401,
-                        message: '用户名或密码错误',
+                        message: '学工号或密码错误',
                         data: null
                     });
                 }
@@ -157,6 +146,31 @@ const mockApi = {
                     message: '退出成功',
                     data: null
                 });
+            }, 300);
+        });
+    },
+
+    // 刷新Token
+    refreshToken: async (refreshToken) => {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                if (refreshToken) {
+                    // 模拟刷新成功
+                    resolve({
+                        code: 200,
+                        message: 'Token刷新成功',
+                        data: {
+                            access: `mock_refreshed_token_${Date.now()}`
+                        }
+                    });
+                } else {
+                    // 模拟刷新失败
+                    resolve({
+                        code: 401,
+                        message: '刷新令牌无效或已过期',
+                        data: null
+                    });
+                }
             }, 300);
         });
     }

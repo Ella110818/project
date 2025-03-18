@@ -60,7 +60,6 @@
               <el-tag :type="getStatusType(item.status)">{{ item.status }}</el-tag>
             </div>
             <div class="assignment-info">
-              <p>{{ item.description }}</p>
               <div class="assignment-meta">
                 <span>截止时间：{{ item.deadline }}</span>
                 <span>满分：{{ item.fullScore }}分</span>
@@ -427,8 +426,8 @@ const initTrendChart = () => {
 }
 
 // 处理标签页切换
-const handleTabClick = (tab) => {
-  console.log('切换到:', tab.props.name)
+    const handleTabClick = (tab) => {
+      console.log('切换到:', tab.props.name)
   // 如果切换到学情回顾标签页
   if (tab.props.name === 'learning-review') {
     // 使用nextTick确保DOM已经更新
@@ -609,7 +608,6 @@ const loadClassInfo = async () => {
             title: '脑机接口第一次作业',
             type: 'homework',
             status: '已批改',
-            description: '请完成教材第三章习题1-5，并提交电子版。',
             deadline: '2023-03-20 23:59',
             fullScore: 100
           },
@@ -618,7 +616,6 @@ const loadClassInfo = async () => {
             title: '期中考试',
             type: 'exam',
             status: '进行中',
-            description: '考试范围：第1-6章，考试时长：120分钟',
             deadline: '2023-04-20 16:00',
             fullScore: 100
           },
@@ -627,7 +624,6 @@ const loadClassInfo = async () => {
             title: '脑机接口第二次作业',
             type: 'homework',
             status: '未开始',
-            description: '请完成教材第五章习题8-12，并提交电子版。',
             deadline: '2023-04-30 23:59',
             fullScore: 100
           }
