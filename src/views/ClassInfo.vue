@@ -17,7 +17,7 @@
             <el-icon><User /></el-icon>
           </div>
           <div class="stat-info">
-            <div class="stat-value">35</div>
+            <div class="stat-value">{{ classInfo.studentCount }}</div>
             <div class="stat-label">班级人数</div>
           </div>
         </div>
@@ -27,8 +27,8 @@
             <el-icon><Location /></el-icon>
           </div>
           <div class="stat-info">
-            <div class="stat-value">主教学楼</div>
-            <div class="stat-label">301</div>
+            <div class="stat-value">{{ classInfo.building }}</div>
+            <div class="stat-label">{{ classInfo.roomNumber }}</div>
           </div>
         </div>
       </div>
@@ -235,7 +235,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed, nextTick } from 'vue';
+import { onMounted, ref, computed, nextTick, onUnmounted } from 'vue';
 import * as echarts from 'echarts';
 import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
@@ -248,6 +248,12 @@ import { Document, User, Location, Download } from '@element-plus/icons-vue';
 const route = useRoute();
 const courseId = computed(() => route.params.id);
 const courseName = ref('');
+const classInfo = ref({
+  studentCount: 0,
+  location: '',
+  building: '',
+  roomNumber: ''
+});
 
 // 表单数据
 const form = ref({
@@ -385,9 +391,19 @@ const handleTabClick = (tab) => {
   }
 };
 
+// 优化图表初始化和重绘
+let gradeChart = null;
+
 const initGradeDistChart = () => {
   const chartDom = document.querySelector('#gradeDistChart');
-  const myChart = echarts.init(chartDom);
+  if (!chartDom) return;
+
+  // 如果已存在图表实例，先销毁
+  if (gradeChart) {
+    gradeChart.dispose();
+  }
+
+  gradeChart = echarts.init(chartDom);
   const option = {
     tooltip: {
       trigger: 'axis',
@@ -426,18 +442,67 @@ const initGradeDistChart = () => {
       data: [7, 5, 15, 8]
     }]
   };
-  myChart.setOption(option);
+  gradeChart.setOption(option);
   
-  // 监听窗口大小变化
-  window.addEventListener('resize', () => {
-    myChart.resize();
+  // 使用防抖处理 resize
+  const handleResize = debounce(() => {
+    if (gradeChart) {
+      gradeChart.resize();
+    }
+  }, 100);
+
+  window.addEventListener('resize', handleResize);
+
+  // 在组件卸载时清理
+  onUnmounted(() => {
+    window.removeEventListener('resize', handleResize);
+    if (gradeChart) {
+      gradeChart.dispose();
+      gradeChart = null;
+    }
   });
+};
+
+// 防抖函数
+function debounce(fn, delay) {
+  let timer = null;
+  return function() {
+    const context = this;
+    const args = arguments;
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      fn.apply(context, args);
+    }, delay);
+  };
+}
+
+// 加载课程信息
+const loadClassInfo = async () => {
+  try {
+    // 从localStorage获取课程信息或从API获取
+    classInfo.value = {
+      studentCount: localStorage.getItem('currentCourseStudentCount') || 0,
+      location: localStorage.getItem('currentCourseLocation') || '未知位置',
+      building: localStorage.getItem('currentCourseLocation')?.split(' ')[0] || '未知教学楼',
+      roomNumber: localStorage.getItem('currentCourseLocation')?.split(' ')[1] || '未知教室'
+    };
+    courseName.value = localStorage.getItem('currentCourseName') || '未知课程';
+  } catch (error) {
+    console.error('获取课程信息失败:', error);
+    ElMessage.error('加载课程信息失败');
+  }
 };
 
 onMounted(() => {
   console.log('Course ID:', courseId.value);
-  // 从localStorage获取课程名称
-  courseName.value = localStorage.getItem('currentCourseName') || '脑机接口';
+  loadClassInfo();
+  
+  // 使用 nextTick 确保 DOM 已更新
+  nextTick(() => {
+    if (activeTab.value === 'grade') {
+      initGradeDistChart();
+    }
+  });
 });
 </script>
 

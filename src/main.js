@@ -34,6 +34,7 @@ import router from './router';
 import store from './store';
 import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css';
+import handleResizeObserverLoopError from './utils/resizeObserver';
 
 // 从 @element-plus/icons-vue 导入所有图标
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
@@ -54,6 +55,9 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 
 // 使用 store、router 和 Element Plus
 app.use(store).use(router).use(ElementPlus);
+
+// 处理 ResizeObserver 错误
+handleResizeObserverLoopError();
 
 // 挂载应用实例
 app.mount('#app');
