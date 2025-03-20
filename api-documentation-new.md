@@ -88,13 +88,12 @@
 
 - **URL**: `/api/auth/login/`
 - **方法**: POST
-- **描述**: 用户登录接口
-- **Content-Type**: application/json
+- **描述**: 用户登录并获取访问令牌
 - **请求参数**:
 
 | 参数名 | 类型 | 必填 | 描述 |
 |--------|------|------|------|
-| username | string | 是 | 用户名（真实姓名） |
+| userId | string | 是 | 学工号 |
 | password | string | 是 | 密码 |
 
 - **响应示例**:
@@ -181,6 +180,9 @@
 - **描述**: 获取用户有权限查看的所有课程
 - **请求头**:
   - Authorization: Bearer {token}
+- **查询参数**:
+  - role: string (可选) - 按角色筛选，可选值：'teacher', 'student'
+  - semester: string (可选) - 按学期筛选，例如：'2023-spring'
 
 - **响应示例**:
 
@@ -188,19 +190,18 @@
 {
   "code": 200,
   "message": "获取成功",
-  "data": {
-    "total": 2,
-    "items": [
-      {
-        "id": "course_001",
-        "title": "脑机接口",
-        "location": "主教学楼301",
-        "building": "主教学楼",
-        "roomNumber": "301",
-        "studentCount": 35
-      }
-    ]
-  }
+  "data": [
+    {
+      "id": 1,
+      "title": "脑机接口",
+      "description": "本课程介绍脑机接口的基本原理与应用技术",
+      "teacherName": "张教授",
+      "location": "主教学楼301",
+      "studentCount": 35,
+      "schedule": "周二 14:00-16:00",
+      "semester": "2023春季学期"
+    }
+  ]
 }
 ```
 
@@ -223,11 +224,92 @@
   "data": {
     "id": "course_001",
     "title": "脑机接口",
+    "description": "本课程介绍脑机接口的基本原理与应用技术",
+    "teacherName": "张教授",
     "location": "主教学楼301",
-    "building": "主教学楼",
-    "roomNumber": "301",
-    "studentCount": 35
+    "studentCount": 35,
+    "schedule": "周二 14:00-16:00",
+    "semester": "2023春季学期",
+    "assessmentScheme": [
+      { "name": "课堂表现", "weight": 30 },
+      { "name": "作业", "weight": 20 },
+      { "name": "考试", "weight": 50 }
+    ]
   }
+}
+```
+
+#### 2.3 创建新课程 (教师权限)
+
+- **URL**: `/api/courses/`
+- **方法**: POST
+- **描述**: 创建新课程
+- **请求头**:
+  - Authorization: Bearer {token}
+- **请求参数**:
+
+| 参数名 | 类型 | 必填 | 描述 |
+|--------|------|------|------|
+| title | string | 是 | 课程名称 |
+| description | string | 是 | 课程描述 |
+| location | string | 是 | 上课地点 |
+| schedule | string | 是 | 上课时间 |
+| semester | string | 是 | 学期 |
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "创建成功",
+  "data": {
+    "id": 1,
+    "title": "脑机接口"
+  }
+}
+```
+
+#### 2.4 更新课程信息 (教师权限)
+
+- **URL**: `/api/courses/{id}/`
+- **方法**: PUT
+- **描述**: 更新课程信息
+- **请求头**:
+  - Authorization: Bearer {token}
+- **路径参数**: 
+  - id: 课程ID
+- **请求参数**: 同创建课程
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "更新成功",
+  "data": {
+    "id": 1,
+    "title": "脑机接口（更新）"
+  }
+}
+```
+
+#### 2.5 删除课程 (教师权限)
+
+- **URL**: `/api/courses/{id}/`
+- **方法**: DELETE
+- **描述**: 删除课程
+- **请求头**:
+  - Authorization: Bearer {token}
+- **路径参数**: 
+  - id: 课程ID
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "删除成功",
+  "data": null
 }
 ```
 
@@ -245,7 +327,6 @@
 - **查询参数**:
   - page: number (可选) - 页码，默认1
   - size: number (可选) - 每页条数，默认10
-  - type: string (可选) - 公告类型，可选值：'info', 'warning', 'danger'
 
 - **响应示例**:
 
@@ -257,23 +338,63 @@
     "total": 2,
     "items": [
       {
-        "title": "关于期中考试的通知",
-        "content": "各位同学请注意，期中考试将于下周三进行，请做好准备。",
-        "type": "info"
+        "id": 1,
+        "title": "关于期中考试安排的通知",
+        "content": "各位同学，期中考试将于下周三进行，请做好准备。",
+        "createTime": "2023-04-15 14:30",
+        "updateTime": "2023-04-15 14:30",
+        "authorName": "张教授",
+        "important": true
       }
     ]
   }
 }
 ```
 
-#### 3.2 发布课程公告
+#### 3.2 获取公告详情
+
+- **URL**: `/api/announcements/{id}/`
+- **方法**: GET
+- **描述**: 获取公告详细信息
+- **请求头**:
+  - Authorization: Bearer {token}
+- **路径参数**: 
+  - id: 公告ID
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "获取成功",
+  "data": {
+    "id": 1,
+    "title": "关于期中考试安排的通知",
+    "content": "各位同学，期中考试将于下周三进行，请做好准备。",
+    "createTime": "2023-04-15 14:30",
+    "updateTime": "2023-04-15 14:30",
+    "authorName": "张教授",
+    "important": true,
+    "attachments": [
+      {
+        "id": 1,
+        "name": "考试大纲.pdf",
+        "url": "https://example.com/files/exam_outline.pdf",
+        "size": "1.2MB"
+      }
+    ]
+  }
+}
+```
+
+#### 3.3 发布课程公告 (教师权限)
 
 - **URL**: `/api/courses/{id}/announcements/`
 - **方法**: POST
 - **描述**: 为课程发布新公告
 - **请求头**:
   - Authorization: Bearer {token}
-  - Content-Type: application/json
+  - Content-Type: multipart/form-data
 - **路径参数**: 
   - id: 课程ID
 - **请求参数**:
@@ -282,7 +403,8 @@
 |--------|------|------|------|
 | title | string | 是 | 公告标题 |
 | content | string | 是 | 公告内容 |
-| type | string | 是 | 公告类型：'info'(普通),'warning'(重要),'danger'(紧急) |
+| important | boolean | 否 | 是否重要公告，默认false |
+| attachments | file[] | 否 | 附件文件列表 |
 
 - **响应示例**:
 
@@ -291,10 +413,56 @@
   "code": 200,
   "message": "发布成功",
   "data": {
-    "title": "关于期中考试的通知",
-    "content": "各位同学请注意，期中考试将于下周三进行，请做好准备。",
-    "type": "info"
+    "id": 1,
+    "title": "关于期中考试安排的通知",
+    "createTime": "2023-04-15 14:30"
   }
+}
+```
+
+#### 3.4 更新公告 (教师权限)
+
+- **URL**: `/api/announcements/{id}/`
+- **方法**: PUT
+- **描述**: 更新公告内容
+- **请求头**:
+  - Authorization: Bearer {token}
+  - Content-Type: multipart/form-data
+- **路径参数**: 
+  - id: 公告ID
+- **请求参数**: 同发布公告
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "更新成功",
+  "data": {
+    "id": 1,
+    "title": "关于期中考试安排的通知（更新）",
+    "updateTime": "2023-04-15 15:30"
+  }
+}
+```
+
+#### 3.5 删除公告 (教师权限)
+
+- **URL**: `/api/announcements/{id}/`
+- **方法**: DELETE
+- **描述**: 删除公告
+- **请求头**:
+  - Authorization: Bearer {token}
+- **路径参数**: 
+  - id: 公告ID
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "删除成功",
+  "data": null
 }
 ```
 
@@ -311,7 +479,7 @@
   - id: 课程ID
 - **查询参数**:
   - type: string (可选) - 类型筛选，可选值：'homework'(作业),'exam'(考试)
-  - status: string (可选) - 状态筛选，可选值：'未开始','进行中','已截止'
+  - status: string (可选) - 状态筛选，可选值：'not_started'(未开始),'in_progress'(进行中),'ended'(已结束)
   - page: number (可选) - 页码，默认1
   - size: number (可选) - 每页条数，默认10
 
@@ -326,15 +494,27 @@
     "items": [
       {
         "id": 1,
+        "title": "脑机接口第一次作业",
+        "type": "homework",
+        "status": "已批改",
+        "startTime": "2023-03-10 00:00",
+        "deadline": "2023-03-20 23:59",
+        "score": 100,
+        "description": "完成教材第一章的习题",
+        "submitStatus": "已提交",
+        "submitTime": "2023-03-19 22:30",
+        "grade": 90
+      },
+      {
+        "id": 2,
         "title": "期中考试",
         "type": "exam",
-        "description": "请大家认真准备期中考试。包括第1-5章内容，考试时间2小时。",
-        "startTime": "2024-05-15 08:30",
-        "deadline": "2024-05-15 10:30",
         "status": "进行中",
-        "fullScore": 100,
-        "submitted": 28,
-        "total": 35
+        "startTime": "2023-04-20 14:00",
+        "endTime": "2023-04-20 16:00",
+        "duration": 120,
+        "totalScore": 100,
+        "submitStatus": "未提交"
       }
     ]
   }
@@ -343,12 +523,92 @@
 
 #### 4.2 发布作业/考试
 
+- **URL**: `/api/assignments/{id}/`
+- **方法**: GET
+- **描述**: 获取作业或考试的详细信息
+- **请求头**:
+  - Authorization: Bearer {token}
+- **路径参数**: 
+  - id: 作业/考试ID
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "获取成功",
+  "data": {
+    "id": 1,
+    "title": "脑机接口第一次作业",
+    "type": "homework",
+    "status": "已批改",
+    "startTime": "2023-03-10 00:00",
+    "deadline": "2023-03-20 23:59",
+    "score": 100,
+    "description": "完成教材第一章的习题",
+    "submitStatus": "已提交",
+    "submitTime": "2023-03-19 22:30",
+    "grade": 90,
+    "feedback": "作业完成得很好，概念理解清晰，但第3题有些小错误。",
+    "attachments": [
+      {
+        "id": 1,
+        "name": "作业要求.pdf",
+        "url": "https://example.com/files/homework_requirements.pdf",
+        "size": "500KB"
+      }
+    ],
+    "questions": [
+      {
+        "id": 1,
+        "type": "single_choice",
+        "content": "以下哪项不是脑机接口的应用领域？",
+        "options": ["医疗康复", "游戏娱乐", "农业生产", "辅助通信"],
+        "score": 20
+      }
+    ]
+  }
+}
+```
+
+#### 4.3 提交作业/考试
+
+- **URL**: `/api/assignments/{id}/submit/`
+- **方法**: POST
+- **描述**: 提交作业或考试答案
+- **请求头**:
+  - Authorization: Bearer {token}
+  - Content-Type: multipart/form-data
+- **路径参数**: 
+  - id: 作业/考试ID
+- **请求参数**:
+
+| 参数名 | 类型 | 必填 | 描述 |
+|--------|------|------|------|
+| answers | object[] | 是 | 答案列表，每个对象包含questionId和answer字段 |
+| attachments | file[] | 否 | 附件文件列表 |
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "提交成功",
+  "data": {
+    "submitTime": "2023-04-18 15:30:22",
+    "submitStatus": "已提交"
+  }
+}
+```
+
+#### 4.4 发布作业/考试 (教师权限)
+
 - **URL**: `/api/courses/{id}/assignments/`
 - **方法**: POST
 - **描述**: 发布新作业或考试
 - **请求头**:
   - Authorization: Bearer {token}
-  - Content-Type: application/json
+  - Content-Type: multipart/form-data
 - **路径参数**: 
   - id: 课程ID
 - **请求参数**:
@@ -359,8 +619,10 @@
 | type | string | 是 | 类型：'homework'或'exam' |
 | description | string | 是 | 描述 |
 | startTime | string | 是 | 开始时间 |
-| deadline | string | 是 | 截止时间 |
-| fullScore | number | 是 | 总分 |
+| deadline/endTime | string | 是 | 截止/结束时间 |
+| totalScore | number | 是 | 总分 |
+| questions | object[] | 是 | 题目列表 |
+| attachments | file[] | 否 | 附件文件列表 |
 
 - **响应示例**:
 
@@ -369,25 +631,52 @@
   "code": 200,
   "message": "发布成功",
   "data": {
-    "id": 1,
-    "title": "期中考试",
-    "type": "exam",
-    "description": "请大家认真准备期中考试。包括第1-5章内容，考试时间2小时。",
-    "startTime": "2024-05-15 08:30",
-    "deadline": "2024-05-15 10:30",
-    "status": "未开始",
-    "fullScore": 100
+    "id": 3,
+    "title": "脑机接口第二次作业"
   }
 }
 ```
 
-### 5. 分组管理相关接口
+#### 4.5 批改作业/考试 (教师权限)
 
-#### 5.1 获取课程分组列表
+- **URL**: `/api/assignments/{id}/grade/`
+- **方法**: POST
+- **描述**: 为学生的作业或考试评分
+- **请求头**:
+  - Authorization: Bearer {token}
+- **路径参数**: 
+  - id: 作业/考试ID
+- **请求参数**:
 
-- **URL**: `/api/courses/{id}/groups/`
+| 参数名 | 类型 | 必填 | 描述 |
+|--------|------|------|------|
+| studentId | string | 是 | 学生ID |
+| score | number | 是 | 分数 |
+| feedback | string | 否 | 评语 |
+| questionScores | object[] | 否 | 每道题的得分和评语 |
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "评分成功",
+  "data": {
+    "studentId": "s20230001",
+    "assignmentId": 1,
+    "score": 90,
+    "gradingTime": "2023-04-20 10:30:00"
+  }
+}
+```
+
+### 5. 成绩相关接口
+
+#### 5.1 获取课程成绩概览
+
+- **URL**: `/api/courses/{id}/grades/overview/`
 - **方法**: GET
-- **描述**: 获取课程的所有分组信息
+- **描述**: 获取课程的成绩统计信息
 - **请求头**:
   - Authorization: Bearer {token}
 - **路径参数**: 
@@ -400,94 +689,26 @@
   "code": 200,
   "message": "获取成功",
   "data": {
-    "unassignedStudents": [
-      {
-        "id": 1,
-        "name": "张三",
-        "studentId": "2021001",
-        "avatar": ""
-      }
+    "averageScore": 87.5,
+    "highestScore": 95,
+    "lowestScore": 75,
+    "distribution": [
+      { "range": "90-100", "count": 10 },
+      { "range": "80-89", "count": 15 },
+      { "range": "70-79", "count": 8 },
+      { "range": "60-69", "count": 2 },
+      { "range": "0-59", "count": 0 }
     ],
-    "groups": [
-      {
-        "id": 1,
-        "name": "第一组",
-        "students": []
-      }
+    "assessmentScheme": [
+      { "name": "课堂表现", "weight": 30 },
+      { "name": "作业", "weight": 20 },
+      { "name": "考试", "weight": 50 }
     ]
   }
 }
 ```
 
-#### 5.2 创建/更新分组
-
-- **URL**: `/api/courses/{courseId}/groups/`
-- **方法**: POST
-- **描述**: 创建新分组或更新现有分组
-- **请求头**:
-  - Authorization: Bearer {token}
-  - Content-Type: application/json
-- **路径参数**: 
-  - courseId: 课程ID
-- **请求参数**:
-
-| 参数名 | 类型 | 必填 | 描述 |
-|--------|------|------|------|
-| name | string | 是 | 分组名称 |
-| studentIds | number[] | 是 | 学生ID列表 |
-
-- **响应示例**:
-
-```json
-{
-  "code": 200,
-  "message": "创建成功",
-  "data": {
-    "id": 1,
-    "name": "第一组",
-    "students": []
-  }
-}
-```
-
-#### 5.3 自动分组
-
-- **URL**: `/api/courses/{courseId}/groups/auto`
-- **方法**: POST
-- **描述**: 自动将学生分配到指定数量的分组中
-- **请求头**:
-  - Authorization: Bearer {token}
-  - Content-Type: application/json
-- **路径参数**: 
-  - courseId: 课程ID
-- **请求参数**:
-
-| 参数名 | 类型 | 必填 | 描述 |
-|--------|------|------|------|
-| groupCount | number | 是 | 分组数量 |
-| method | string | 是 | 分组方式：'random'(随机),'average'(平均) |
-
-- **响应示例**:
-
-```json
-{
-  "code": 200,
-  "message": "自动分组成功",
-  "data": {
-    "groups": [
-      {
-        "id": 1,
-        "name": "第一组",
-        "students": []
-      }
-    ]
-  }
-}
-```
-
-### 6. 成绩相关接口
-
-#### 6.1 获取课程成绩列表
+#### 5.2 获取课程成绩列表
 
 - **URL**: `/api/courses/{id}/grades/`
 - **方法**: GET
@@ -497,6 +718,8 @@
 - **路径参数**: 
   - id: 课程ID
 - **查询参数**:
+  - sort: string (可选) - 排序字段，可选值：'totalScore', 'classScore', 'homeworkScore', 'examScore'
+  - order: string (可选) - 排序方式，可选值：'asc', 'desc'
   - page: number (可选) - 页码，默认1
   - size: number (可选) - 每页条数，默认10
   - search: string (可选) - 搜索学生姓名或学号
@@ -511,22 +734,146 @@
     "total": 35,
     "items": [
       {
-        "index": 1,
+        "studentId": "s20230001",
         "name": "张三",
-        "studentId": "2021001",
-        "classScore": 28,
-        "rainScore": 18,
-        "examScore": 45,
-        "totalScore": 91
+        "totalScore": 87.5,
+        "classScore": 27,
+        "homeworkScore": 18,
+        "examScore": 42.5,
+        "rank": 1
       }
     ]
   }
 }
 ```
 
-### 7. 课程资源相关接口
+#### 5.3 获取学生个人成绩
 
-#### 7.1 获取课程资源列表
+- **URL**: `/api/courses/{id}/grades/{studentId}/`
+- **方法**: GET
+- **描述**: 获取特定学生在课程中的详细成绩
+- **请求头**:
+  - Authorization: Bearer {token}
+- **路径参数**: 
+  - id: 课程ID
+  - studentId: 学生ID
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "获取成功",
+  "data": {
+    "studentInfo": {
+      "studentId": "s20230001",
+      "name": "张三",
+      "avatar": "https://example.com/avatar.png"
+    },
+    "totalScore": 87.5,
+    "rank": 1,
+    "components": [
+      {
+        "name": "课堂表现",
+        "score": 27,
+        "fullScore": 30,
+        "weight": 30,
+        "details": [
+          {
+            "date": "2023-03-01",
+            "score": 9,
+            "fullScore": 10,
+            "comment": "课堂参与度高"
+          }
+        ]
+      },
+      {
+        "name": "作业",
+        "score": 18,
+        "fullScore": 20,
+        "weight": 20,
+        "details": [
+          {
+            "title": "第一次作业",
+            "score": 9,
+            "fullScore": 10,
+            "submitTime": "2023-03-19 22:30",
+            "feedback": "完成得很好"
+          }
+        ]
+      },
+      {
+        "name": "考试",
+        "score": 42.5,
+        "fullScore": 50,
+        "weight": 50,
+        "details": [
+          {
+            "title": "期中考试",
+            "score": 42.5,
+            "fullScore": 50,
+            "examTime": "2023-04-20 14:00",
+            "feedback": "整体表现良好"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+#### 5.4 导出成绩单 (教师权限)
+
+- **URL**: `/api/courses/{id}/grades/export/`
+- **方法**: GET
+- **描述**: 导出课程成绩单Excel文件
+- **请求头**:
+  - Authorization: Bearer {token}
+- **路径参数**: 
+  - id: 课程ID
+- **查询参数**:
+  - format: string (可选) - 导出格式，可选值：'xlsx'(默认), 'csv'
+  - includeDetails: boolean (可选) - 是否包含详细成绩，默认false
+
+- **响应**: 文件流
+- **Content-Type**: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+
+#### 5.5 更新成绩 (教师权限)
+
+- **URL**: `/api/courses/{id}/grades/{studentId}/`
+- **方法**: PUT
+- **描述**: 更新学生成绩
+- **请求头**:
+  - Authorization: Bearer {token}
+- **路径参数**: 
+  - id: 课程ID
+  - studentId: 学生ID
+- **请求参数**:
+
+| 参数名 | 类型 | 必填 | 描述 |
+|--------|------|------|------|
+| classScore | number | 否 | 课堂表现分数 |
+| homeworkScore | number | 否 | 作业分数 |
+| examScore | number | 否 | 考试分数 |
+| comment | string | 否 | 评语 |
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "更新成功",
+  "data": {
+    "studentId": "s20230001",
+    "totalScore": 87.5,
+    "updateTime": "2023-04-20 10:30:00"
+  }
+}
+```
+
+### 6. 课程资源相关接口
+
+#### 6.1 获取课程资源列表
 
 - **URL**: `/api/courses/{id}/resources/`
 - **方法**: GET
@@ -570,7 +917,7 @@
 }
 ```
 
-#### 7.2 获取资源详情
+#### 6.2 获取资源详情
 
 - **URL**: `/api/resources/{id}/`
 - **方法**: GET
@@ -613,7 +960,7 @@
 }
 ```
 
-#### 7.3 上传课程资源 (教师权限)
+#### 6.3 上传课程资源 (教师权限)
 
 - **URL**: `/api/courses/{id}/resources/`
 - **方法**: POST
@@ -647,7 +994,37 @@
 }
 ```
 
-#### 7.4 删除资源 (教师权限)
+#### 6.4 更新资源信息 (教师权限)
+
+- **URL**: `/api/resources/{id}/`
+- **方法**: PUT
+- **描述**: 更新资源信息
+- **请求头**:
+  - Authorization: Bearer {token}
+- **路径参数**: 
+  - id: 资源ID
+- **请求参数**:
+
+| 参数名 | 类型 | 必填 | 描述 |
+|--------|------|------|------|
+| name | string | 否 | 资源名称 |
+| description | string | 否 | 资源描述 |
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "更新成功",
+  "data": {
+    "id": 1,
+    "name": "脑机接口导论（修订版）.pdf",
+    "updateTime": "2023-03-02 10:30:00"
+  }
+}
+```
+
+#### 6.5 删除资源 (教师权限)
 
 - **URL**: `/api/resources/{id}/`
 - **方法**: DELETE
@@ -667,7 +1044,7 @@
 }
 ```
 
-#### 7.5 下载资源
+#### 6.6 下载资源
 
 - **URL**: `/api/resources/{id}/download/`
 - **方法**: GET
@@ -680,6 +1057,240 @@
 - **响应**: 文件流
 - **Content-Type**: 根据文件类型自动设置
 - **Content-Disposition**: attachment; filename="filename.ext"
+
+### 7. 学情分析相关接口
+
+#### 7.1 获取课程学情概览
+
+- **URL**: `/api/courses/{id}/learning-analytics/overview/`
+- **方法**: GET
+- **描述**: 获取课程整体学习情况统计
+- **请求头**:
+  - Authorization: Bearer {token}
+- **路径参数**: 
+  - id: 课程ID
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "获取成功",
+  "data": {
+    "studentCount": 35,
+    "attendance": {
+      "averageRate": 92.5,
+      "totalClasses": 15,
+      "distribution": [
+        { "rate": "90-100%", "count": 25 },
+        { "rate": "80-89%", "count": 8 },
+        { "rate": "70-79%", "count": 2 }
+      ]
+    },
+    "performance": {
+      "averageScore": 87.5,
+      "distribution": [
+        { "range": "90-100", "count": 10 },
+        { "range": "80-89", "count": 15 },
+        { "range": "70-79", "count": 8 }
+      ]
+    },
+    "participation": {
+      "averageRate": 85.0,
+      "distribution": {
+        "high": 15,
+        "medium": 15,
+        "low": 5
+      }
+    },
+    "assignments": {
+      "totalCount": 5,
+      "submissionRate": 95.0,
+      "averageScore": 88.5
+    }
+  }
+}
+```
+
+#### 7.2 获取学生个人学情分析
+
+- **URL**: `/api/courses/{id}/learning-analytics/students/{studentId}/`
+- **方法**: GET
+- **描述**: 获取特定学生的学习情况分析
+- **请求头**:
+  - Authorization: Bearer {token}
+- **路径参数**: 
+  - id: 课程ID
+  - studentId: 学生ID
+- **查询参数**:
+  - startDate: string (可选) - 开始日期，格式：YYYY-MM-DD
+  - endDate: string (可选) - 结束日期，格式：YYYY-MM-DD
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "获取成功",
+  "data": {
+    "studentInfo": {
+      "studentId": "s20230001",
+      "name": "张三",
+      "avatar": "https://example.com/avatar.png"
+    },
+    "attendance": {
+      "rate": 93.3,
+      "total": 15,
+      "attended": 14,
+      "details": [
+        {
+          "date": "2023-03-01",
+          "status": "attended",
+          "duration": 90,
+          "note": "准时到课"
+        }
+      ]
+    },
+    "performance": {
+      "overallScore": 87.5,
+      "rank": 5,
+      "trend": [
+        {
+          "date": "2023-03-01",
+          "score": 85
+        }
+      ]
+    },
+    "participation": {
+      "classInteraction": 25,
+      "questionCount": 8,
+      "answerCount": 12,
+      "discussionCount": 5
+    },
+    "assignments": {
+      "submissionRate": 100,
+      "averageScore": 88.5,
+      "details": [
+        {
+          "id": 1,
+          "title": "第一次作业",
+          "submitTime": "2023-03-19 22:30",
+          "score": 90,
+          "classAverage": 85
+        }
+      ]
+    },
+    "learningBehavior": {
+      "resourceAccess": {
+        "total": 45,
+        "distribution": {
+          "document": 25,
+          "video": 15,
+          "other": 5
+        }
+      },
+      "onlineDuration": {
+        "total": 1200,
+        "averagePerDay": 80,
+        "distribution": {
+          "morning": 400,
+          "afternoon": 600,
+          "evening": 200
+        }
+      }
+    }
+  }
+}
+```
+
+#### 7.3 获取课程日历数据
+
+- **URL**: `/api/courses/{id}/calendar/`
+- **方法**: GET
+- **描述**: 获取课程的日历数据，包括课程安排、作业和考试日期等
+- **请求头**:
+  - Authorization: Bearer {token}
+- **路径参数**: 
+  - id: 课程ID
+- **查询参数**:
+  - month: string (可选) - 月份，格式：YYYY-MM
+  - type: string (可选) - 事件类型筛选，可选值：'class'(课程),'homework'(作业),'exam'(考试),'all'(默认)
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "获取成功",
+  "data": {
+    "month": "2023-03",
+    "events": [
+      {
+        "date": "2023-03-01",
+        "type": "class",
+        "title": "第一节课",
+        "startTime": "14:00",
+        "endTime": "15:30",
+        "location": "主教学楼301"
+      },
+      {
+        "date": "2023-03-15",
+        "type": "homework",
+        "title": "第一次作业",
+        "deadline": "23:59",
+        "status": "not_started"
+      },
+      {
+        "date": "2023-03-20",
+        "type": "exam",
+        "title": "期中考试",
+        "startTime": "14:00",
+        "endTime": "16:00",
+        "location": "主教学楼301"
+      }
+    ]
+  }
+}
+```
+
+#### 7.4 获取学习预警信息 (教师权限)
+
+- **URL**: `/api/courses/{id}/learning-analytics/warnings/`
+- **方法**: GET
+- **描述**: 获取需要特别关注的学生学习预警信息
+- **请求头**:
+  - Authorization: Bearer {token}
+- **路径参数**: 
+  - id: 课程ID
+- **查询参数**:
+  - type: string (可选) - 预警类型，可选值：'attendance'(出勤),'performance'(成绩),'participation'(参与度),'all'(默认)
+  - severity: string (可选) - 严重程度，可选值：'high'(严重),'medium'(中等),'low'(轻微)
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "获取成功",
+  "data": {
+    "total": 5,
+    "items": [
+      {
+        "studentId": "s20230001",
+        "name": "张三",
+        "type": "attendance",
+        "severity": "high",
+        "description": "连续3次未到课",
+        "createTime": "2023-03-15 10:30:00",
+        "suggestions": [
+          "建议与学生沟通了解情况",
+          "可考虑调整考勤方式"
+        ]
+      }
+    ]
+  }
+}
+```
 
 ### 8. 用户管理相关接口
 
