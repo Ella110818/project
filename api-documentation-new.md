@@ -199,7 +199,6 @@
       "teacherName": "张教授",
       "location": "主教学楼301",
       "studentCount": 35,
-      "schedule": "周二 14:00-16:00",
       "semester": "2023春季学期"
     }
   ]
@@ -229,7 +228,6 @@
     "teacherName": "张教授",
     "location": "主教学楼301",
     "studentCount": 35,
-    "schedule": "周二 14:00-16:00",
     "semester": "2023春季学期",
     "assessmentScheme": [
       { "name": "课堂表现", "weight": 30 },
@@ -254,7 +252,6 @@
 | title | string | 是 | 课程名称 |
 | description | string | 是 | 课程描述 |
 | location | string | 是 | 上课地点 |
-| schedule | string | 是 | 上课时间 |
 | semester | string | 是 | 学期 |
 
 - **响应示例**:
@@ -421,51 +418,9 @@
 }
 ```
 
-#### 3.4 更新公告 (教师权限)
 
-- **URL**: `/api/announcements/{id}/`
-- **方法**: PUT
-- **描述**: 更新公告内容
-- **请求头**:
-  - Authorization: Bearer {token}
-  - Content-Type: multipart/form-data
-- **路径参数**: 
-  - id: 公告ID
-- **请求参数**: 同发布公告
 
-- **响应示例**:
 
-```json
-{
-  "code": 200,
-  "message": "更新成功",
-  "data": {
-    "id": 1,
-    "title": "关于期中考试安排的通知（更新）",
-    "updateTime": "2023-04-15 15:30"
-  }
-}
-```
-
-#### 3.5 删除公告 (教师权限)
-
-- **URL**: `/api/announcements/{id}/`
-- **方法**: DELETE
-- **描述**: 删除公告
-- **请求头**:
-  - Authorization: Bearer {token}
-- **路径参数**: 
-  - id: 公告ID
-
-- **响应示例**:
-
-```json
-{
-  "code": 200,
-  "message": "删除成功",
-  "data": null
-}
-```
 
 ### 4. 作业与考试相关接口
 
@@ -558,15 +513,6 @@
         "url": "https://example.com/files/homework_requirements.pdf",
         "size": "500KB"
       }
-    ],
-    "questions": [
-      {
-        "id": 1,
-        "type": "single_choice",
-        "content": "以下哪项不是脑机接口的应用领域？",
-        "options": ["医疗康复", "游戏娱乐", "农业生产", "辅助通信"],
-        "score": 20
-      }
     ]
   }
 }
@@ -638,38 +584,7 @@
 }
 ```
 
-#### 4.5 批改作业/考试 (教师权限)
 
-- **URL**: `/api/assignments/{id}/grade/`
-- **方法**: POST
-- **描述**: 为学生的作业或考试评分
-- **请求头**:
-  - Authorization: Bearer {token}
-- **路径参数**: 
-  - id: 作业/考试ID
-- **请求参数**:
-
-| 参数名 | 类型 | 必填 | 描述 |
-|--------|------|------|------|
-| studentId | string | 是 | 学生ID |
-| score | number | 是 | 分数 |
-| feedback | string | 否 | 评语 |
-| questionScores | object[] | 否 | 每道题的得分和评语 |
-
-- **响应示例**:
-
-```json
-{
-  "code": 200,
-  "message": "评分成功",
-  "data": {
-    "studentId": "s20230001",
-    "assignmentId": 1,
-    "score": 90,
-    "gradingTime": "2023-04-20 10:30:00"
-  }
-}
-```
 
 ### 5. 成绩相关接口
 
@@ -823,54 +738,7 @@
 }
 ```
 
-#### 5.4 导出成绩单 (教师权限)
 
-- **URL**: `/api/courses/{id}/grades/export/`
-- **方法**: GET
-- **描述**: 导出课程成绩单Excel文件
-- **请求头**:
-  - Authorization: Bearer {token}
-- **路径参数**: 
-  - id: 课程ID
-- **查询参数**:
-  - format: string (可选) - 导出格式，可选值：'xlsx'(默认), 'csv'
-  - includeDetails: boolean (可选) - 是否包含详细成绩，默认false
-
-- **响应**: 文件流
-- **Content-Type**: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-
-#### 5.5 更新成绩 (教师权限)
-
-- **URL**: `/api/courses/{id}/grades/{studentId}/`
-- **方法**: PUT
-- **描述**: 更新学生成绩
-- **请求头**:
-  - Authorization: Bearer {token}
-- **路径参数**: 
-  - id: 课程ID
-  - studentId: 学生ID
-- **请求参数**:
-
-| 参数名 | 类型 | 必填 | 描述 |
-|--------|------|------|------|
-| classScore | number | 否 | 课堂表现分数 |
-| homeworkScore | number | 否 | 作业分数 |
-| examScore | number | 否 | 考试分数 |
-| comment | string | 否 | 评语 |
-
-- **响应示例**:
-
-```json
-{
-  "code": 200,
-  "message": "更新成功",
-  "data": {
-    "studentId": "s20230001",
-    "totalScore": 87.5,
-    "updateTime": "2023-04-20 10:30:00"
-  }
-}
-```
 
 ### 6. 课程资源相关接口
 
@@ -995,35 +863,6 @@
 }
 ```
 
-#### 6.4 更新资源信息 (教师权限)
-
-- **URL**: `/api/resources/{id}/`
-- **方法**: PUT
-- **描述**: 更新资源信息
-- **请求头**:
-  - Authorization: Bearer {token}
-- **路径参数**: 
-  - id: 资源ID
-- **请求参数**:
-
-| 参数名 | 类型 | 必填 | 描述 |
-|--------|------|------|------|
-| name | string | 否 | 资源名称 |
-| description | string | 否 | 资源描述 |
-
-- **响应示例**:
-
-```json
-{
-  "code": 200,
-  "message": "更新成功",
-  "data": {
-    "id": 1,
-    "name": "脑机接口导论（修订版）.pdf",
-    "updateTime": "2023-03-02 10:30:00"
-  }
-}
-```
 
 #### 6.5 删除资源 (教师权限)
 
@@ -1061,57 +900,7 @@
 
 ### 7. 学情分析相关接口
 
-#### 7.1 获取课程学情概览
 
-- **URL**: `/api/courses/{id}/learning-analytics/overview/`
-- **方法**: GET
-- **描述**: 获取课程整体学习情况统计
-- **请求头**:
-  - Authorization: Bearer {token}
-- **路径参数**: 
-  - id: 课程ID
-
-- **响应示例**:
-
-```json
-{
-  "code": 200,
-  "message": "获取成功",
-  "data": {
-    "studentCount": 35,
-    "attendance": {
-      "averageRate": 92.5,
-      "totalClasses": 15,
-      "distribution": [
-        { "rate": "90-100%", "count": 25 },
-        { "rate": "80-89%", "count": 8 },
-        { "rate": "70-79%", "count": 2 }
-      ]
-    },
-    "performance": {
-      "averageScore": 87.5,
-      "distribution": [
-        { "range": "90-100", "count": 10 },
-        { "range": "80-89", "count": 15 },
-        { "range": "70-79", "count": 8 }
-      ]
-    },
-    "participation": {
-      "averageRate": 85.0,
-      "distribution": {
-        "high": 15,
-        "medium": 15,
-        "low": 5
-      }
-    },
-    "assignments": {
-      "totalCount": 5,
-      "submissionRate": 95.0,
-      "averageScore": 88.5
-    }
-  }
-}
-```
 
 #### 7.2 获取学生个人学情分析
 

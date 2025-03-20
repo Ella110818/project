@@ -169,6 +169,58 @@ export default {
 }
 </script>
 
+<script setup>
+import { ref } from 'vue';
+
+const averageScore = ref(88.5);
+const highestScore = ref(95);
+const lowestScore = ref(82);
+const totalCourses = ref(5);
+const selectedSemester = ref('2023-2024-2');
+const semesters = ref([
+  { value: '2023-2024-2', label: '2023-2024学年第二学期' },
+  { value: '2023-2024-1', label: '2023-2024学年第一学期' }
+]);
+const gradeList = ref([
+  {
+    courseName: '脑机接口导论',
+    courseType: '专业必修',
+    credit: 3,
+    composition: [
+      { name: '平时成绩', score: 90 },
+      { name: '实验', score: 85 },
+      { name: '期末考试', score: 88 }
+    ],
+    finalScore: 88
+  },
+  {
+    courseName: '人工智能基础',
+    courseType: '专业选修',
+    credit: 2,
+    composition: [
+      { name: '平时成绩', score: 92 },
+      { name: '项目', score: 95 },
+      { name: '期末考试', score: 89 }
+    ],
+    finalScore: 92
+  }
+]);
+
+const getProgressColor = (score) => {
+  if (score >= 90) return '#67C23A';
+  if (score >= 80) return '#409EFF';
+  if (score >= 60) return '#E6A23C';
+  return '#F56C6C';
+};
+
+const getScoreClass = (score) => {
+  if (score >= 90) return 'score-excellent';
+  if (score >= 80) return 'score-good';
+  if (score >= 60) return 'score-pass';
+  return 'score-fail';
+};
+</script>
+
 <style scoped>
 .grades-container {
   padding: 20px;
