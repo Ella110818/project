@@ -225,7 +225,7 @@ export default {
         if (valid) {
           try {
             const response = await store.dispatch('login', {
-              userId: loginForm.value.userId,
+              username: loginForm.value.userId,
               password: loginForm.value.password
             });
             
@@ -233,7 +233,7 @@ export default {
             router.push('/');
           } catch (error) {
             console.error('登录失败:', error);
-            ElMessage.error(error.message || '学工号或密码错误');
+            ElMessage.error(error.message || '用户名或密码错误');
           }
         } else {
           console.log('登录表单验证失败');
@@ -251,6 +251,7 @@ export default {
               password: registerForm.value.password,
               email: registerForm.value.email,
               userId: registerForm.value.userId,
+              name: registerForm.value.userId,
               role: registerForm.value.role
             });
             
