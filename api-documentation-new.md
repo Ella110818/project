@@ -214,6 +214,7 @@
   - Authorization: Bearer {token}
 - **路径参数**: 
   - id: 课程ID
+<<<<<<< HEAD
 
 - **响应示例**:
 
@@ -239,6 +240,172 @@
 }
 ```
 
+#### 2.3 创建新课程 (教师权限)
+
+- **URL**: `/api/courses/`
+- **方法**: POST
+- **描述**: 创建新课程
+- **请求头**:
+  - Authorization: Bearer {token}
+- **请求参数**:
+
+| 参数名 | 类型 | 必填 | 描述 |
+|--------|------|------|------|
+| title | string | 是 | 课程名称 |
+| description | string | 是 | 课程描述 |
+| location | string | 是 | 上课地点 |
+| schedule | string | 是 | 上课时间 |
+| semester | string | 是 | 学期 |
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "创建成功",
+  "data": {
+    "id": 1,
+    "title": "脑机接口"
+  }
+}
+```
+
+#### 2.4 更新课程信息 (教师权限)
+
+- **URL**: `/api/courses/{id}/`
+- **方法**: PUT
+- **描述**: 更新课程信息
+- **请求头**:
+  - Authorization: Bearer {token}
+- **路径参数**: 
+  - id: 课程ID
+- **请求参数**: 同创建课程
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "更新成功",
+  "data": {
+    "id": 1,
+    "title": "脑机接口（更新）"
+  }
+}
+```
+
+#### 2.5 删除课程 (教师权限)
+
+- **URL**: `/api/courses/{id}/`
+- **方法**: DELETE
+- **描述**: 删除课程
+- **请求头**:
+  - Authorization: Bearer {token}
+- **路径参数**: 
+  - id: 课程ID
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "删除成功",
+  "data": null
+}
+```
+
+### 3. 课程公告相关接口
+
+#### 3.1 获取课程公告列表
+
+- **URL**: `/api/courses/{id}/announcements/`
+- **方法**: GET
+- **描述**: 获取课程的所有公告
+- **请求头**:
+  - Authorization: Bearer {token}
+- **路径参数**: 
+  - id: 课程ID
+- **查询参数**:
+  - page: number (可选) - 页码，默认1
+  - size: number (可选) - 每页条数，默认10
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "获取成功",
+  "data": {
+    "total": 2,
+    "items": [
+      {
+        "id": 1,
+        "title": "关于期中考试安排的通知",
+        "content": "各位同学，期中考试将于下周三进行，请做好准备。",
+        "createTime": "2023-04-15 14:30",
+        "updateTime": "2023-04-15 14:30",
+        "authorName": "张教授",
+        "important": true
+      }
+    ]
+  }
+}
+```
+
+#### 3.2 获取公告详情
+
+- **URL**: `/api/announcements/{id}/`
+- **方法**: GET
+- **描述**: 获取公告详细信息
+- **请求头**:
+  - Authorization: Bearer {token}
+- **路径参数**: 
+  - id: 公告ID
+=======
+>>>>>>> 9113e04 (保存本地修改)
+
+- **响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "获取成功",
+  "data": {
+    "id": 1,
+<<<<<<< HEAD
+    "title": "关于期中考试安排的通知",
+    "content": "各位同学，期中考试将于下周三进行，请做好准备。",
+    "createTime": "2023-04-15 14:30",
+    "updateTime": "2023-04-15 14:30",
+    "authorName": "张教授",
+    "important": true,
+    "attachments": [
+      {
+        "id": 1,
+        "name": "考试大纲.pdf",
+        "url": "https://example.com/files/exam_outline.pdf",
+        "size": "1.2MB"
+      }
+=======
+    "title": "脑机接口",
+    "description": "本课程介绍脑机接口的基本原理与应用技术",
+    "teacherName": "张教授",
+    "location": "主教学楼301",
+    "studentCount": 35,
+    "schedule": "周二 14:00-16:00",
+    "semester": "2023春季学期",
+    "assessmentScheme": [
+      { "name": "课堂表现", "weight": 30 },
+      { "name": "作业", "weight": 20 },
+      { "name": "考试", "weight": 50 }
+>>>>>>> 9113e04 (保存本地修改)
+    ]
+  }
+}
+```
+
+<<<<<<< HEAD
+=======
 #### 2.3 创建新课程 (教师权限)
 
 - **URL**: `/api/courses/`
@@ -387,6 +554,7 @@
 }
 ```
 
+>>>>>>> 9113e04 (保存本地修改)
 #### 3.3 发布课程公告 (教师权限)
 
 - **URL**: `/api/courses/{id}/announcements/`
