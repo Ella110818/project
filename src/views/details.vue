@@ -6,10 +6,10 @@
         <div class="photo-placeholder"></div>
       </div>
       <div class="basic-info">
-        <div class="info-row">姓名：{{ studentInfo.name }}</div>
-        <div class="info-row">班级：{{ studentInfo.className }}</div>
-        <div class="info-row">学号：{{ studentInfo.studentId }}</div>
-        <div class="info-row">学院：{{ studentInfo.college }}</div>
+        <div class="info-row">姓名</div>
+        <div class="info-row">班级</div>
+        <div class="info-row">学号</div>
+        <div class="info-row">学院</div>
       </div>
     </div>
 
@@ -47,10 +47,10 @@
                 </div>
                 <div class="metric-info">
                   <div class="metric-title">专注度</div>
-                  <div class="metric-value">{{ academicMetrics.attention }}%</div>
+                  <div class="metric-value">{{ studentMetrics.attention }}%</div>
                   <div class="metric-chart">
                     <div class="chart-bar">
-                      <div class="chart-fill attention" :style="{ width: academicMetrics.attention + '%' }"></div>
+                      <div class="chart-fill attention" :style="{ width: studentMetrics.attention + '%' }"></div>
                     </div>
                   </div>
                 </div>
@@ -62,10 +62,10 @@
                 </div>
                 <div class="metric-info">
                   <div class="metric-title">低头度</div>
-                  <div class="metric-value">{{ academicMetrics.headDown }}%</div>
+                  <div class="metric-value">{{ studentMetrics.headDown }}%</div>
                   <div class="metric-chart">
                     <div class="chart-bar">
-                      <div class="chart-fill head-down" :style="{ width: academicMetrics.headDown + '%' }"></div>
+                      <div class="chart-fill head-down" :style="{ width: studentMetrics.headDown + '%' }"></div>
                     </div>
                   </div>
                 </div>
@@ -77,10 +77,10 @@
                 </div>
                 <div class="metric-info">
                   <div class="metric-title">疑惑度</div>
-                  <div class="metric-value">{{ academicMetrics.confusion }}%</div>
+                  <div class="metric-value">{{ studentMetrics.confusion }}%</div>
                   <div class="metric-chart">
                     <div class="chart-bar">
-                      <div class="chart-fill confusion" :style="{ width: academicMetrics.confusion + '%' }"></div>
+                      <div class="chart-fill confusion" :style="{ width: studentMetrics.confusion + '%' }"></div>
                     </div>
                   </div>
                 </div>
@@ -92,10 +92,10 @@
                 </div>
                 <div class="metric-info">
                   <div class="metric-title">总体</div>
-                  <div class="metric-value">{{ academicMetrics.overall }}%</div>
+                  <div class="metric-value">{{ studentMetrics.overall }}%</div>
                   <div class="metric-chart">
                     <div class="chart-bar">
-                      <div class="chart-fill overall" :style="{ width: academicMetrics.overall + '%' }"></div>
+                      <div class="chart-fill overall" :style="{ width: studentMetrics.overall + '%' }"></div>
                     </div>
                   </div>
                 </div>
@@ -107,10 +107,10 @@
           <div class="performance-section">
             <div class="performance-box">
               <div class="box-header-container">
-                <div class="box-header">作业</div>
+              <div class="box-header">作业</div>
                 <div class="box-date-picker">
                   <el-date-picker
-                    v-model="homeworkDate"
+                    v-model="currentDate"
                     type="date"
                     placeholder="选择日期"
                     format="YYYY-MM-DD"
@@ -124,10 +124,10 @@
             </div>
             <div class="performance-box">
               <div class="box-header-container">
-                <div class="box-header">考试</div>
+              <div class="box-header">考试</div>
                 <div class="box-date-picker">
                   <el-date-picker
-                    v-model="examDate"
+                    v-model="currentDate"
                     type="date"
                     placeholder="选择日期"
                     format="YYYY-MM-DD"
@@ -160,10 +160,18 @@
                       <div class="behavior-box">
                         <h4>出勤</h4>
                         <div class="behavior-item-container">
-                          <!-- 使用变量渲染出勤记录 -->
-                          <div class="attendance-item" v-for="item in attendanceList" :key="item.date">
-                            <span class="date">{{ item.date }}</span>
-                            <span class="status" :class="getAttendanceStatusClass(item.status)">{{ item.status }}</span>
+                          <!-- 出勤内容区域 -->
+                          <div class="attendance-item">
+                            <span class="date">2024-03-01</span>
+                            <span class="status normal">正常</span>
+                          </div>
+                          <div class="attendance-item">
+                            <span class="date">2024-03-05</span>
+                            <span class="status late">迟到</span>
+                          </div>
+                          <div class="attendance-item">
+                            <span class="date">2024-03-08</span>
+                            <span class="status normal">正常</span>
                           </div>
                         </div>
                       </div>
@@ -172,11 +180,16 @@
                       <div class="behavior-box">
                         <h4>课外活动</h4>
                         <div class="behavior-item-container">
-                          <!-- 使用变量渲染课外活动 -->
-                          <div class="activity-item" v-for="activity in activityList" :key="activity.date + activity.name">
-                            <div class="activity-name">{{ activity.name }}</div>
-                            <div class="activity-date">{{ activity.date }}</div>
-                            <div class="activity-role">{{ activity.role }}</div>
+                          <!-- 课外活动内容区域 -->
+                          <div class="activity-item">
+                            <div class="activity-name">校园文化节</div>
+                            <div class="activity-date">2024-02-20</div>
+                            <div class="activity-role">组织者</div>
+                          </div>
+                          <div class="activity-item">
+                            <div class="activity-name">志愿服务活动</div>
+                            <div class="activity-date">2024-03-05</div>
+                            <div class="activity-role">参与者</div>
                           </div>
                         </div>
                       </div>
@@ -185,14 +198,19 @@
                       <div class="behavior-box">
                         <h4>请假/违纪</h4>
                         <div class="behavior-item-container">
-                          <!-- 使用变量渲染请假违纪记录 -->
-                          <div class="discipline-item" v-for="item in disciplineList" :key="item.date + item.type">
-                            <div class="discipline-date">{{ item.date }}</div>
-                            <div class="discipline-type" :class="getDisciplineTypeClass(item.type)">{{ item.type }}</div>
-                            <div class="discipline-reason">{{ item.reason }}</div>
+                          <!-- 其它行为内容区域 -->
+                          <div class="discipline-item">
+                            <div class="discipline-date">2024-03-02</div>
+                            <div class="discipline-type leave">请假</div>
+                            <div class="discipline-reason">家中有事请假</div>
                           </div>
-                        </div>
-                      </div>
+                          <div class="discipline-item">
+                            <div class="discipline-date">2024-02-28</div>
+                            <div class="discipline-type warning">违纪警告</div>
+                            <div class="discipline-reason">上课使用手机</div>
+                    </div>
+                  </div>
+                            </div>
                     </div>
                   </div>
                 </div>
@@ -213,79 +231,36 @@
 <script setup>
 import { ref } from 'vue';
 
-// 变量定义
 const currentDate = ref('2024-03-12');
-const homeworkDate = ref('2024-03-12');
-const examDate = ref('2024-03-12');
-const activeTab = ref('academic');
-const activeBehaviorItem = ref('community');
+const activeTab = ref('behavior');
 
-// 学生基本信息
-const studentInfo = ref({
-  name: '张三',
-  className: '计算机科学与技术2班',
-  studentId: '202101234',
-  college: '计算机科学与技术学院'
-});
-
-// 学术状态度量
-const academicMetrics = ref({
+const studentMetrics = ref({
   attention: 85,
   headDown: 30,
   confusion: 45,
   overall: 75
 });
 
-// 作业和考试评价
 const evaluations = ref({
   homework: '按时完成作业，认真负责。',
   exam: '考试成绩优秀，理解能力强。'
 });
 
-// 出勤记录
-const attendanceList = ref([
-  { date: '2024-03-01', status: '正常' },
-  { date: '2024-03-05', status: '迟到' },
-  { date: '2024-03-08', status: '正常' },
-  { date: '2024-03-12', status: '正常' }
+const attendanceRecords = ref([
+  { date: '2024-03-01', type: '上课', status: '正常', points: '+2' },
+  { date: '2024-03-05', type: '晨读', status: '迟到', points: '-1' },
+  { date: '2024-03-08', type: '上课', status: '正常', points: '+2' },
+  { date: '2024-03-12', type: '上课', status: '正常', points: '+2' }
 ]);
 
-// 课外活动
-const activityList = ref([
-  { date: '2024-02-20', name: '校园文化节', role: '组织者' },
-  { date: '2024-03-05', name: '志愿服务活动', role: '参与者' }
+const extraCurricularRecords = ref([
+  { date: '2024-02-20', activity: '校园文化节', role: '参与者', stars: 4, points: '+5' },
+  { date: '2024-03-05', activity: '志愿服务活动', role: '组织者', stars: 5, points: '+8' },
+  { date: '2024-03-15', activity: '学科竞赛', role: '参赛者', stars: 4, points: '+6' }
 ]);
-
-// 请假/违纪记录
-const disciplineList = ref([
-  { date: '2024-03-02', type: '请假', reason: '家中有事请假' },
-  { date: '2024-02-28', type: '违纪警告', reason: '上课使用手机' }
-]);
-
-// 辅助函数
-const getAttendanceStatusClass = (status) => {
-  switch (status) {
-    case '正常': return 'normal';
-    case '迟到': return 'late';
-    case '缺勤': return 'absent';
-    default: return '';
-  }
-};
-
-const getDisciplineTypeClass = (type) => {
-  switch (type) {
-    case '请假': return 'leave';
-    case '违纪警告': return 'warning';
-    default: return '';
-  }
-};
 
 const switchTab = (tab) => {
   activeTab.value = tab;
-};
-
-const switchBehaviorItem = (item) => {
-  activeBehaviorItem.value = item;
 };
 </script>
 
@@ -417,7 +392,7 @@ const switchBehaviorItem = (item) => {
 }
 
 .status-header {
-  margin-bottom: 24px;
+  margin-bottom: 8px;
   padding-bottom: 12px;
   border-bottom: 1px solid #ebeef5;
   display: flex;

@@ -75,89 +75,89 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue';
-
-const activeTab = ref('homework');
-const assignments = ref([
-  {
-    id: 1,
-    title: '第一次作业',
-    description: '完成教材第一章的练习题1-5',
-    deadline: '2024-03-20 23:59',
-    score: 100,
-    status: '未提交'
+<script>
+export default {
+  name: 'StudentAssignments',
+  data() {
+    return {
+      activeTab: 'homework',
+      assignments: [
+        {
+          id: 1,
+          title: '第一次作业',
+          description: '完成教材第一章的练习题1-5',
+          deadline: '2024-03-20 23:59',
+          score: 100,
+          status: '未提交'
+        },
+        {
+          id: 2,
+          title: '第二次作业',
+          description: '完成课后实验报告',
+          deadline: '2024-03-25 23:59',
+          score: 100,
+          status: '已提交'
+        }
+      ],
+      exams: [
+        {
+          id: 1,
+          title: '期中考试',
+          description: '本次考试范围为第1-5章',
+          examTime: '2024-04-15 14:00',
+          duration: 120,
+          totalScore: 100,
+          status: '未开始'
+        },
+        {
+          id: 2,
+          title: '第一次测验',
+          description: '本次测验范围为第1-2章',
+          examTime: '2024-03-10 10:00',
+          duration: 60,
+          totalScore: 100,
+          status: '已完成'
+        }
+      ]
+    }
   },
-  {
-    id: 2,
-    title: '第二次作业',
-    description: '完成课后实验报告',
-    deadline: '2024-03-25 23:59',
-    score: 100,
-    status: '已提交'
+  methods: {
+    getStatusType(status) {
+      const statusMap = {
+        '未提交': 'warning',
+        '已提交': 'success',
+        '未开始': 'info',
+        '已完成': 'success',
+        '进行中': 'primary'
+      }
+      return statusMap[status]
+    },
+    handleSubmit(assignment) {
+      // 处理作业提交
+      console.log('提交作业:', assignment)
+    },
+    viewDetails(assignment) {
+      // 查看作业详情
+      console.log('查看作业详情:', assignment)
+    },
+    startExam(exam) {
+      // 开始考试
+      console.log('开始考试:', exam)
+    },
+    viewExamDetails(exam) {
+      // 查看考试详情
+      console.log('查看考试详情:', exam)
+    },
+    getExamButtonText(status) {
+      const textMap = {
+        '未开始': '进入考试',
+        '进行中': '继续考试',
+        '已完成': '查看成绩'
+      }
+      return textMap[status]
+    }
   }
-]);
-
-const exams = ref([
-  {
-    id: 1,
-    title: '期中考试',
-    description: '本次考试范围为第1-5章',
-    examTime: '2024-04-15 14:00',
-    duration: 120,
-    totalScore: 100,
-    status: '未开始'
-  },
-  {
-    id: 2,
-    title: '第一次测验',
-    description: '本次测验范围为第1-2章',
-    examTime: '2024-03-10 10:00',
-    duration: 60,
-    totalScore: 100,
-    status: '已完成'
-  }
-]);
-
-const getStatusType = (status) => {
-  const statusMap = {
-    '未提交': 'warning',
-    '已提交': 'success',
-    '未开始': 'info',
-    '已完成': 'success',
-    '进行中': 'primary'
-  };
-  return statusMap[status];
-};
-
-const handleSubmit = (assignment) => {
-  // 处理作业提交
-  console.log('提交作业:', assignment);
-};
-
-const viewDetails = (assignment) => {
-  // 查看作业详情
-  console.log('查看作业详情:', assignment);
-};
-
-const startExam = (exam) => {
-  // 开始考试
-  console.log('开始考试:', exam);
-};
-
-const viewExamDetails = (exam) => {
-  // 查看考试详情
-  console.log('查看考试详情:', exam);
-};
-
-const getExamButtonText = (status) => {
-  const textMap = {
-    '未开始': '进入考试',
-    '进行中': '继续考试',
-    '已完成': '查看成绩'
-  };
-  return textMap[status];
-};
+}
 </script>
 
 <style scoped>
