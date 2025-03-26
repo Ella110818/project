@@ -427,8 +427,8 @@ const initTrendChart = () => {
 }
 
 // 处理标签页切换
-    const handleTabClick = (tab) => {
-      console.log('切换到:', tab.props.name)
+const handleTabClick = (tab) => {
+  console.log('切换到:', tab.props.name)
   // 如果切换到学情回顾标签页
   if (tab.props.name === 'learning-review') {
     // 使用nextTick确保DOM已经更新
