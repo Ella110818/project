@@ -1,19 +1,11 @@
 <template>
-  <el-card :body-style="{ padding: '0px' }" class="course-card" shadow="hover">
-    <!-- 图片区域 -->
-    <div class="image-wrapper">
+  <el-card class="course-card" shadow="hover">
+    <div class="course-header">
       <img src="@/assets/class.png" alt="课程图片" class="course-image" />
     </div>
-
-    <!-- 内容区域 -->
     <div class="course-info">
-      <div class="course-header">
-        <h3 class="course-title">{{ course.title }}</h3>
-        <div class="course-meta">
-          <span class="teacher">{{ course.teacherName }}</span>
-          <span class="location">{{ course.location }}</span>
-        </div>
-      </div>
+      <h3 class="course-title">{{ course.title }}</h3>
+      <span class="teacher">{{ course.teacherName }}</span>
       <el-button type="primary" @click="viewCourse">开始上课</el-button>
     </div>
   </el-card>
@@ -39,113 +31,80 @@ export default {
 
 <style scoped>
 .course-card {
-  width: 100%;
-  max-width: 280px;
-  margin: 10px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  height: auto;
-  background-color: #fff;
+  width: 360px;
+  margin: 25px;
+  border-radius: 12px;
+  background: #fff;
+  transition: all 0.3s ease;
   overflow: hidden;
 }
 
 .course-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
-.image-wrapper {
-  position: relative;
+.course-header {
   width: 100%;
-  aspect-ratio: 16/9;
+  height: 140px;
   overflow: hidden;
-  background-color: #f5f7fa;
 }
 
 .course-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-  transition: transform 0.3s ease-in-out;
-}
-
-.course-image:hover {
-  transform: scale(1.05);
 }
 
 .course-info {
   padding: 16px;
-  text-align: left;
-  display: flex;
-  flex-direction: column;
-  background-color: #fff;
-}
-
-.course-header {
-  margin-bottom: 12px;
+  position: relative;
+  min-height: 100px;
 }
 
 .course-title {
-  font-size: 16px;
-  font-weight: bold;
-  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
   color: #333;
+  margin: 5px;
   line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  text-align: left;
+  max-width: calc(100% - 150px); /* 为更宽的按钮留出空间 */
 }
 
-.course-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 13px;
+.teacher {
+  display: block;
+  font-size: 14px;
   color: #666;
-}
-
-.teacher, .location {
-  display: flex;
-  align-items: center;
-  opacity: 0.85;
-}
-
-.teacher::before {
-  content: '👨‍🏫';
-  margin-right: 4px;
-}
-
-.location::before {
-  content: '📍';
-  margin-right: 4px;
+  margin-top: 8px;
+  text-align: left;
+  margin-left: 5px;
+  max-width: calc(100% - 150px); /* 为更宽的按钮留出空间 */
 }
 
 .el-button {
-  width: 100%;
-  margin-top: 12px;
-  height: 36px;
-  font-weight: 500;
-  letter-spacing: 1px;
-  border-radius: 6px;
-  background-color: #409EFF;
-  border-color: #409EFF;
-  transition: all 0.3s ease;
+  position: absolute;
+  right: 16px;
+  top: 60%;
+  transform: translateY(-50%);
+  padding: 8px 30px;  /* 增加内边距 */
+  min-width: 120px;   /* 设置最小宽度 */
+  font-size: 14px;
+  border-radius: 0;
+  background:#0A9CE7; 
+  border: none;
 }
 
 .el-button:hover {
-  background-color: #66b1ff;
-  border-color: #66b1ff;
-  transform: translateY(-1px);
+  background: #66b1ff;
 }
 
-.el-button:active {
-  background-color: #3a8ee6;
-  border-color: #3a8ee6;
-  transform: translateY(0);
+:deep(.el-card__body) {
+  padding: 0;
+}
+
+:deep(.el-card__body), .course-info {
+  display: block;
+  text-align: left;
 }
 </style> 

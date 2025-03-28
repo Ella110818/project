@@ -61,10 +61,10 @@ const teacherRoutes = [
 // 学生路由
 const studentRoutes = [
   {
-    path: 'startclass',
+    path: '/startclass',
     name: 'student-startclass',
-    component: () => import('@/views/StudentStartClass.vue'),
-    meta: { requiresAuth: true, role: 'student' }
+    component: StartClass,
+    meta: { requiresAuth: true }
   },
   {
     path: 'assignments',
@@ -136,7 +136,7 @@ const routes = [
     meta: { requiresAuth: true },
     children: [
       ...teacherRoutes,
-      ...studentRoutes,
+      ...studentRoutes.filter(route => route.path !== '/startclass'),
       ...sharedRoutes,
       {
         path: 'student-display',
@@ -149,6 +149,7 @@ const routes = [
       }
     ],
   },
+  studentRoutes[0],
   {
     path: '/home',
     component: Home,
@@ -196,40 +197,41 @@ router.beforeEach((to, from, next) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
   const userRole = localStorage.getItem('userRole');
 
+  // 如果已登录且访问登录页，重定向到数据显示屏
+  if (isAuthenticated && to.path === '/login') {
+    if (userRole === 'teacher') {
+      next('/teacher-display');
+    } else if (userRole === 'student') {
+      next('/student-display');
+    } else {
+      next('/datascreen');
+    }
+    return;
+  }
+
+  // 如果访问开始上课页面，直接允许（移除角色检查）
+  if (to.path === '/startclass') {
+    if (!isAuthenticated) {
+      next('/login');
+      return;
+    }
+    next();
+    return;
+  }
+
   // 如果未登录且访问需要认证的页面，重定向到登录页
   if (to.meta.requiresAuth && !isAuthenticated) {
     next('/login');
     return;
   }
 
-  // 如果已登录且访问登录页，重定向到首页
-  if (to.path === '/login' && isAuthenticated) {
-    next('/');
+  // 检查角色权限
+  if (to.meta.role && to.meta.role !== userRole) {
+    next('/login');
     return;
   }
 
-  // 如果已登录，检查路由权限
-  if (isAuthenticated) {
-    // 检查路由是否需要特定角色
-    const matchedRoute = to.matched.find(record => record.meta.role);
-    if (matchedRoute && matchedRoute.meta.role !== userRole) {
-      console.log(`用户角色 ${userRole} 访问 ${to.path} 路由被拒绝，matched route:`, matchedRoute.path);
-
-      // 如果是学生访问开始上课页面，允许访问
-      if (userRole === 'student' && to.path === '/startclass') {
-        next();
-        return;
-      }
-
-      next('/myclass');
-      return;
-    }
-
-    // 允许访问
-    next();
-  } else {
-    next();
-  }
+  next();
 
   // 设置页面标题
   document.title = to.meta.title || '知微课研'

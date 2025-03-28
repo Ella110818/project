@@ -76,18 +76,9 @@ export default {
         const userRole = localStorage.getItem('userRole');
         
         if (userRole === 'teacher') {
-          this.$router.push(`/live-class/${courseId}`).catch(err => {
-            console.error('教师路由跳转失败:', err);
-          });
+          this.$router.push(`/live-class/${courseId}`);
         } else if (userRole === 'student') {
-          console.log('学生跳转到实时课堂页面');
-          this.$router.push(`/student-live-class/${courseId}`).catch(err => {
-            console.error('学生路由跳转失败:', err);
-            // 如果跳转失败，尝试使用相对路径
-            this.$router.push(`student-live-class/${courseId}`).catch(err2 => {
-              console.error('使用相对路径跳转也失败:', err2);
-            });
-          });
+          this.$router.push(`/student-live-class/${courseId}`);
         }
       }
     },

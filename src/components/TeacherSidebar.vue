@@ -20,7 +20,7 @@
       text-color="#ffffff"
       active-text-color="#00d8ff"
     >
-      <el-menu-item index="1" @click="navigateTo('teacher-display')">
+      <el-menu-item index="1" @click="navigateTo('/teacher-display')">
         <i class="el-icon-data-analysis"></i>
         <span>数据显示屏</span>
       </el-menu-item>
@@ -195,12 +195,21 @@ export default {
       });
     };
 
+    const navigateTo = (path) => {
+      // 使用绝对路径进行导航
+      if (!path.startsWith('/')) {
+        path = '/' + path;
+      }
+      router.push(path);
+    };
+
     return {
       passwordDialogVisible,
       passwordFormRef,
       passwordForm,
       passwordRules,
-      handleChangePassword
+      handleChangePassword,
+      navigateTo
     };
   },
   data() {
@@ -215,9 +224,6 @@ export default {
     },
     handleClose(key, keyPath) {
       console.log('close', key, keyPath);
-    },
-    navigateTo(path) {
-      this.$router.push(path);
     },
     handleCommand(command) {
       switch (command) {

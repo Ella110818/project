@@ -103,13 +103,18 @@ export default {
         localStorage.setItem('isAuthenticated', 'true');
         localStorage.setItem('userRole', loginForm.value.role);
         
-        // 简化登录逻辑，直接根据角色跳转
-            ElMessage.success('登录成功');
+        ElMessage.success('登录成功');
         
-        // 根据角色跳转到主页（实际路由会根据角色进行后续处理）
-            router.push('/');
-          } catch (error) {
-            console.error('登录失败:', error);
+        // 根据角色跳转到对应的数据显示屏
+        if (loginForm.value.role === 'teacher') {
+          router.push('/teacher-display');
+        } else if (loginForm.value.role === 'student') {
+          router.push('/student-display');
+        } else {
+          router.push('/datascreen');
+        }
+      } catch (error) {
+        console.error('登录失败:', error);
         ElMessage.error('登录失败，请检查账号密码');
       }
     };

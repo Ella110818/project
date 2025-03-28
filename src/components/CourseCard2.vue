@@ -1,15 +1,11 @@
 <template>
-  <el-card :body-style="{ padding: '0px' }" class="course-card" shadow="hover">
-    <!-- 图片区域 -->
-    <div class="image-wrapper">
+  <el-card class="course-card" shadow="hover">
+    <div class="course-header">
       <img src="@/assets/class.png" alt="课程图片" class="course-image" />
     </div>
-
-    <!-- 内容区域 -->
     <div class="course-info">
-      <div class="course-header">
-        <h3 class="course-title">{{ course.title }}</h3>
-      </div>
+      <h3 class="course-title">{{ course.title }}</h3>
+      <span class="location">{{ course.location || '线上课程' }}</span>
       <el-button type="primary" @click="viewCourse">课程详情</el-button>
     </div>
   </el-card>
@@ -39,24 +35,22 @@ export default {
 
 <style scoped>
 .course-card {
-  width: 100%;
-  max-width: 280px;
-  margin: 10px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  height: auto;
+  width: 360px;
+  margin: 25px;
+  border-radius: 12px;
+  background: #fff;
+  transition: all 0.3s ease;
+  overflow: hidden;
 }
 
 .course-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
-.image-wrapper {
-  position: relative;
+.course-header {
   width: 100%;
-  aspect-ratio: 16/9;
+  height: 140px;
   overflow: hidden;
 }
 
@@ -64,36 +58,56 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-  transition: transform 0.3s ease-in-out;
-}
-
-.course-image:hover {
-  transform: scale(1.05);
 }
 
 .course-info {
-  padding: 12px;
-  text-align: left;
-  display: flex;
-  flex-direction: column;
-}
-
-.course-header {
-  margin-bottom: 8px;
+  padding: 16px;
+  position: relative;
+  min-height: 100px;
 }
 
 .course-title {
-  font-size: 16px;
-  font-weight: bold;
-  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
   color: #333;
+  margin: 5px;
+  line-height: 1.4;
+  text-align: left;
+  max-width: calc(100% - 150px);
+}
+
+.location {
+  display: block;
+  font-size: 14px;
+  color: #666;
+  margin: 8px 5px;
+  text-align: left;
+  max-width: calc(100% - 150px);
 }
 
 .el-button {
-  width: 100%;
-  margin-top: 5px;
-  height: 36px;
+  position: absolute;
+  right: 16px;
+  top: 60%;
+  transform: translateY(-50%);
+  padding: 8px 30px;
+  min-width: 120px;
+  font-size: 14px;
+  border-radius: 0;
+  background: #0A9CE7;
+  border: none;
+}
+
+.el-button:hover {
+  background: #66b1ff;
+}
+
+:deep(.el-card__body) {
+  padding: 0;
+}
+
+:deep(.el-card__body), .course-info {
+  display: block;
+  text-align: left;
 }
 </style> 
