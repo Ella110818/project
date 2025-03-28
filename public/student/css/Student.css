@@ -1,0 +1,402 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+
+.title-text {
+    margin-left: 30%;
+}
+
+.public-bg {
+    border-radius: 10px;
+}
+
+.public-title {
+    width: calc(100% - 20px);
+    height: 30px;
+    position: relative;
+    top: 2%;
+    text-align: center;
+    color: white;
+    padding-left: 16px;
+    line-height: 30px;
+    font-size: 21px;
+    margin-top: 3%;
+}
+
+.public-title1 {
+    width: calc(100% - 20px);
+    height: 30px;
+    position: relative;
+    top: 3%;
+    margin-left: 10%;
+    color: white;
+    padding-left: 16px;
+    font-size: 21px;
+}
+
+.content-body {
+    width: 100%;
+    height: 100%;
+    background: url(../image/bg.png);
+    background-size: 100% 100%;
+    position: absolute;
+}
+
+.header {
+    height: 70px;
+    width: 100%;
+}
+
+.fl {
+    float: left;
+}
+
+.header .header-left {
+    width: 25%;
+    height: 1.05rem;
+    color: white;
+    text-align: center;
+    line-height: 1.05rem;
+}
+
+.header .header-center {
+    width: 50%;
+    height: 1.05rem;
+    position: relative;
+}
+
+.header .header-center .header-title {
+    text-align: center;
+    color: #ffffff;
+    font-size: 30px;
+    text-shadow: 0 0 .3rem #00d8ff;
+    margin: 1%;
+    margin-left: -10%;
+}
+
+.header .header-img {
+    background: url("../image/head.gif") no-repeat center center;
+    background-size: 100%;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 10px;
+    margin-left: -6%;
+    margin-top: 4%;
+}
+
+.header .header-right {
+    width: 25%;
+    height: 1.05rem;
+}
+
+.header .header-bottom {
+    width: calc(100% - .4rem);
+    height: .16rem;
+    background: url("../image/header.png") no-repeat;
+    background-size: calc(100% - .2rem) 100%;
+    padding: 0 .2rem;
+    margin-left: .3rem;
+    margin-top: 1%;
+}
+
+.header .header-right {
+    width: 50%;
+    line-height: 40px;
+    color: #ffffff;
+    margin-left: 75%;
+}
+
+.header .header-right span {
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 28px;
+    letter-spacing: 2px;
+    padding: 0 20px;
+}
+
+.header .header-time {
+    width: 48%;
+    line-height: 70px;
+    float: right;
+    text-align: right;
+    margin-left: 10%;
+}
+
+.header .header-time span {
+    color: #ffffff;
+}
+
+.content {
+    width: 100%;
+    height: calc(100% - 75px);
+    position: absolute;
+}
+
+.content .content-con {
+    height: 100%;
+}
+
+.content .content-con .left-body {
+    width: 25%;
+    height: 100%;
+    float: left;
+    margin: 0 0.3%;
+}
+
+.left-body .left-top {
+    width: 100%;
+    height: 32%;
+    background: url(../image/bor1_1.png);
+    background-size: 100% 100%;
+}
+
+.left-body .left-top .top-body {
+    width: 100%;
+    height: calc(100% - 30px);
+}
+
+.left-body .left-top .top-body .top-left {
+    float: left;
+    width: 50%;
+    height: 100%;
+}
+
+.top-left-title {
+    width: 100%;
+    height: 100%;
+    padding: 30px;
+    box-sizing: border-box;
+}
+
+.top-left-title h6 {
+    color: #bad0e2;
+}
+
+.top-left-title span {
+    margin-top: 30px;
+    display: inline-block;
+    color: #2aa4f1;
+}
+
+.top-left-title span b {
+    font-size: 30px;
+    letter-spacing: 5px;
+}
+
+.top-left-title img {
+    width: 80%;
+}
+
+.left-body .left-top .top-body .top-right {
+    float: left;
+    width: 50%;
+    height: 100%;
+}
+
+.left-body .left-con {
+    width: 100%;
+    height: 30%;
+    margin-top: 1.6%;
+    background: url(../image/bor1_3.png);
+    background-size: 100% 100%;
+}
+
+.title-nav {
+    width: 100%;
+    height: calc(100% - 30px);
+}
+
+.left-body .left-bottom {
+    width: 100%;
+    height: 35%;
+    margin-top: 1.6%;
+    background: url(../image/bor1_2.png);
+    background-size: 100% 100%;
+}
+
+.center-body {
+    width: 45%;
+    height: 100%;
+    margin: 0 0.3%;
+    float: left;
+}
+
+.center-body .center-top {
+    width: 100%;
+    height: 68.5%;
+    background: url(../image/bor1_5.png);
+    background-size: 100% 100%;
+}
+
+.center-body .center-bottom {
+    width: 100%;
+    height: 26%;
+    justify-content: center;
+    display: flex;
+    margin-top: 5.5%;
+    background: url(../image/bor1_1.png);
+    background-size: 100% 100%;
+}
+
+.right-body {
+    width: 28%;
+    height: 100%;
+    float: right;
+    margin: 0 0.3%;
+}
+
+.right-body .right-top {
+    width: 100%;
+    height: 35%;
+    background: url(../image/bor1_3.png);
+    background-size: 100% 100%;
+}
+
+.right-body .right-top1 {
+    width: 100%;
+    height: 60%;
+    background: url(../image/bor1_3.png);
+    background-size: 100% 100%;
+}
+
+.level {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 5px;
+}
+
+.level1 {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 5px;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    margin: 10px 0;
+}
+
+.task-incomplete {
+    color: white;
+    font-family: Arial sans-serif;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.task-complete {
+    color: gray;
+    font-family: Arial, sans-serif;
+    justify-content: center;
+    align-items: center;
+    text-decoration: line-through;
+    margin-bottom: 10px;
+}
+
+.checkbox {
+    width: 20px;
+    height: 20px;
+    border: 1px solid #000;
+    margin-right: 10px;
+    display: inline-block;
+    position: relative;
+}
+
+.checkbox:checked::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 8px;
+    height: 13px;
+    border: solid black;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+}
+
+.photo {
+    width: 50%;
+}
+
+.photo-box {
+    margin-top: 3%;
+    height: 100%;
+}
+
+.information {
+    max-width: 400px;
+    color: #ffffff;
+    font-size: 17px;
+}
+
+.information p {
+    margin: 5px 0;
+    margin-left: -90%;
+    margin-bottom: 15%;
+    color: #ffffff;
+}
+
+.task-text {
+    margin-left: 3%;
+    margin-top: 5%;
+    font-size: 17px;
+    line-height: 180%;
+}
+
+.suggestion {
+    font-size: 21px;
+    color: #ffffff;
+    text-align: center;
+    display: block;
+    width: 230%;
+    margin-left: -135%;
+    line-height: 1.5;
+    padding: 0;
+    word-wrap: break-word;
+    word-break: normal;
+    overflow-wrap: break-word;
+    white-space: normal;
+    margin-top: 8%;
+}
+
+.suggestion-container {
+    width: 100%;
+    height: calc(100% - 50px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 5%;
+    margin-top: 5%;
+    box-sizing: border-box;
+}
+
+.right-body .right-con {
+    width: 100%;
+    height: 26.5%;
+    margin-top: 2%;
+    background-color: rgba(12, 26, 63, 0.3);
+    background: url(../image/bor1_6.png);
+    background-size: 100% 100%;
+}
+
+.right-body .right-bottom {
+    width: 100%;
+    height: 33.5%;
+    margin-top: 1.6%;
+    background: url(../image/bor1_4.png);
+    background-size: 100% 100%;
+}

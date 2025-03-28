@@ -60,7 +60,7 @@
             </el-button>
           </el-button-group>
         </div>
-      </el-card>
+        </el-card>
     </div>
 
     <!-- 添加/编辑对话框 -->
@@ -223,7 +223,7 @@ const dateShortcuts = [
 const assignments = ref([
   {
     id: 1,
-    title: '期中考试',
+        title: '期中考试',
     type: 'exam',
     description: '请大家认真准备期中考试。包括第1-5章内容，考试时间2小时。',
     startTime: '2024-05-15 08:30',
@@ -271,7 +271,7 @@ const assignments = ref([
   },
   {
     id: 5,
-    title: '期末考试',
+        title: '期末考试',
     type: 'exam',
     description: '本学期期末考试，包括所有章节内容。',
     startTime: '2024-06-01 14:00',
@@ -280,8 +280,8 @@ const assignments = ref([
     fullScore: 100,
     submitted: 0,
     total: 35
-  },
-]);
+      },
+    ]);
 
 // 筛选后的作业/考试列表
 const filteredAssignments = computed(() => {

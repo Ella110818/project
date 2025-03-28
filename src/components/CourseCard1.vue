@@ -1,107 +1,3 @@
-<!-- <template>
-  <el-card class="course-card">
-    <img src="@/assets/class.png" alt="课程图片" class="course-image" />
-    <div class="course-info">
-      <div class="course-header">
-        <span class="course-time">{{ course.time }}</span>
-        <h3 class="course-title">{{ course.title }}</h3>
-      </div>
-      <div class="course-teacher">
-        <span class="teacher-name">{{ course.teacher }}</span>
-        <span class="teacher-tag">{{ course.teacherTag }}</span>
-      </div>
-      <p class="course-description">{{ course.description }}</p>
-      <el-button type="primary" @click="viewCourse">开始上课</el-button>
-    </div>
-  </el-card>
-</template>
-<script>
-export default {
-  name: 'CourseCard2',
-  props: {
-    course: {
-      type: Object,
-      required: true,
-    },
-  },
-  methods: {
-    viewCourse() {
-      this.$router.push(`/class-info/${this.course.id}`);
-    },
-  },
-};
-</script>
-<style scoped>
-.course-card {
-  width: 100%;
-  max-width: 300px;
-  margin: 10px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.course-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
-
-.course-image {
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-}
-
-.course-info {
-  padding: 15px;
-  text-align: left;
-}
-
-.course-header {
-  margin-bottom: 10px;
-}
-
-.course-time {
-  display: block;
-  font-size: 12px;
-  color: #666;
-  margin-bottom: 5px;
-}
-
-.course-title {
-  font-size: 18px;
-  font-weight: bold;
-  margin: 0;
-  color: #333;
-}
-
-.course-teacher {
-  margin-bottom: 10px;
-}
-
-.teacher-name {
-  font-size: 14px;
-  color: #333;
-}
-
-.teacher-tag {
-  font-size: 12px;
-  color: #666;
-  margin-left: 5px;
-}
-
-.course-description {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 10px;
-}
-
-.el-button {
-  width: 100%;
-}
-</style> -->
 <template>
   <el-card :body-style="{ padding: '0px' }" class="course-card" shadow="hover">
     <!-- 图片区域 -->
@@ -113,6 +9,10 @@ export default {
     <div class="course-info">
       <div class="course-header">
         <h3 class="course-title">{{ course.title }}</h3>
+        <div class="course-meta">
+          <span class="teacher">{{ course.teacherName }}</span>
+          <span class="location">{{ course.location }}</span>
+        </div>
       </div>
       <el-button type="primary" @click="viewCourse">开始上课</el-button>
     </div>
@@ -146,6 +46,8 @@ export default {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   height: auto;
+  background-color: #fff;
+  overflow: hidden;
 }
 
 .course-card:hover {
@@ -156,8 +58,9 @@ export default {
 .image-wrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 16/9; /* 图片宽高比 16:10 */
+  aspect-ratio: 16/9;
   overflow: hidden;
+  background-color: #f5f7fa;
 }
 
 .course-image {
@@ -174,26 +77,75 @@ export default {
 }
 
 .course-info {
-  padding: 12px;
+  padding: 16px;
   text-align: left;
   display: flex;
   flex-direction: column;
+  background-color: #fff;
 }
 
 .course-header {
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .course-title {
   font-size: 16px;
   font-weight: bold;
-  margin: 0;
+  margin: 0 0 8px 0;
   color: #333;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.course-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #666;
+}
+
+.teacher, .location {
+  display: flex;
+  align-items: center;
+  opacity: 0.85;
+}
+
+.teacher::before {
+  content: '👨‍🏫';
+  margin-right: 4px;
+}
+
+.location::before {
+  content: '📍';
+  margin-right: 4px;
 }
 
 .el-button {
   width: 100%;
-  margin-top: 5px;
+  margin-top: 12px;
   height: 36px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  border-radius: 6px;
+  background-color: #409EFF;
+  border-color: #409EFF;
+  transition: all 0.3s ease;
 }
-</style>
+
+.el-button:hover {
+  background-color: #66b1ff;
+  border-color: #66b1ff;
+  transform: translateY(-1px);
+}
+
+.el-button:active {
+  background-color: #3a8ee6;
+  border-color: #3a8ee6;
+  transform: translateY(0);
+}
+</style> 

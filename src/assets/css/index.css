@@ -1,0 +1,374 @@
+* {
+    padding: 0px;
+    margin: 0px;
+}
+
+body {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+
+.public-bg {
+    border-radius: 10px;
+}
+
+.public-title {
+    width: calc(100% - 20px);
+    height: 30px;
+    position: relative;
+    top: 3%;
+    text-align: center;
+    color: rgb(255, 255, 255);
+    padding-left: 16px;
+    line-height: 30px;
+    font-size: 21px;
+}
+
+.public-title1 {
+    width: calc(100% - 20px);
+    height: 30px;
+    position: relative;
+    top: 2%;
+    left: 150px;
+    color: rgb(255, 255, 255);
+    padding-left: 16px;
+    line-height: 30px;
+    font-size: 21px;
+}
+
+.content-body {
+    width: 100%;
+    height: 100%;
+    background: url('../bg.png') no-repeat center;
+    background-size: 100% 100%;
+    position: absolute;
+}
+
+.header {
+    height: 70px;
+    width: 100%;
+}
+
+.fl {
+    float: left;
+}
+
+.header .header-left {
+    width: 25%;
+    height: 1.05rem;
+    color: white;
+    text-align: center;
+    line-height: 1.05rem;
+}
+
+.header .header-center {
+    width: 50%;
+    height: 1.05rem;
+    position: relative;
+}
+
+.header .header-center .header-title {
+    text-align: center;
+    color: #ffffff;
+    font-size: 30px;
+    text-shadow: 0 0 .3rem #00d8ff;
+    margin: 1%;
+    margin-left: -10%;
+}
+
+.header .header-img {
+    background: url('../head.gif') no-repeat center center;
+    background-size: 100%;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 10px;
+    margin-left: -6%;
+    margin-top: 4%;
+}
+
+.header .header-right {
+    width: 25%;
+    height: 1.05rem;
+}
+
+.header .header-bottom {
+    width: calc(100% - .4rem);
+    height: .16rem;
+    background: url('../header.png') no-repeat;
+    background-size: calc(100% - .2rem) 100%;
+    padding: 0 .2rem;
+    margin-left: .3rem;
+    margin-top: 1%;
+}
+
+.header .header-right {
+    width: 50%;
+    line-height: 40px;
+    color: #ffffff;
+    margin-left: 75%;
+}
+
+.header .header-right span {
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 28px;
+    letter-spacing: 2px;
+    padding: 0 20px;
+}
+
+.content {
+    width: 100%;
+    height: calc(100% - 75px);
+    position: absolute;
+}
+
+.content .content-con {
+    height: 100%;
+}
+
+.content .content-con .left-body {
+    width: 22%;
+    height: 100%;
+    float: left;
+    margin: 0 0.3%;
+}
+
+.left-body .left-top {
+    width: 100%;
+    height: 32%;
+    background: url('../bor1_2.png');
+    background-size: 100% 100%;
+    margin-top: 2%;
+}
+
+.left-body .left-bottom {
+    width: 100%;
+    height: 66%;
+    margin-top: 3%;
+    background: url('../bor1_6.png');
+    background-size: 100% 100%;
+}
+
+.center-body {
+    width: 50%;
+    height: 100%;
+    margin: 0 0.3%;
+    float: left;
+    margin-left: 1%;
+}
+
+.center-body .center-top {
+    width: 100%;
+    height: 56.5%;
+    background: url('../bor1_5.png');
+    background-size: 100% 100%;
+}
+
+.center-body .center-bottom {
+    width: 100%;
+    height: 38%;
+    margin-top: 3.5%;
+    background: url('../bor1_2.png');
+    background-size: 100% 100%;
+}
+
+.right-body {
+    width: 25%;
+    height: 100%;
+    float: right;
+    margin: 0 0.3%;
+}
+
+.right-body .right-top1 {
+    width: 100%;
+    height: 60%;
+    background: url('../bor1_3.png');
+    background-size: 100% 100%;
+}
+
+.right-body .right-bottom1 {
+    width: 100%;
+    height: 38%;
+    margin-top: 2%;
+    background: url('../bor1_6.png');
+    background-size: 100% 100%;
+}
+
+.information {
+    max-width: 400px;
+    color: #ffffff;
+    font-size: 16px;
+    margin-top: 4%;
+}
+
+.information p {
+    margin: 5px 0;
+    color: #ffffff;
+    margin-top: 2.5%;
+    margin-left: 10%;
+}
+
+.table-container {
+    width: 100%;
+    max-height: 200px;
+    overflow: hidden;
+    position: relative;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    color: #2997e4;
+    text-align: left;
+    padding: 8px;
+    font-size: 17px;
+}
+
+td {
+    text-align: left;
+    padding: 8px;
+    color: #ffffff;
+    font-size: 17px;
+}
+
+/* 弹幕相关样式 */
+#barrage-container {
+    width: 100%;
+    height: calc(100% - 50px);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.barrage-display-area {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.barrage-input-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: auto;
+}
+
+#barrage-input {
+    flex: 1;
+    height: 30px;
+    padding: 0 10px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    color: #fff;
+    font-size: 14px;
+}
+
+.barrage-input-container button {
+    height: 30px;
+    padding: 0 15px;
+    border: none;
+    border-radius: 15px;
+    background: #0e34a5;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.barrage-input-container button:hover {
+    background: #ffffff;
+    color: #0e34a5;
+}
+
+.barrage-item {
+    position: absolute;
+    white-space: nowrap;
+    color: #fff;
+    font-size: 16px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    animation: barrage-move 8s linear;
+    pointer-events: none;
+    right: 0;
+}
+
+@keyframes barrage-move {
+    from {
+        transform: translateX(0);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    to {
+        transform: translateX(-100vw);
+        opacity: 0;
+    }
+}
+
+.student-avatar {
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin: 5px;
+}
+
+.student-avatar.visible {
+    opacity: 1;
+}
+
+.student-avatar:hover {
+    transform: scale(1.1);
+    transition: transform 0.3s ease-in-out;
+}
+
+.level {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px;
+}
+
+.foldable-section {
+    width: 100%;
+    overflow: hidden;
+    transition: transform 0.5s ease-in-out;
+    margin-top: 3%;
+}
+
+.folded {
+    transform: translateX(-100%);
+}
+
+.arrow {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.arrow img {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+}
+
+.folded .arrow img {
+    transform: rotate(180deg);
+}

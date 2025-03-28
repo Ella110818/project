@@ -2,14 +2,16 @@
   <div class="student-details">
     <!-- 学生基本信息卡片 -->
     <div class="info-card">
-      <div class="photo-section">
-        <div class="photo-placeholder"></div>
-      </div>
-      <div class="basic-info">
-        <div class="info-row">姓名</div>
-        <div class="info-row">班级</div>
-        <div class="info-row">学号</div>
-        <div class="info-row">学院</div>
+      <div class="main-info-container">
+        <div class="photo-section">
+          <div class="photo-placeholder"></div>
+        </div>
+        <div class="basic-info">
+          <div class="info-row">姓名</div>
+          <div class="info-row">班级</div>
+          <div class="info-row">学号</div>
+          <div class="info-row">学院</div>
+        </div>
       </div>
     </div>
 
@@ -208,9 +210,9 @@
                             <div class="discipline-date">2024-02-28</div>
                             <div class="discipline-type warning">违纪警告</div>
                             <div class="discipline-reason">上课使用手机</div>
-                    </div>
-                  </div>
-                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -248,9 +250,8 @@ const evaluations = ref({
 
 const attendanceRecords = ref([
   { date: '2024-03-01', type: '上课', status: '正常', points: '+2' },
-  { date: '2024-03-05', type: '晨读', status: '迟到', points: '-1' },
-  { date: '2024-03-08', type: '上课', status: '正常', points: '+2' },
-  { date: '2024-03-12', type: '上课', status: '正常', points: '+2' }
+  { date: '2024-03-05', type: '上课', status: '迟到', points: '+1' },
+  { date: '2024-03-08', type: '上课', status: '正常', points: '+2' }
 ]);
 
 const extraCurricularRecords = ref([
@@ -266,501 +267,394 @@ const switchTab = (tab) => {
 
 <style scoped>
 .student-details {
-  padding: 24px;
-  background-color: #f5f7fa;
+  width: 100vw;
+  background: linear-gradient(to bottom, #0b1834, #162956);
   min-height: 100vh;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 80px 40px 20px 40px;
+  overflow-x: hidden;
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  z-index: 0;
+  box-sizing: border-box;
+  color: #fff;
 }
 
 .info-card {
-  background: #fff;
-  border-radius: 8px;
-  padding: 24px;
-  display: flex;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+  background: url(../assets/bor1_2.png);
+  background-size: 100% 100%;
+  border-radius: 12px;
+  padding: 30px;
+  margin: 0 auto 30px auto;
+  max-width: 1400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
 }
 
-.info-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+.main-info-container {
+  display: flex;
+  align-items: center;
+  max-width: 600px;
 }
 
 .photo-section {
-  width: 160px;
-  margin-right: 40px;
+  width: 120px;
+  height: 120px;
+  margin-right: 30px;
+  flex-shrink: 0;
 }
 
 .photo-placeholder {
-  width: 160px;
-  height: 200px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%);
-  border-radius: 8px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.photo-placeholder::after {
-  content: '照片';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #909399;
-  font-size: 14px;
+  width: 100%;
+  height: 100%;
+  background-color: #2a3e63;
+  border-radius: 10px;
 }
 
 .basic-info {
-  flex: 1;
-  padding: 10px 0;
+  flex: 0 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .info-row {
-  height: 48px;
-  line-height: 48px;
-  border-bottom: 1px solid #ebeef5;
-  color: #606266;
-  font-size: 15px;
-  display: flex;
-  align-items: center;
-  transition: all 0.3s ease;
-}
-
-.info-row:hover {
-  background-color: #f9fafc;
-  padding-left: 10px;
+  margin-bottom: 10px;
+  font-size: 16px;
 }
 
 .evaluation-area {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
+  background: rgba(22, 41, 86, 0.6);
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
+  margin: 0 auto;
+  max-width: 1400px;
 }
 
 .evaluation-header {
   display: flex;
-  background: linear-gradient(to right, #f5f7fa, #fff);
-  border-bottom: 1px solid #dcdfe6;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 20px;
 }
 
 .header-item {
-  flex: 1;
-  text-align: center;
-  padding: 16px 0;
-  font-size: 16px;
-  color: #303133;
-  border-right: 1px solid #dcdfe6;
+  padding: 10px 20px;
   cursor: pointer;
+  color: rgba(255, 255, 255, 0.7);
   transition: all 0.3s ease;
   position: relative;
 }
 
-.header-item:hover, .header-item.active {
-  color: #409eff;
-  background-color: rgba(64, 158, 255, 0.04);
+.header-item.active {
+  color: #00d8ff;
+  font-weight: bold;
 }
 
-.header-item::after {
+.header-item.active::after {
   content: '';
   position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
   height: 2px;
-  background-color: #409eff;
-  transition: all 0.3s ease;
-}
-
-.header-item:hover::after, .header-item.active::after {
-  width: 40%;
+  background-color: #00d8ff;
 }
 
 .evaluation-content {
-  padding: 24px;
+  padding: 10px 0;
 }
 
 .status-section {
-  margin-bottom: 32px;
-  background: #fff;
-  border-radius: 8px;
-  padding: 20px;
+  margin-bottom: 30px;
 }
 
 .status-header {
-  margin-bottom: 8px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #ebeef5;
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .status-title {
   font-size: 18px;
-  color: #303133;
-  font-weight: 500;
-}
-
-.date-picker-container {
-  display: flex;
-  align-items: center;
+  font-weight: bold;
 }
 
 .metrics-dashboard {
   display: flex;
   flex-wrap: wrap;
-  gap: 24px;
-  margin-top: 20px;
+  gap: 20px;
 }
 
 .metric-card {
+  background: rgba(27, 50, 105, 0.6);
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
   flex: 1;
   min-width: 200px;
-  background: #fff;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-  margin-bottom: 16px;
-}
-
-.metric-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .metric-icon {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background: #f5f7fa;
+  border-radius: 8px;
   display: flex;
-  align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
+  align-items: center;
+  margin-right: 15px;
 }
 
-.metric-icon.attention-icon {
-  background-color: rgba(64, 158, 255, 0.1);
-  color: #409eff;
+.attention-icon {
+  background-color: rgba(0, 216, 255, 0.2);
+  color: #00d8ff;
 }
 
-.metric-icon.head-down-icon {
-  background-color: rgba(230, 162, 60, 0.1);
-  color: #e6a23c;
+.head-down-icon {
+  background-color: rgba(255, 159, 67, 0.2);
+  color: #ff9f43;
 }
 
-.metric-icon.confusion-icon {
-  background-color: rgba(245, 108, 108, 0.1);
-  color: #f56c6c;
+.confusion-icon {
+  background-color: rgba(255, 71, 87, 0.2);
+  color: #ff4757;
 }
 
-.metric-icon.overall-icon {
-  background-color: rgba(103, 194, 58, 0.1);
-  color: #67c23a;
+.overall-icon {
+  background-color: rgba(46, 213, 115, 0.2);
+  color: #2ed573;
 }
 
 .metric-info {
-  text-align: center;
+  flex: 1;
 }
 
 .metric-title {
-  font-size: 15px;
-  color: #606266;
-  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 5px;
 }
 
 .metric-value {
-  font-size: 18px;
-  color: #303133;
-  font-weight: 500;
-  margin-top: 8px;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
 }
 
 .metric-chart {
-  height: 12px;
-  background: #f5f7fa;
-  border-radius: 6px;
-  overflow: hidden;
-  margin-top: 8px;
+  margin-top: 5px;
 }
 
 .chart-bar {
-  width: 100%;
-  height: 100%;
-  border-radius: 6px;
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
   overflow: hidden;
-  background: #f5f7fa;
 }
 
 .chart-fill {
   height: 100%;
-  transition: width 0.5s ease;
+  border-radius: 3px;
 }
 
 .chart-fill.attention {
-  background: #409eff;
+  background-color: #00d8ff;
 }
 
 .chart-fill.head-down {
-  background: #e6a23c;
+  background-color: #ff9f43;
 }
 
 .chart-fill.confusion {
-  background: #f56c6c;
+  background-color: #ff4757;
 }
 
 .chart-fill.overall {
-  background: #67c23a;
+  background-color: #2ed573;
 }
 
 .performance-section {
   display: flex;
-  gap: 24px;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .performance-box {
   flex: 1;
-  border-radius: 8px;
-  padding: 20px;
-  background: #fff;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-}
-
-.performance-box:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  min-width: 300px;
+  background: rgba(27, 50, 105, 0.6);
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .box-header-container {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  align-items: center;
+  margin-bottom: 15px;
 }
 
 .box-header {
-  font-size: 18px;
-  color: #303133;
-  margin-bottom: 12px;
-  font-weight: 500;
-}
-
-.box-date-picker {
-  display: flex;
-  align-items: center;
+  font-size: 16px;
+  font-weight: bold;
 }
 
 .box-content {
-  color: #606266;
-  line-height: 1.8;
-  font-size: 15px;
+  padding: 10px;
+  background: rgba(22, 41, 86, 0.4);
+  border-radius: 8px;
+  min-height: 100px;
 }
 
-/* 行为习惯样式 */
 .behavior-container {
-  display: flex;
-  border: none;
-  border-radius: 0;
-  overflow: hidden;
-  min-height: 500px;
-  width: 100%;
-}
-
-.behavior-content {
-  flex: 1;
-  padding: 20px;
-  width: 100%;
+  padding: 0 10px;
 }
 
 .behavior-sections {
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 .section-header {
   display: flex;
-  background: #f5f7fa;
-  border-radius: 4px 4px 0 0;
-  padding: 12px 0;
-  border: 1px solid #ebeef5;
-  border-bottom: none;
+  justify-content: space-between;
+  margin-bottom: 15px;
 }
 
 .header-text {
+  font-size: 16px;
+  font-weight: bold;
   flex: 1;
   text-align: center;
-  font-weight: 500;
-  color: #606266;
 }
 
 .section-content {
-  border: 1px solid #ebeef5;
-  border-radius: 0 0 4px 4px;
-  padding: 15px;
-  background-color: #fff;
+  margin-top: 15px;
 }
 
 .content-row {
   display: flex;
-  gap: 15px;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .content-cell {
   flex: 1;
+  min-width: 250px;
 }
 
 .behavior-box {
-  border: 1px solid #ebeef5;
-  border-radius: 4px;
+  background: rgba(27, 50, 105, 0.6);
+  border-radius: 10px;
   padding: 15px;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   height: 100%;
 }
 
 .behavior-box h4 {
-  margin: 0 0 10px 0;
-  font-size: 15px;
-  color: #303133;
-  text-align: center;
-  padding-bottom: 8px;
-  border-bottom: 1px dashed #ebeef5;
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #00d8ff;
 }
 
 .behavior-item-container {
-  margin-top: 10px;
-  min-height: 100px;
+  background: rgba(22, 41, 86, 0.4);
+  border-radius: 8px;
+  padding: 10px;
 }
 
-.attendance-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 10px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 13px;
+.attendance-item, .activity-item, .discipline-item {
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  background: rgba(27, 50, 105, 0.5);
 }
 
-.attendance-item:last-child {
-  border-bottom: none;
-}
-
-.attendance-item .date {
-  color: #606266;
-}
-
-.attendance-item .status {
-  padding: 2px 6px;
-  border-radius: 3px;
+.date, .activity-date, .discipline-date {
+  color: rgba(255, 255, 255, 0.7);
   font-size: 12px;
 }
 
-.attendance-item .status.normal {
-  background-color: #f0f9eb;
-  color: #67c23a;
-}
-
-.attendance-item .status.late {
-  background-color: #fdf6ec;
-  color: #e6a23c;
-}
-
-.attendance-item .status.absent {
-  background-color: #fef0f0;
-  color: #f56c6c;
-}
-
-.activity-item {
-  border-bottom: 1px solid #f0f0f0;
-  padding: 8px 10px;
-  font-size: 13px;
-}
-
-.activity-item:last-child {
-  border-bottom: none;
-}
-
-.activity-name {
-  font-weight: 500;
-  color: #303133;
-}
-
-.activity-date, .activity-role {
-  color: #909399;
-  font-size: 12px;
-  margin-top: 3px;
-}
-
-.discipline-item {
-  border-bottom: 1px solid #f0f0f0;
-  padding: 8px 10px;
-  font-size: 13px;
-}
-
-.discipline-item:last-child {
-  border-bottom: none;
-}
-
-.discipline-date {
-  color: #909399;
-  font-size: 12px;
-}
-
-.discipline-type {
+.status {
   display: inline-block;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 12px;
-  margin: 3px 0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 10px;
+}
+
+.status.normal {
+  background-color: rgba(46, 213, 115, 0.2);
+  color: #2ed573;
+}
+
+.status.late {
+  background-color: rgba(255, 159, 67, 0.2);
+  color: #ff9f43;
+}
+
+.activity-name, .discipline-type {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.activity-role, .discipline-reason {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .discipline-type.leave {
-  background-color: #ecf5ff;
-  color: #409eff;
+  color: #ff9f43;
 }
 
 .discipline-type.warning {
-  background-color: #fef0f0;
-  color: #f56c6c;
+  color: #ff4757;
 }
 
-.discipline-reason {
-  color: #606266;
-}
-
-.placeholder-content {
-  text-align: center;
-  padding: 20px;
-  color: #909399;
-  font-size: 15px;
-}
-
-/* 日期选择器样式 */
-:deep(.el-input__inner) {
-  height: 32px;
-  line-height: 32px;
+/* Element Plus 组件样式覆盖 */
+:deep(.el-date-editor) {
+  --el-datepicker-text-color: #fff;
+  --el-datepicker-border-color: rgba(255, 255, 255, 0.1);
+  --el-datepicker-inner-border-color: rgba(255, 255, 255, 0.1);
+  --el-datepicker-off-font-color: rgba(255, 255, 255, 0.4);
+  --el-datepicker-header-font-color: #fff;
+  --el-datepicker-icon-color: #fff;
+  --el-datepicker-hover-font-color: #fff;
+  --el-datepicker-active-color: #00d8ff;
 }
 
 :deep(.el-date-editor.el-input) {
-  width: 160px;
+  background-color: rgba(22, 41, 86, 0.4);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+:deep(.el-input__inner) {
+  color: #fff;
 }
 
 @media screen and (max-width: 768px) {
-  .metrics-dashboard {
+  .student-details {
+    padding: 60px 15px 15px 15px;
+  }
+  
+  .info-card {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .photo-section {
+    margin-right: 0;
+    margin-bottom: 20px;
+  }
+  
+  .metrics-dashboard, .performance-section, .content-row {
     flex-direction: column;
   }
   
-  .performance-section {
-    flex-direction: column;
-  }
-  
-  .performance-box {
-    margin-bottom: 16px;
+  .metric-card, .performance-box, .content-cell {
+    width: 100%;
+    margin-bottom: 15px;
   }
 }
 </style>

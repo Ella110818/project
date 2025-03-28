@@ -5,15 +5,11 @@ import HomeView from '@/views/HomeView.vue'
 import Sidebar from '@/components/Sidebar.vue'
 import LoginView from '@/views/LoginView.vue'
 import Login from '@/components/Loign.vue'
-import CourseCard1 from '@/components/CourseCard1.vue'
-import CourseCard2 from '@/components/CourseCard2.vue'
 import MyClass from '@/views/MyClass.vue'
 import StartClass from '@/views/StartClass.vue'
 import ClassInfo from '@/views/ClassInfo.vue'
 import StudentManage from '@/views/StudentManage.vue'
 import Score from '@/components/Score.vue'
-import Record from '@/views/Record.vue'
-import Message from '@/views/Message.vue'
 import Profile from '@/views/Profile.vue'
 import details from '@/views/details.vue'
 import TextScroll from '@/components/TextScroll.vue'
@@ -25,32 +21,60 @@ import ImageCard from '@/components/ImageCard.vue'
 import NewClassPage from '@/views/NewClassPage.vue'
 import Register from '@/views/Register.vue'
 import LiveClassPage from '@/views/LiveClassPage.vue'
+import StudentLiveClass from '@/views/StudentLiveClass.vue'
+import StudentHtmlDisplay from '../views/StudentHtmlDisplay.vue'
+import TeacherHtmlDisplay from '../views/TeacherHtmlDisplay.vue'
+import TestDatav from '../views/TestDatav.vue'
 
 // 教师路由
 const teacherRoutes = [
   {
     path: 'startclass',
+    name: 'teacher-startclass',
     component: StartClass,
-  },
-  {
-    path: 'record',
-    component: Record,
+    meta: { requiresAuth: true, role: 'teacher' }
   },
   {
     path: 'studentmanage',
     component: StudentManage,
+    meta: { requiresAuth: true, role: 'teacher' }
   },
+  {
+    path: 'live-class/:id',
+    name: 'live-class',
+    component: LiveClassPage,
+    props: true,
+    meta: { requiresAuth: true, role: 'teacher' }
+  },
+  {
+    path: 'teacher-display',
+    name: 'TeacherHtmlDisplay',
+    component: TeacherHtmlDisplay,
+    meta: {
+      title: '教师数据显示屏',
+      requiresAuth: true,
+      role: 'teacher'
+    }
+  }
 ]
 
 // 学生路由
 const studentRoutes = [
   {
+    path: 'startclass',
+    name: 'student-startclass',
+    component: () => import('@/views/StudentStartClass.vue'),
+    meta: { requiresAuth: true, role: 'student' }
+  },
+  {
     path: 'assignments',
     component: () => import('@/views/StudentAssignments.vue'),
+    meta: { requiresAuth: true, role: 'student' }
   },
   {
     path: 'grades',
     component: () => import('@/views/StudentGrades.vue'),
+    meta: { requiresAuth: true, role: 'student' }
   },
 ]
 
@@ -61,10 +85,6 @@ const sharedRoutes = [
     component: MyClass,
   },
   {
-    path: 'message',
-    component: Message,
-  },
-  {
     path: 'profile',
     component: Profile,
   },
@@ -73,7 +93,7 @@ const sharedRoutes = [
     component: () => import('@/views/Assistant.vue'),
   },
   {
-    path: 'class-info/:id',  // 移除开头的斜杠
+    path: 'class-info/:id',
     name: 'class-info',
     component: ClassInfo,
     props: true,
@@ -85,15 +105,16 @@ const sharedRoutes = [
     props: true,
   },
   {
-    path: 'live-class/:id',
-    name: 'live-class',
-    component: LiveClassPage,
-    props: true,
-  },
-  {
     path: '/student/:id',
     name: 'details',
     component: details,
+  },
+  {
+    path: 'student-live-class/:id',
+    name: 'student-live-class',
+    component: StudentLiveClass,
+    props: true,
+    meta: { requiresAuth: true }
   },
 ]
 
@@ -117,6 +138,15 @@ const routes = [
       ...teacherRoutes,
       ...studentRoutes,
       ...sharedRoutes,
+      {
+        path: 'student-display',
+        name: 'StudentDisplay',
+        component: () => import('@/views/StudentHtmlDisplay.vue'),
+        meta: {
+          requiresAuth: true,
+          roles: ['student']
+        }
+      }
     ],
   },
   {
@@ -140,6 +170,20 @@ const routes = [
     path: '/new-class-page',
     name: 'new-class-page',
     component: NewClassPage,
+  },
+  {
+    path: '/datascreen',
+    name: 'DataScreen',
+    component: () => import('@/views/DataScreen.vue'),
+    meta: {
+      title: '数据显示屏',
+      requiresAuth: true // 需要登录才能访问
+    }
+  },
+  {
+    path: '/test-datav',
+    name: 'TestDatav',
+    component: TestDatav
   },
 ]
 
@@ -166,39 +210,41 @@ router.beforeEach((to, from, next) => {
 
   // 如果已登录，检查路由权限
   if (isAuthenticated) {
-    const path = to.path.split('/')[1]; // 获取第一级路由
+    // 检查路由是否需要特定角色
+    const matchedRoute = to.matched.find(record => record.meta.role);
+    if (matchedRoute && matchedRoute.meta.role !== userRole) {
+      console.log(`用户角色 ${userRole} 访问 ${to.path} 路由被拒绝，matched route:`, matchedRoute.path);
 
-    // 检查是否是教师路由
-    const isTeacherRoute = teacherRoutes.some(route => route.path === path);
-    // 检查是否是学生路由
-    const isStudentRoute = studentRoutes.some(route => route.path === path);
+      // 如果是学生访问开始上课页面，允许访问
+      if (userRole === 'student' && to.path === '/startclass') {
+        next();
+        return;
+      }
 
-    // 根据用户角色和路由类型进行权限控制
-    if (userRole === 'student' && isTeacherRoute) {
       next('/myclass');
-    } else if (userRole === 'teacher' && isStudentRoute) {
-      next('/myclass');
-    } else {
-      next();
+      return;
     }
+
+    // 允许访问
+    next();
   } else {
     next();
   }
-});
+
+  // 设置页面标题
+  document.title = to.meta.title || '知微课研'
+})
 
 const teacherMenuItems = [
   { index: '1', icon: 'el-icon-video-play', name: '开始上课', path: '/startclass' },
   { index: '2', icon: 'el-icon-notebook-2', name: '我的课程', path: '/myclass' },
-  { index: '3', icon: 'el-icon-document', name: '课堂记录', path: '/record' },
-  { index: '4', icon: 'el-icon-user', name: '学生管理', path: '/studentmanage' },
-  { index: '5', icon: 'el-icon-message', name: '消息', path: '/message' },
+  { index: '3', icon: 'el-icon-user', name: '学生管理', path: '/studentmanage' },
 ];
 
 const studentMenuItems = [
-  { index: '1', icon: 'el-icon-video-play', name: '开始上课', path: '/startclass' },
+  { index: '1', icon: 'el-icon-video-play', name: '开始上课', path: '/startclass', meta: { role: 'student' } },
   { index: '2', icon: 'el-icon-notebook-2', name: '我的课程', path: '/myclass' },
-  { index: '5', icon: 'el-icon-message', name: '消息', path: '/message' },
-  { index: '6', icon: 'el-icon-message', name: '智能助手', path: '/smart-assistant' },
+  { index: '3', icon: 'el-icon-robot', name: '智能助手', path: '/assistant' },
 ];
 
 export default router

@@ -322,9 +322,11 @@ const handleSubmit = () => {
 <style lang="scss" scoped>
 .page-content {
   width: 100%;
-   width:1480px;
+  max-width: 1480px;
   height: 100vh;
-  background-color:#f5f5f5 ;
+  background-color: #f5f5f5;
+  margin: 0 auto;
+  padding: 0 20px;
 
 .gray-space {
   height: 12px; // 空隙的高度
@@ -333,11 +335,14 @@ const handleSubmit = () => {
 .header {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   margin-bottom: 20px;
-  margin-left:10px;
-  height:50px;
+  margin-left: 0;
+  height: 50px;
   background-color: white;
-      border-radius: 13px;
+  border-radius: 13px;
+  width: 100%;
+  padding: 0 20px;
 }
 ::v-deep .el-input__suffix .el-input__icon {
   color: #007bff; /* 设置图标颜色为蓝色 */
@@ -345,8 +350,8 @@ const handleSubmit = () => {
 .table{
   width: 100%;
   border-radius: 13px;
-  margin-left: 10px;
-  margin-right: 10px;
+  margin-left: 0;
+  margin-right: 0;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
 }

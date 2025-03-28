@@ -5,7 +5,7 @@
     "baseUrl": "./",
     "moduleResolution": "node",
     "paths": {
-      "@../views/Home.vue": [
+      "@/*": [
         "src/*"
       ]
     },
@@ -15,5 +15,11 @@
       "dom.iterable",
       "scripthost"
     ]
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/views/Message.vue",
+    "src/views/Record.vue"
+  ]
 }

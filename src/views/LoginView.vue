@@ -6,32 +6,25 @@
         <!-- 左侧插图 -->
         <div class="illustration-container">
           <img src="@/assets/end.png" alt="3D blackboard" class="illustration-image" />
-        </div>
+          </div>
 
         <!-- 右侧登录表单 -->
         <div class="login-container">
           <div class="login-content">
-            <h1 class="login-title">敬请登录账号</h1>
-            <p class="subtitle">智能脑机连接教学</p>
+            <h1 class="login-title">知微课研</h1>
+            <p class="subtitle">请选择身份后登录</p>
             
             <div class="form-inputs">
               <div class="input-wrapper">
                 <div class="input-icon">
-                  <el-icon><User /></el-icon>
+                <el-icon><User /></el-icon>
                 </div>
                 <input v-model="loginForm.userId" placeholder="学工号" class="login-input" />
               </div>
               
               <div class="input-wrapper">
                 <div class="input-icon">
-                  <el-icon><Message /></el-icon>
-                </div>
-                <input v-model="loginForm.email" placeholder="邮箱" class="login-input" />
-              </div>
-              
-              <div class="input-wrapper">
-                <div class="input-icon">
-                  <el-icon><Lock /></el-icon>
+                <el-icon><Lock /></el-icon>
                 </div>
                 <div class="password-input-wrapper">
                   <input v-model="loginForm.password" :type="showPassword ? 'text' : 'password'" placeholder="密码" class="login-input" />
@@ -39,15 +32,26 @@
                 </div>
               </div>
               
-              <div class="remember-me">
-                <el-checkbox v-model="agreeTerms">同意用户协议</el-checkbox>
-              </div>
-              
+              <div class="role-selector">
+                <div class="role-option" 
+                     :class="{ 'active': loginForm.role === 'student' }" 
+                     @click="loginForm.role = 'student'">
+                  <div class="role-icon student-icon"></div>
+                  <span>学生</span>
+                </div>
+                <div class="role-option" 
+                     :class="{ 'active': loginForm.role === 'teacher' }" 
+                     @click="loginForm.role = 'teacher'">
+                  <div class="role-icon teacher-icon"></div>
+                  <span>教师</span>
+          </div>
+      </div>
+
               <button type="button" class="login-btn" @click="submitLoginForm">确认登录</button>
-            </div>
-            
+      </div>
+
             <div class="version-info">
-              脑机教学系统 v3.0
+              知微课研
             </div>
           </div>
         </div>
@@ -57,9 +61,9 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { Lock, User, Message } from '@element-plus/icons-vue';
+import { Lock, User } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { useStore } from 'vuex';
 import api, { ApiEnv } from '@/api';
@@ -68,8 +72,7 @@ export default {
   name: 'LoginView',
   components: {
     Lock,
-    User,
-    Message
+    User
   },
   setup() {
     const store = useStore();
@@ -80,16 +83,13 @@ export default {
 
     // 登录表单数据
     const loginForm = ref({
-      userId: '',
-      email: '',
-      password: ''
+      userId: '10001', // 预设学工号
+      password: '123456', // 预设密码
+      role: 'student' // 默认为学生身份
     });
     
     // 显示密码
     const showPassword = ref(false);
-    
-    // 同意条款
-    const agreeTerms = ref(false);
 
     // 登录表单提交方法
     const submitLoginForm = async () => {
@@ -98,30 +98,31 @@ export default {
         return;
       }
       
-      if (!agreeTerms.value) {
-        ElMessage.error('请同意用户协议');
-        return;
-      }
-      
       try {
-        const response = await store.dispatch('login', {
-          userId: loginForm.value.userId,
-          email: loginForm.value.email,
-          password: loginForm.value.password
-        });
+        // 记录用户角色到本地存储
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('userRole', loginForm.value.role);
         
-        ElMessage.success('登录成功');
-        router.push('/');
-      } catch (error) {
-        console.error('登录失败:', error);
-        ElMessage.error(error.message || '学工号或密码错误');
+        // 简化登录逻辑，直接根据角色跳转
+            ElMessage.success('登录成功');
+        
+        // 根据角色跳转到主页（实际路由会根据角色进行后续处理）
+            router.push('/');
+          } catch (error) {
+            console.error('登录失败:', error);
+        ElMessage.error('登录失败，请检查账号密码');
       }
     };
+    
+    // 页面加载时自动填充用户名和密码
+    onMounted(() => {
+      // 如果需要自动登录，取消下面的注释
+      // submitLoginForm();
+    });
 
     return {
       loginForm,
       showPassword,
-      agreeTerms,
       submitLoginForm,
       isLocalEnv
     };
@@ -320,6 +321,59 @@ export default {
   opacity: 0.7;
 }
 
+.role-selector {
+  display: flex;
+  width: 65%;
+  margin: 10px 0 15px;
+  justify-content: space-between;
+}
+
+.role-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 48%;
+  padding: 12px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.role-option.active {
+  background-color: rgba(0, 119, 255, 0.15);
+  border-color: rgba(0, 119, 255, 0.5);
+  color: white;
+}
+
+.role-option:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.role-option.active:hover {
+  background-color: rgba(0, 119, 255, 0.2);
+}
+
+.role-icon {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 6px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.student-icon {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%230077ff"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm7 10.82L12 18l-7-4.18v-3.63l7 4.18 7-4.18v3.63zM12 14l-7-4.18 7-4.18 7 4.18L12 14z"/></svg>');
+}
+
+.teacher-icon {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%230077ff"><path d="M20 17a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H9.46c.35.61.54 1.3.54 2h10v11h-9v2h9zM15 7v2H9v13H7v-6H5v6H3v-8H1.5V9a2 2 0 0 1 2-2H15zM8 4a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/></svg>');
+}
+
 .remember-me {
   display: flex;
   align-items: center;
@@ -411,7 +465,7 @@ export default {
   }
   
   .login-container {
-    width: 100%;
+  width: 100%;
   }
 }
 </style>

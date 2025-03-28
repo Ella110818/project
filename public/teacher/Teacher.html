@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>知微课研可视化平台</title>
+    <link rel="stylesheet" href="css/Teacher.css">
+</head>
+
+<body>
+    <div class="content-body">
+        <div class="header">
+            <div class="header-left fl"></div>
+            <div class="header-center fl">
+                <div class="header-title">
+                    知微课研可视化平台
+                </div>
+                <div class="header-img"></div>
+            </div>
+            <div class="header-right fl" id="time"></div>
+            <div class="header-bottom fl"></div>
+        </div>
+
+        <div class="content">
+            <div class="content-con">
+                <div class="left-body">
+                    <div class="left-top public-bg">
+                        <div class="public-title">课程信息</div>
+                        <div class="information">
+                            <p>课程名称：数据结构与算法</p>
+                            <p>课程教师：王某某</p>
+                            <p>课程学分：5学分</p>
+                            <p>课程学时：96学时</p>
+                            <p>学院：计算机与信息技术学院</p>
+                            <p>专业：计算机科学与技术</p>
+                            <p>联系电话：123456789</p>
+                        </div>
+                    </div>
+
+                    <div class="left-bottom public-bg">
+                        <div class="public-title">课堂认真top6
+                            <button onclick="toggleFold()"><span class="arrow"><img src="image/left.png"
+                                        style="width: 90%;height: 10%;"></span></button>
+                        </div>
+                        <div class="title-nav" id="top6">
+                            <div class="foldable-section" id="foldableSection">
+                                <div class="level">
+                                    <img src="image/guo.png" alt="Student 1" class="student-avatar">
+                                    <img src="image/song.png" alt="Student 1" class="student-avatar">
+                                </div>
+                                <div class="level">
+                                    <img src="image/yang.png" alt="Student 1" class="student-avatar">
+                                    <img src="image/wen.png" alt="Student 1" class="student-avatar">
+                                </div>
+                                <div class="level">
+                                    <img src="image/tang.png" alt="Student 1" class="student-avatar">
+                                    <img src="image/zhang.png" alt="Student 1" class="student-avatar">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="center-body">
+                    <div class="center-top public-bg">
+                        <div class="public-title1">课堂情况回放</div>
+                        <div id="barrage-container">
+                            <div class="barrage-display-area"></div>
+                            <div class="barrage-input-container">
+                                <input type="text" id="barrage-input" placeholder="输入弹幕内容...">
+                                <button onclick="sendBarrage()">发送</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="center-bottom public-bg">
+                        <div class="public-title">课后任务完成情况</div>
+                        <div id="table-container">
+                            <table id="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>姓名</th>
+                                        <th>班级</th>
+                                        <th>完成率</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right-body">
+                    <div class="right-top public-bg">
+                        <div class="public-title">课堂情况占比情况</div>
+                        <div class="title-nav" id="piechart5"></div>
+                    </div>
+                    <div class="right-con public-bg">
+                        <div class="public-title">与上节课相比</div>
+                        <div class="title-nav" id="huaxing"></div>
+                    </div>
+                    <div class="right-bottom public-bg">
+                        <div class="public-title">课堂实时情况</div>
+                        <div class="title-nav" id="zhexian"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.jq22.com/jquery/echarts-4.2.1.min.js"></script>
+    <script src="https://www.jq22.com/jquery/jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="js/china.js"></script>
+    <script type="text/javascript" src="js/huaxing.js"></script>
+    <script type="text/javascript" src="js/piechart5.js"></script>
+    <script type="text/javascript" src="js/zhexian.js"></script>
+    <script type="text/javascript" src="js/top6.js"></script>
+    <script type="text/javascript" src="js/container.js"></script>
+    <script type="text/javascript" src="js/danmu.js"></script>
+    <script>
+        //顶部时间
+        function getTime() {
+            var myDate = new Date();
+            var myYear = myDate.getFullYear();
+            var myMonth = myDate.getMonth() + 1;
+            var myToday = myDate.getDate();
+            var myDay = myDate.getDay();
+            var myHour = myDate.getHours();
+            var myMinute = myDate.getMinutes();
+            var mySecond = myDate.getSeconds();
+            var week = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            var nowTime;
+
+            nowTime = myYear + '年' + fillZero(myMonth) + '月' + fillZero(myToday) + '日' + '&nbsp;&nbsp;' + fillZero(myHour) + ':' + fillZero(myMinute) + ':' + fillZero(mySecond) + '&nbsp;&nbsp;' + week[myDay] + '&nbsp;&nbsp;';
+            $('#time').html(nowTime);
+        };
+        function fillZero(str) {
+            var realNum;
+            if (str < 10) {
+                realNum = '0' + str;
+            } else {
+                realNum = str;
+            }
+            return realNum;
+        }
+        setInterval(getTime, 1000);
+    </script>
+</body>
+
+</html>

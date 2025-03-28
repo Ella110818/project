@@ -216,10 +216,9 @@ const api = {
     switchEnvironment: (env) => {
         if (env === ApiEnv.LOCAL || env === ApiEnv.PRODUCTION) {
             localStorage.setItem('api_environment', env);
-            // 提示用户需要刷新页面
-            alert('环境已切换，请刷新页面以应用更改');
-            // 可选：自动刷新页面
-            // window.location.reload();
+            // 提示用户环境已切换并自动刷新页面
+            alert('环境已切换，页面将自动刷新以应用更改');
+            window.location.reload();
         }
     },
 

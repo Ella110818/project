@@ -30,9 +30,9 @@ nav a.router-link-exact-active {
 </style> -->
 
 <template>
-  <div id="app" style="height: 100%;">
+  <div id="app">
     <router-view></router-view>
-    <env-switcher v-if="showEnvSwitcher"></env-switcher>
+    <EnvSwitcher v-if="showEnvSwitcher" />
   </div>
 </template>
 
@@ -63,6 +63,19 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
 
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
 </style>

@@ -1,14 +1,17 @@
 <template>
   <div class="head-menu">
     <el-container>
-      <el-aside width="200px">
-        <component :is="sidebarComponent" />
-      </el-aside>
       <el-container>
         <el-header>
           <div class="top-head">
-            <div class="btn">
-              <el-button @click="goHome" type="text">回首页</el-button>
+            <div style="display: flex; align-items: center;">
+              <div class="btn">
+                <el-button @click="goHome" type="text">回首页</el-button>
+              </div>
+              <!-- 添加导航菜单 -->
+              <div class="nav-menu">
+                <component :is="sidebarComponent" />
+              </div>
             </div>
             <el-space wrap size="large">
               <div style="width: 300px; display: flex; justify-content: space-around; align-items: center;">
@@ -331,11 +334,28 @@ export default {
   width: 100%;
   height: 100%;
   padding: 0 20px;
-  background-color: #f5f7fa;
+  background-color: #0b1834;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+}
+
+.nav-menu {
+  margin-left: 20px;
+}
+
+.nav-menu :deep(.header-container) {
+  display: flex;
+  align-items: center;
+}
+
+.nav-menu :deep(.logo-container) {
+  display: none;
+}
+
+.nav-menu :deep(.user-dropdown) {
+  display: none;
 }
 
 .admin {
