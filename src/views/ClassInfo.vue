@@ -36,8 +36,9 @@
     
     <el-tabs v-model="activeTab" @tab-click="handleTabClick" class="custom-tabs">
       <el-tab-pane label="发布公告" name="announce">
-        
-        <AnnouncementForm />
+        <div class="announcement-container">
+          <AnnouncementForm />
+        </div>
       </el-tab-pane>
       <el-tab-pane label="作业/考试" name="homework"> 
         <Exam />
@@ -1031,5 +1032,12 @@ onMounted(() => {
   font-size: 30px;
   font-weight: bold;
   color: #409EFF;
+}
+
+.announcement-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  width: 100%;
 }
 </style>

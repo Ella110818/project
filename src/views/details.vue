@@ -267,7 +267,7 @@ const switchTab = (tab) => {
 <style scoped>
 .student-details {
   padding: 24px;
-  background-color: #f5f7fa;
+  background-color: #EBEFF8;
   min-height: 100vh;
   max-width: 1200px;
   margin: 0 auto;
@@ -343,7 +343,7 @@ const switchTab = (tab) => {
 
 .evaluation-header {
   display: flex;
-  background: linear-gradient(to right, #f5f7fa, #fff);
+  background: linear-gradient(to right, #EBEFF8, #fff);
   border-bottom: 1px solid #dcdfe6;
 }
 
@@ -585,7 +585,7 @@ const switchTab = (tab) => {
 
 .section-header {
   display: flex;
-  background: #f5f7fa;
+  background: #EBEFF8;
   border-radius: 4px 4px 0 0;
   padding: 12px 0;
   border: 1px solid #ebeef5;

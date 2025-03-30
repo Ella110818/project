@@ -1,98 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <title class="title-text">知微课研可视化平台</title>
+    <title class="title-text">知微课研数据显示屏</title>
     <link rel="stylesheet" href="css/Student.css">
 </head>
-
 <body>
 
-    <div class="content-body">
-        <div class="header">
-            <div class="header-left fl"></div>
+<div class="content-body">
+    <div class="header">
+            <div class="header-left fl" ></div>
             <div class="header-center fl">
                 <div class="header-title">
-                    知微课研可视化平台
+                    知微课研数据显示屏
                 </div>
                 <div class="header-img"></div>
             </div>
             <div class="header-right fl" id="time"></div>
             <div class="header-bottom fl"></div>
-        </div>
+    </div>
 
-        <div class="content">
-            <div class="content-con">
-                <div class="left-body">
-                    <div class="left-top public-bg">
-                        <div class="public-title1">学生信息</div>
-                        <div class="title-nav">
-                            <div class="level1">
-                                <div class="photo-box">
-                                    <img src="image/Song.jpg" class="photo">
-                                </div>
-                                <div class="information">
-                                    <p>姓名：宋嘉怡</p>
-                                    <p>学号：202301001129</p>
-                                    <p>学院：计算机与信息技术学院</p>
-                                    <p>专业：计算机科学与技术</p>
-                                    <p>联系电话：123456789</p>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                    <div class="left-con public-bg">
-                        <div class="public-title">完成情况</div>
-                        <div class="level">
-                            <div id="feng01" style="width: 150%;height: 170%;"></div>
-                            <div id="feng02" style="width: 150%;height: 170%;"></div>
-                            <div id="feng03" style="width: 150%;height: 170%;"></div>
+    <div class="content">
+        <div class="content-con">
+            <div class="left-body">
+                <div class="left-top public-bg">
+                    <div class="public-title1">学生信息</div>
+                    <div class="title-nav">
+                        <div class="level1">
+                        <div class="photo-box">
+                            <img src="image/Song.jpg" class="photo">
+                         </div>
+                         <div class="information">
+                            <p>姓名：宋嘉怡</p>
+                            <p>学号：202301001129</p>
+                            <p>学院：计算机与信息技术学院</p>
+                            <p>专业：计算机科学与技术</p>
+                            <p>联系电话：123456789</p>
+                         </div>   
                         </div>
                     </div>
-                    <div class="left-bottom public-bg">
-                        <div class="public-title">待办清单</div>
-                        <div class="task-text">
-                            <li id="taskList"></li>
+
+                </div>
+                <div class="left-con public-bg">
+                    <div class="public-title">完成情况</div>
+                    <div class="level">
+                        <div id="feng01" style="width: 150%;height: 170%;"></div>
+                        <div id="feng02"style="width: 150%;height: 170%;"></div>
+                        <div id="feng03" style="width: 150%;height: 170%;"></div>
+                </div>
+                </div>
+                <div class="left-bottom public-bg">
+                    <div class="public-title">待办清单</div>
+                   <div class="task-text">
+                    <li id="taskList"></li>
+                </div>
+                </div>
+            </div>
+
+            <div class="center-body">
+                <div class="center-top public-bg">
+                    <div class="public-title1">课程直播回放</div>
+                    <div class="course-selector">
+                        <select class="data-select" id="dateSelect">
+                            <option value="">选择日期</option>
+                            <option value="2024-03-18">2024-03-18</option>
+                            <option value="2024-03-19">2024-03-19</option>
+                            <option value="2024-03-20">2024-03-20</option>
+                            <option value="2024-03-21">2024-03-21</option>
+                            <option value="2024-03-22">2024-03-22</option>
+                            <option value="2024-03-23">2024-03-23</option>
+                            <option value="2024-03-24">2024-03-24</option>
+                            <option value="2024-03-25">2024-03-25</option>
+                        </select>
+                        <select class="data-select" id="courseSelect">
+                            <option value="">选择课程</option>
+                            <option value="math">高等数学</option>
+                            <option value="physics">大学物理</option>
+                            <option value="programming">C++程序设计</option>
+                            <option value="data">数据结构</option>
+                            <option value="computer">计算机组成原理</option>
+                            <option value="English">大学英语</option>
+                        </select>
+                        <button class="data-select" onclick="loadPlayback()" >加载回放</button>
+                    </div>
+                </div>
+                <div class="center-bottom public-bg">
+                    <div class="public-title1">教师评价</div>
+                    <div class="title-nav">
+                        <div class="suggestion-container">
+                            <text class="suggestion">这位同学在本课程表现优秀，对问题有独到见解，但需加强小组协作能力。</text>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="center-body">
-                    <div class="center-top public-bg">
-                        <div class="public-title1">课程直播回放</div>
-                    </div>
-                    <div class="center-bottom public-bg">
-                        <div class="public-title1">教师评价</div>
-                        <div class="title-nav">
-                            <div class="suggestion-container">
-                                <text class="suggestion">这位同学在本课程表现优秀，对问题有独到见解，但需加强小组协作能力。</text>
-                            </div>
-                        </div>
-                    </div>
+            <div class="right-body">
+                <div class="right-top public-bg">
+                    <div class="public-title">课堂情况占比情况</div>
+                    <div class="title-nav" id="piechart5"></div>
                 </div>
-
-                <div class="right-body">
-                    <div class="right-top public-bg">
-                        <div class="public-title">课堂情况占比情况</div>
-                        <div class="title-nav" id="piechart5"></div>
-                    </div>
-                    <div class="right-con public-bg">
-                        <div class="public-title">与上节课相比</div>
-                        <div class="title-nav" id="huaxing"></div>
-                    </div>
-                    <div class="right-bottom public-bg">
-                        <div class="public-title1">pk情况</div>
-                        <div class="title-nav" id="leidatu"></div>
-                    </div>
+                <div class="right-con public-bg">
+                    <div class="public-title">与上节课相比</div>
+                    <div class="title-nav" id="huaxing"></div>
+                </div>
+                <div class="right-bottom public-bg">
+                    <div class="public-title1">pk情况</div>
+                    <div class="title-nav" id="leidatu"></div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
 </body>
-
 </html>
 
 <script src="https://www.jq22.com/jquery/echarts-4.2.1.min.js"></script>
@@ -107,31 +127,77 @@
 <script type="text/javascript" src="js/complete03.js"></script>
 <script>
     //顶部时间
-    function getTime() {
+    function getTime(){
         var myDate = new Date();
         var myYear = myDate.getFullYear(); //获取完整的年份(4位,1970-????)
-        var myMonth = myDate.getMonth() + 1; //获取当前月份(0-11,0代表1月)
+        var myMonth = myDate.getMonth()+1; //获取当前月份(0-11,0代表1月)
         var myToday = myDate.getDate(); //获取当前日(1-31)
         var myDay = myDate.getDay(); //获取当前星期X(0-6,0代表星期天)
         var myHour = myDate.getHours(); //获取当前小时数(0-23)
         var myMinute = myDate.getMinutes(); //获取当前分钟数(0-59)
         var mySecond = myDate.getSeconds(); //获取当前秒数(0-59)
-        var week = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+        var week = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
         var nowTime;
 
-        nowTime = myYear + '年' + fillZero(myMonth) + '月' + fillZero(myToday) + '日' + '&nbsp;&nbsp;' + fillZero(myHour) + ':' + fillZero(myMinute) + ':' + fillZero(mySecond) + '&nbsp;&nbsp;' + week[myDay] + '&nbsp;&nbsp;';
+        nowTime = myYear+'年'+fillZero(myMonth)+'月'+fillZero(myToday)+'日'+'&nbsp;&nbsp;'+fillZero(myHour)+':'+fillZero(myMinute)+':'+fillZero(mySecond)+'&nbsp;&nbsp;'+week[myDay]+'&nbsp;&nbsp;';
         //console.log(nowTime);
         $('#time').html(nowTime);
     };
-    function fillZero(str) {
+    function fillZero(str){
         var realNum;
-        if (str < 10) {
-            realNum = '0' + str;
-        } else {
-            realNum = str;
+        if(str<10){
+            realNum	= '0'+str;
+        }else{
+            realNum	= str;
         }
         return realNum;
     }
     //大屏
-    setInterval(getTime, 1000);
+    setInterval(getTime,1000);
+
+    // 处理课程回放加载
+    function loadPlayback() {
+        const date = document.getElementById('dateSelect').value;
+        const course = document.getElementById('courseSelect').value;
+        
+        if (!date || !course) {
+            alert('请选择日期和课程！');
+            return;
+        }
+        
+        // 刷新右侧三个图表
+        refreshRightCharts();
+        
+        console.log(`加载 ${date} 的 ${course} 课程回放`);
+    }
+
+    // 刷新右侧三个图表
+    function refreshRightCharts() {
+        // 刷新课堂情况占比情况
+        if (typeof piechart5 === 'function') {
+            // 清除原有图表
+            var pieChart = echarts.init(document.getElementById('piechart5'));
+            pieChart.clear();
+            // 重新初始化
+            piechart5();
+        }
+        
+        // 刷新与上节课相比数据
+        if (typeof huaxing === 'function') {
+            // 清除原有图表
+            var huaxingChart = echarts.init(document.getElementById('huaxing'));
+            huaxingChart.clear();
+            // 重新初始化
+            huaxing();
+        }
+        
+        // 刷新PK情况
+        if (typeof leidatu === 'function') {
+            // 清除原有图表
+            var pkChart = echarts.init(document.getElementById('leidatu'));
+            pkChart.clear();
+            // 重新初始化
+            leidatu();
+        }
+    }
 </script>

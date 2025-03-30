@@ -1,7 +1,7 @@
 <template>
   <div class="assignments-container">
     <div class="bg-image-container">
-      <img src="~@/assets/bg3.png" alt="背景图片" class="bg-image" />
+      <img src="~@/assets/BG02.png" alt="背景图片" class="bg-image" />
       <div class="overlay"></div>
     </div>
     
@@ -219,7 +219,7 @@ export default {
   bottom: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to bottom, rgba(11, 24, 52, 0.01), rgba(22, 41, 86, 0.01));
+  background: linear-gradient(to bottom, rgba(11, 24, 52, 0.1), rgba(22, 41, 86, 0.1));
 }
 
 .decoration-container {

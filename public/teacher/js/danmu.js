@@ -50,22 +50,56 @@ let barrageSystem;
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('barrage-container');
     barrageSystem = new BarrageSystem(container);
-});
 
-// 发送弹幕
-function sendBarrage() {
-    const input = document.getElementById('barrage-input');
-    const text = input.value.trim();
+    // 连接Socket.IO服务器
+    const socket = io("http://127.0.0.1:3333", {
+        transports: ['websocket'],
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000
+    });
     
-    if (text) {
-        barrageSystem.createBarrage(text);
-        input.value = '';
-    }
-}
+    // 监听连接成功事件
+    socket.on('connect', () => {
+        console.log('弹幕系统已连接到服务器');
+    });
 
-// 按回车发送弹幕
-document.getElementById('barrage-input').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        sendBarrage();
+    // 监听连接错误事件
+    socket.on('connect_error', (error) => {
+        console.error('弹幕系统连接错误:', error);
+    });
+
+    // 监听断开连接事件
+    socket.on('disconnect', (reason) => {
+        console.log('弹幕系统断开连接:', reason);
+    });
+
+    // 监听新消息
+    socket.on('sendFunEventCallBack', (data) => {
+        const messages = JSON.parse(data);
+        const lastMessage = messages[messages.length - 1];
+        if (lastMessage && lastMessage.info) {
+            barrageSystem.createBarrage(lastMessage.info);
+        }
+    });
+
+    // 发送弹幕
+    window.sendBarrage = function() {
+        const input = document.getElementById('barrage-input');
+        const text = input.value.trim();
+        
+        if (text) {
+            socket.emit('sendFunEvent', {
+                info: text
+            });
+            input.value = '';
+        }
     }
+
+    // 按回车发送弹幕
+    document.getElementById('barrage-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendBarrage();
+        }
+    });
 });

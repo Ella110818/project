@@ -1,288 +1,372 @@
-* {
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-}
-
-.title-text {
-    margin-left: 30%;
-}
-
-.public-bg {
-    border-radius: 10px;
-}
-
-.public-title {
-    width: calc(100% - 20px);
-    height: 30px;
-    position: relative;
-    top: 2%;
-    text-align: center;
-    color: white;
-    padding-left: 16px;
-    line-height: 30px;
-    font-size: 21px;
-    margin-top: 3%;
-}
-
-.public-title1 {
-    width: calc(100% - 20px);
-    height: 30px;
-    position: relative;
-    top: 3%;
-    margin-left: 10%;
-    color: white;
-    padding-left: 16px;
-    font-size: 21px;
-}
-
-.content-body {
-    width: 100%;
-    height: 100%;
-    background: url(../image/bg.png);
-    background-size: 100% 100%;
-    position: absolute;
-}
-
-.header {
-    height: 70px;
-    width: 100%;
-}
-
-.fl {
-    float: left;
-}
-
-.header .header-left {
-    width: 25%;
-    height: 1.05rem;
-    color: white;
-    text-align: center;
-    line-height: 1.05rem;
-}
-
-.header .header-center {
-    width: 50%;
-    height: 1.05rem;
-    position: relative;
-}
-
-.header .header-center .header-title {
-    text-align: center;
-    color: #ffffff;
-    font-size: 30px;
-    text-shadow: 0 0 .3rem #00d8ff;
-    margin: 1%;
-    margin-left: -10%;
-}
-
-.header .header-img {
-    background: url("../image/head.gif") no-repeat center center;
-    background-size: 100%;
-    height: 100%;
-    width: 100%;
-    position: absolute;
-    top: 10px;
-    margin-left: -6%;
-    margin-top: 4%;
-}
-
-.header .header-right {
-    width: 25%;
-    height: 1.05rem;
-}
-
-.header .header-bottom {
-    width: calc(100% - .4rem);
-    height: .16rem;
-    background: url("../image/header.png") no-repeat;
-    background-size: calc(100% - .2rem) 100%;
-    padding: 0 .2rem;
-    margin-left: .3rem;
-    margin-top: 1%;
-}
-
-.header .header-right {
-    width: 50%;
-    line-height: 40px;
-    color: #ffffff;
-    margin-left: 75%;
-}
-
-.header .header-right span {
-    color: #ffffff;
-    font-weight: bold;
-    font-size: 28px;
-    letter-spacing: 2px;
-    padding: 0 20px;
-}
-
-.header .header-time {
-    width: 48%;
-    line-height: 70px;
-    float: right;
-    text-align: right;
-    margin-left: 10%;
-}
-
-.header .header-time span {
-    color: #ffffff;
-}
-
-.content {
-    width: 100%;
-    height: calc(100% - 75px);
-    position: absolute;
-}
-
-.content .content-con {
-    height: 100%;
-}
-
-.content .content-con .left-body {
-    width: 25%;
-    height: 100%;
-    float: left;
-    margin: 0 0.3%;
-}
-
-.left-body .left-top {
-    width: 100%;
-    height: 32%;
-    background: url(../image/bor1_1.png);
-    background-size: 100% 100%;
-}
-
-.left-body .left-top .top-body {
-    width: 100%;
-    height: calc(100% - 30px);
-}
-
-.left-body .left-top .top-body .top-left {
-    float: left;
-    width: 50%;
-    height: 100%;
-}
-
-.top-left-title {
-    width: 100%;
-    height: 100%;
-    padding: 30px;
-    box-sizing: border-box;
-}
-
-.top-left-title h6 {
-    color: #bad0e2;
-}
-
-.top-left-title span {
-    margin-top: 30px;
-    display: inline-block;
-    color: #2aa4f1;
-}
-
-.top-left-title span b {
-    font-size: 30px;
-    letter-spacing: 5px;
-}
-
-.top-left-title img {
-    width: 80%;
-}
-
-.left-body .left-top .top-body .top-right {
-    float: left;
-    width: 50%;
-    height: 100%;
-}
-
-.left-body .left-con {
-    width: 100%;
-    height: 30%;
-    margin-top: 1.6%;
-    background: url(../image/bor1_3.png);
-    background-size: 100% 100%;
-}
-
-.title-nav {
-    width: 100%;
-    height: calc(100% - 30px);
-}
-
-.left-body .left-bottom {
-    width: 100%;
-    height: 35%;
-    margin-top: 1.6%;
-    background: url(../image/bor1_2.png);
-    background-size: 100% 100%;
-}
-
-.center-body {
-    width: 45%;
-    height: 100%;
-    margin: 0 0.3%;
-    float: left;
-}
-
-.center-body .center-top {
-    width: 100%;
-    height: 68.5%;
-    background: url(../image/bor1_5.png);
-    background-size: 100% 100%;
-}
-
-.center-body .center-bottom {
-    width: 100%;
-    height: 26%;
-    justify-content: center;
-    display: flex;
-    margin-top: 5.5%;
-    background: url(../image/bor1_1.png);
-    background-size: 100% 100%;
-}
-
-.right-body {
-    width: 28%;
-    height: 100%;
-    float: right;
-    margin: 0 0.3%;
-}
-
-.right-body .right-top {
-    width: 100%;
-    height: 35%;
-    background: url(../image/bor1_3.png);
-    background-size: 100% 100%;
-}
-
-.right-body .right-top1 {
-    width: 100%;
-    height: 60%;
-    background: url(../image/bor1_3.png);
-    background-size: 100% 100%;
-}
-
-.level {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 5px;
-}
-
-.level1 {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 5px;
-}
-
+    *{
+        margin: 0;
+        padding: 0;
+    }
+    body{
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+    }
+    .title-text{
+        margin-left: 30%;
+    }
+    .public-bg{
+        border-radius: 10px;
+    }
+    
+    .public-title{
+        width: calc(100% - 20px);
+        height: 30px;
+        position: relative;
+        top: 2%;
+        text-align: center;
+        color: white;
+        padding-left: 16px;
+        line-height: 30px;
+        font-size: 22px;
+        margin-top: 5%;
+    }
+    .public-title1{
+        width: calc(100% - 20px);
+        height: 30px;
+        position: relative;
+        top: 3%;
+        margin-left: 10%;
+        color: white;
+        padding-left: 16px;
+        font-size: 22px;
+    }
+    /*.public-title:before{
+        width: 4px;
+        height: 20px;
+        top: 5px;
+        position: absolute;
+        content: "";
+        background: #2aa4f1;
+        border-radius: 2px;
+        left: 5px;
+    }*/
+    
+    .content-body{
+        width: 100%; 
+        height: 100%;
+        background: url(../image/bg.png);
+        background-size: 100% 100%;
+        position: absolute;
+    
+    }
+    
+    .header{
+        height: 70px;
+        width: 100%;
+    /*    border: 1px solid red;*/
+    }
+    .fl{
+        float: left;
+    }
+    .header .header-left{
+        width: 25%;
+        height: 1.05rem;
+        color: white;
+    /*    border: 1px solid green;*/
+        text-align: center;
+        line-height: 1.05rem;
+    }
+    .header .header-center{
+        width: 50%;
+        height: 1.05rem;
+        /*border: 1px solid red;*/
+    /*    background: url("../images/head.gif") no-repeat;
+        background-size: 100% 100%;*/
+        position: relative;
+    }
+    .header .header-center .header-title{
+        text-align: center;
+        color: #ffffff;
+        font-size: 30px;
+        text-shadow: 0 0 .3rem #00d8ff;
+        margin: 1%;
+        margin-left: -10%;
+    }
+    .header .header-img{
+        background: url("../image/head\ .gif") no-repeat center center;
+        background-size: 100%;
+        height: 100%;
+        width: 100%;
+        position: absolute;
+        top: 10px;
+        margin-left: -6%;
+        margin-top: 4%;
+    }
+    
+    .header .header-right{
+        width: 25%;
+        height: 1.05rem;
+        /*border: 1px solid gold;*/
+    }
+    .header .header-bottom{
+        width: calc(100% - .4rem);
+        height: .16rem;
+        background: url("../image/header.png") no-repeat;
+        background-size: calc(100% - .2rem) 100%;
+        padding: 0 .2rem;
+        margin-left: .3rem;
+        margin-top: 1%;
+    }
+    .header .header-right{
+        width: 50%;
+        line-height: 40px;
+        color: #ffffff;
+        margin-left: 75%;
+    }
+    .header .header-right span{
+        color: #ffffff;
+        font-weight: bold;
+        font-size: 28px;
+        letter-spacing:2px;
+        padding: 0 20px;
+    }
+    .header .header-time{
+        width: 48%;
+        line-height: 70px;
+        float: right;
+        text-align: right;
+        margin-left: 10%;
+    }
+    .header .header-time span{
+        color: #ffffff;
+        
+    }
+    .content{
+        width: 100%;
+        height: calc(100% - 75px);
+        position: absolute;
+    }
+    .content .content-con{
+        height: 100%;
+    }
+    .content .content-con .left-body{
+        width: 25%;
+        height: 100%;
+        float: left;
+        margin:0 0.3%;
+    }
+    .left-body .left-top{
+        width: 100%;
+        height: 32%;
+        background: url(../image/bor1_1.png);
+        background-size: 100% 100%;
+    }
+    .left-body .left-top .top-body{
+        width: 100%;
+        height: calc(100% - 30px);
+    }
+    .left-body .left-top .top-body .top-left{
+        float: left;
+        width: 50%;
+        height: 100%;
+    }
+     .top-left-title{
+        width: 100%;
+        height: 100%;
+        padding: 30px;
+        box-sizing: border-box;
+    }
+     .top-left-title h6{
+        color: #bad0e2;
+    }
+    .top-left-title span{
+        margin-top: 30px;
+        display: inline-block;
+        color: #2aa4f1;
+    
+    /*    height: 80px;
+        line-height: 80px;*/
+    }
+     .top-left-title span b{
+        font-size: 30px;
+         letter-spacing:5px;
+    }
+    .top-left-title img{
+        width: 80%;
+    }
+    .left-body .left-top .top-body .top-right{
+        float: left;
+        width: 50%;
+        height: 100%;
+    }
+   .left-body .left-con{
+        width: 100%;
+        height: 30%;
+        margin-top: 1.6%;
+        background: url(../image/bor1_3.png);
+        background-size: 100% 100%;
+    }
+    .title-nav{
+        width: 100%;
+        height: calc(100% - 30px);
+    }
+    .left-body .left-bottom{
+        width: 100%;
+        height: 35%;
+        margin-top: 1.6%;
+        background: url(../image/bor1_2.png);
+        background-size: 100% 100%;
+    }
+    .center-body{
+        width: 45%;
+        height: 100%;
+        margin:0 0.3%;
+        float: left;
+        /*border: 1px solid red;*/
+    }
+    .center-body .center-top{
+        width: 100%;
+        height: 68.5%;
+        background: url(../image/bor1_5.png);
+        background-size: 100% 100%;
+    }
+    .center-body .center-bottom{
+        width: 100%;
+        height: 26%;
+        justify-content: center;
+        display: flex;
+        margin-top: 5.5%;
+        background: url(../image/bor1_1.png);
+        background-size: 100% 100%;
+    }
+    .right-body{
+        width: 28%;
+        height: 100%;
+        float: right;
+        margin:0 0.3%;
+    }
+    
+    .right-body .right-top{
+        width: 100%;
+        height: 35%;
+        background: url(../image/bor1_3.png);
+        background-size: 100% 100%;
+    }
+    .right-body .right-top1{
+        width: 100%;
+        height: 60%;
+        background: url(../image/bor1_3.png);
+        background-size: 100% 100%;
+    }
+    .title-nav .top5-ul{
+        width: calc(100% - 20px);
+        height: calc(100% - 30px);
+        padding: 10px;
+    }
+    .title-nav .top5-ul ul{
+        width: 100%;
+        height: 100%;
+    }
+    .title-nav .top5-ul ul,li{
+        list-style: none;
+    }
+    .title-nav .top5-ul ul>li{
+        width: 100%;
+        height: 20%;
+        color: #ffffff;
+        line-height: 68px;
+        justify-content: center;
+    }
+    .title-nav .top5-ul ul li span{
+        margin-left: 3%;
+        font-size: 14px;
+    }
+    .title-nav .top5-ul ul li span:nth-child(1){
+        color:  #EB6841;
+        font-style: oblique;
+        /*width: 10%;*/
+        /*#20a8fe
+                #EB6841
+                #3FB8AF
+                #FE4365
+                #FC9D9A*/
+        display: inline-block;
+        text-align: center;
+        font-size: 20px;
+    }
+    
+    .title-nav .top5-ul ul li span:nth-child(2){
+        width: 10%;
+        display: inline-block;
+        text-align: center;
+    
+        height: 30px;
+        line-height: 30px;
+    /*    height: 100%;*/
+        /*line-height: 100%;*/
+        vertical-align: center;
+        border-radius: 5px;
+        color: #ffffff;
+    }
+    .title-nav .top5-ul ul li:nth-child(1) span:nth-child(2),.title-nav .top5-ul ul li:nth-child(2) span:nth-child(2)
+    ,.title-nav .top5-ul ul li:nth-child(3) span:nth-child(2){
+        background: #d89346;
+    }
+    .title-nav .top5-ul ul li:nth-child(4) span:nth-child(2)
+    ,.title-nav .top5-ul ul li:nth-child(5) span:nth-child(2){
+        background: #1db5ea;
+    }
+    .title-nav .top5-ul ul li span:nth-child(3){
+        /*width: 15%;*/
+        display: inline-block;
+        text-align: center;
+    }
+    .title-nav .top5-ul ul li span:nth-child(4){
+        /*width: 15%;*/
+        display: inline-block;
+        text-align: center;
+    }
+    .title-nav .top5-ul ul li span:nth-child(5){
+        /*width: 20%;*/
+        display: inline-block;
+        text-align: center;
+    }
+    .title-nav .top5-ul ul li span:nth-child(6){
+        display: inline-block;
+        text-align: center;
+    }
+    .right-body .right-con{
+        width: 100%;
+        height: 26.5%;
+        margin-top: 2%;
+        background-color: rgba(12, 26, 63, 0.3);
+        background: url(../image/bor1_6.png);
+        background-size: 100% 100%;
+    }
+    .right-body .right-bottom{
+        width: 100%;
+        height: 32%;
+        margin-top: 1.6%;
+        background: url(../image/bor1_4.png);
+        background-size: 100% 100%;
+    }
+    .right-body .right-bottom1{
+        width: 100%;
+        height: 34%;
+        margin-top: 5%;
+        background: url(../image/bor1_4.png);
+        background-size: 100% 100%;
+    }
+    .level {
+		display: flex;
+		justify-content: space-around;
+		align-items: center;
+		padding: 5px;
+	}
+    .level1 {
+		display: flex;
+		justify-content: space-around;
+		align-items: center;
+		padding: 5px;
+	}
 ul {
-    list-style-type: none;
+    list-style-type: none; /* 移除默认的列表样式 */
     padding: 0;
 }
 
@@ -290,23 +374,26 @@ li {
     margin: 10px 0;
 }
 
+/* 未完成的任务样式 */
 .task-incomplete {
-    color: white;
-    font-family: Arial sans-serif;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 10px;
+        color: white; 
+        font-family: Arial sans-serif;
+        justify-content: center; 
+        align-items: center; 
+        
 }
 
+/* 完成的任务样式 */
 .task-complete {
-    color: gray;
-    font-family: Arial, sans-serif;
-    justify-content: center;
-    align-items: center;
-    text-decoration: line-through;
-    margin-bottom: 10px;
+        color: gray; 
+        font-family: Arial, sans-serif; 
+        
+        justify-content: center; 
+        align-items: center; 
+       text-decoration: line-through;
 }
 
+/* 小方框样式 */
 .checkbox {
     width: 20px;
     height: 20px;
@@ -316,6 +403,7 @@ li {
     position: relative;
 }
 
+/* 勾选标记样式 */
 .checkbox:checked::after {
     content: "";
     position: absolute;
@@ -327,39 +415,39 @@ li {
     border-width: 0 3px 3px 0;
     transform: rotate(45deg);
 }
-
-.photo {
-    width: 50%;
+.feng{
+    width: 33.3333%; 
+    float: left; 
+    height: 50%; 
 }
 
-.photo-box {
+.photo{
+    width: 50%;
+}
+.photo-box{
     margin-top: 3%;
     height: 100%;
 }
-
 .information {
     max-width: 400px;
     color: #ffffff;
     font-size: 17px;
 }
-
 .information p {
     margin: 5px 0;
     margin-left: -90%;
     margin-bottom: 15%;
     color: #ffffff;
 }
-
-.task-text {
+.task-text{
     margin-left: 3%;
     margin-top: 5%;
     font-size: 17px;
     line-height: 180%;
 }
-
-.suggestion {
+.suggestion{
     font-size: 21px;
-    color: #ffffff;
+    color:#ffffff;
     text-align: center;
     display: block;
     width: 230%;
@@ -383,20 +471,131 @@ li {
     margin-top: 5%;
     box-sizing: border-box;
 }
-
-.right-body .right-con {
+/* 弹幕容器样式 */
+#barrage-container {
     width: 100%;
-    height: 26.5%;
-    margin-top: 2%;
-    background-color: rgba(12, 26, 63, 0.3);
-    background: url(../image/bor1_6.png);
-    background-size: 100% 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    box-sizing: border-box;
 }
 
-.right-body .right-bottom {
+/* 弹幕容器样式 */
+#barrage-container {
     width: 100%;
-    height: 33.5%;
-    margin-top: 1.6%;
-    background: url(../image/bor1_4.png);
-    background-size: 100% 100%;
+    height: calc(100% - 50px); /* 减去标题的高度 */
+    overflow: hidden;
+     position: relative;
+     display: flex;
+     flex-direction: column;
+    }
+    
+    /* 弹幕显示区域 */
+    .barrage-display-area {
+     flex: 1;
+     position: relative;
+     overflow: hidden;
+    }
+    
+    /* 弹幕输入区域样式 */
+    .barrage-input-container {
+     display: flex;
+     align-items: center;
+     gap: 10px;
+     padding: 10px;
+     border-top: 1px solid rgba(255, 255, 255, 0.1);
+     margin-top: auto; /* 将输入区域推到底部 */
+    }
+    
+    #barrage-input {
+     flex: 1;
+     height: 30px;
+     padding: 0 10px;
+     border: 1px solid rgba(255, 255, 255, 0.3);
+     border-radius: 15px;
+     background: rgba(0, 0, 0, 0.2);
+     color: #fff;
+     font-size: 14px;
+    }
+    
+    #barrage-input::placeholder {
+     color: rgba(255, 255, 255, 0.5);
+    }
+    
+    #barrage-input:focus {
+     outline: none;
+     border-color: #0e34a5;
+    }
+    
+    .barrage-input-container button {
+     height: 30px;
+     padding: 0 15px;
+     border: none;
+     border-radius: 15px;
+     background: #0e34a5;
+     color: #fff;
+     font-size: 14px;
+     cursor: pointer;
+     transition: background-color 0.3s;
+    }
+    
+    .barrage-input-container button:hover {
+     background: #ffffff;
+    }
+    
+    /* 弹幕样式 */
+    .barrage-item {
+     position: absolute;
+     white-space: nowrap;
+     color: #fff;
+     font-size: 19px;
+     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+     animation: barrage-move 28s linear;
+     pointer-events: none;
+     right: 0;
+    }
+    
+    @keyframes barrage-move {
+     from {
+     transform: translateX(0);
+     opacity: 0;
+     }
+     10% {
+     opacity: 1;
+     }
+     90% {
+     opacity: 1;
+     }
+     to {
+     transform: translateX(-100vw);
+     opacity: 0;
+     }
+    }
+.course-selector {
+    margin: 15px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.data-select {
+    margin-left: 12%;
+    margin-top: 3%;
+    padding: 8px 15px;
+    border: 1px solid #4a90e2;
+    border-radius: 4px;
+    background-color: rgba(74, 144, 226, 0.1);
+    color: #ffffff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.data-select:hover {
+    background-color: rgba(74, 144, 226, 0.2);
+}
+.data-select option {
+    background-color: #fff;
+    color: #333;
 }

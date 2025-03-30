@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>知微课研可视化平台</title>
-    <link rel="stylesheet" href="css/Teacher.css">
+    <link rel="stylesheet" href="css/index.css">
 </head>
 
 <body>
@@ -38,7 +38,7 @@
                     </div>
 
                     <div class="left-bottom public-bg">
-                        <div class="public-title">课堂认真top6
+                        <div class=" public-title">课堂认真top6
                             <button onclick="toggleFold()"><span class="arrow"><img src="image/left.png"
                                         style="width: 90%;height: 10%;"></span></button>
                         </div>
@@ -59,18 +59,13 @@
                             </div>
                         </div>
                     </div>
+
                 </div>
 
                 <div class="center-body">
                     <div class="center-top public-bg">
-                        <div class="public-title1">课堂情况回放</div>
-                        <div id="barrage-container">
-                            <div class="barrage-display-area"></div>
-                            <div class="barrage-input-container">
-                                <input type="text" id="barrage-input" placeholder="输入弹幕内容...">
-                                <button onclick="sendBarrage()">发送</button>
-                            </div>
-                        </div>
+                        <div class="public-title1"> 课堂情况回放</div>
+
                     </div>
                     <div class="center-bottom public-bg">
                         <div class="public-title">课后任务完成情况</div>
@@ -83,11 +78,14 @@
                                         <th>完成率</th>
                                     </tr>
                                 </thead>
-                                <tbody></tbody>
+                                <tbody>
+
+                                </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
+
 
                 <div class="right-body">
                     <div class="right-top public-bg">
@@ -107,43 +105,45 @@
         </div>
     </div>
 
-    <script src="https://www.jq22.com/jquery/echarts-4.2.1.min.js"></script>
-    <script src="https://www.jq22.com/jquery/jquery-1.10.2.js"></script>
-    <script type="text/javascript" src="js/china.js"></script>
-    <script type="text/javascript" src="js/huaxing.js"></script>
-    <script type="text/javascript" src="js/piechart5.js"></script>
-    <script type="text/javascript" src="js/zhexian.js"></script>
-    <script type="text/javascript" src="js/top6.js"></script>
-    <script type="text/javascript" src="js/container.js"></script>
-    <script type="text/javascript" src="js/danmu.js"></script>
-    <script>
-        //顶部时间
-        function getTime() {
-            var myDate = new Date();
-            var myYear = myDate.getFullYear();
-            var myMonth = myDate.getMonth() + 1;
-            var myToday = myDate.getDate();
-            var myDay = myDate.getDay();
-            var myHour = myDate.getHours();
-            var myMinute = myDate.getMinutes();
-            var mySecond = myDate.getSeconds();
-            var week = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-            var nowTime;
-
-            nowTime = myYear + '年' + fillZero(myMonth) + '月' + fillZero(myToday) + '日' + '&nbsp;&nbsp;' + fillZero(myHour) + ':' + fillZero(myMinute) + ':' + fillZero(mySecond) + '&nbsp;&nbsp;' + week[myDay] + '&nbsp;&nbsp;';
-            $('#time').html(nowTime);
-        };
-        function fillZero(str) {
-            var realNum;
-            if (str < 10) {
-                realNum = '0' + str;
-            } else {
-                realNum = str;
-            }
-            return realNum;
-        }
-        setInterval(getTime, 1000);
-    </script>
 </body>
 
 </html>
+
+<script src="https://www.jq22.com/jquery/echarts-4.2.1.min.js"></script>
+<script src="https://www.jq22.com/jquery/jquery-1.10.2.js"></script>
+<script type="text/javascript" src="js/china.js"></script>
+<script type="text/javascript" src="js/huaxing.js"></script>
+<script type="text/javascript" src="js/piechart5.js"></script>
+<script type="text/javascript" src="js/zhexian.js"></script>
+<script type="text/javascript" src="js/top6.js"></script>
+<script type="text/javascript" src="js/container.js"></script>
+<script>
+    //顶部时间
+    function getTime() {
+        var myDate = new Date();
+        var myYear = myDate.getFullYear(); //获取完整的年份(4位,1970-????)
+        var myMonth = myDate.getMonth() + 1; //获取当前月份(0-11,0代表1月)
+        var myToday = myDate.getDate(); //获取当前日(1-31)
+        var myDay = myDate.getDay(); //获取当前星期X(0-6,0代表星期天)
+        var myHour = myDate.getHours(); //获取当前小时数(0-23)
+        var myMinute = myDate.getMinutes(); //获取当前分钟数(0-59)
+        var mySecond = myDate.getSeconds(); //获取当前秒数(0-59)
+        var week = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+        var nowTime;
+
+        nowTime = myYear + '年' + fillZero(myMonth) + '月' + fillZero(myToday) + '日' + '&nbsp;&nbsp;' + fillZero(myHour) + ':' + fillZero(myMinute) + ':' + fillZero(mySecond) + '&nbsp;&nbsp;' + week[myDay] + '&nbsp;&nbsp;';
+        //console.log(nowTime);
+        $('#time').html(nowTime);
+    };
+    function fillZero(str) {
+        var realNum;
+        if (str < 10) {
+            realNum = '0' + str;
+        } else {
+            realNum = str;
+        }
+        return realNum;
+    }
+    //大屏
+    setInterval(getTime, 1000);
+</script>

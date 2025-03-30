@@ -31,7 +31,7 @@
       <el-table-column label="学生" width="150" align="center">
         <template #default="scope">
           <div class="user">
-            <img class="avatar" :src="scope.row.avatar" />
+            <img class="avatar" src="/teacher/image/song.png" />
             <div class="user-info">
               <p class="user-name">{{ scope.row.username }}</p>
             </div>
@@ -44,13 +44,6 @@
           {{ scope.row.sex === 1 ? '男' : '女' }}
         </template>
       </el-table-column>
-      <el-table-column label="状态" prop="status" width="100" align="center">
-        <template #default="scope">
-          <el-tag :type="getTagType(scope.row.status)">
-            {{ buildTagText(scope.row.status) }}
-          </el-tag>
-        </template>
-      </el-table-column>
       <el-table-column label="详情" width="130" align="center">
         <template #default="{ row }">
           <router-link :to="{ name: 'details', params: { id: row.id } }">
@@ -61,6 +54,7 @@
       <el-table-column label="操作" width="130" align="center">
         <template #default="scope">
           <el-button type="primary" :icon="Edit" circle @click="showDialog('edit', scope.row)"/>
+          <span class="operation-divider"></span>
           <el-button type="danger" :icon="Delete" circle @click="deleteUser('delete', scope.row)"/>
         </template>
       </el-table-column>
@@ -121,6 +115,7 @@ const formData = reactive({
   studentId: '',
   sex: 1,
   className: '',
+  id: null,
 });
 
 const searchFormRef = ref(null);
@@ -142,7 +137,6 @@ const tableData = ref([
     mobile: '12345678901',
     sex: 1,
     dep: '技术部',
-    status: '1',
     create_time: '2023-01-01',
     avatar: '',
     className: '计算机科学1班'
@@ -154,7 +148,6 @@ const tableData = ref([
     mobile: '12345678902',
     sex: 2,
     dep: '市场部',
-    status: '2',
     create_time: '2023-01-02',
     avatar: '',
     className: '计算机科学2班'
@@ -214,21 +207,29 @@ const showDialog = (type, row) => {
     formData.studentId = row.mobile;
     formData.sex = row.sex;
     formData.className = row.className;
+    formData.id = row.id;
   } else {
     formData.username = '';
     formData.studentId = '';
     formData.sex = 1;
     formData.className = '';
+    formData.id = null;
   }
 };
 
-const deleteUser = (row) => {
+const deleteUser = (type, row) => {
   ElMessageBox.confirm('确定要删除该用户吗？', '删除用户', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
-    type: 'error',
+    type: 'warning',
   }).then(() => {
-    ElMessage.success('删除成功');
+    const index = tableData.value.findIndex(item => item.id === row.id);
+    if (index !== -1) {
+      tableData.value.splice(index, 1);
+      ElMessage.success('删除成功');
+    }
+  }).catch(() => {
+    ElMessage.info('已取消删除');
   });
 };
 
@@ -288,31 +289,30 @@ const formRef = ref(null);
 const handleSubmit = () => {
   formRef.value.validate((valid) => {
     if (valid) {
-      // 如果是添加操作，将新用户添加到表格数据中
       if (dialogType.value === 'add') {
         const newUser = {
           id: tableData.value.length + 1,
           username: formData.username,
           mobile: formData.studentId,
           sex: formData.sex,
-          status: '1', // 默认设置为在线状态
           className: formData.className,
-          avatar: 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
+          avatar: '/teacher/image/song.png'
         };
         tableData.value.push(newUser);
+        ElMessage.success('添加成功');
       } else {
-        // 如果是编辑操作，更新表格中对应的用户数据
-        const index = tableData.value.findIndex(item => item.id === formData.id);
+        const index = tableData.value.findIndex(item => item.mobile === formData.studentId);
         if (index !== -1) {
-          tableData.value[index].username = formData.username;
-          tableData.value[index].mobile = formData.studentId;
-          tableData.value[index].sex = formData.sex;
-          tableData.value[index].className = formData.className;
-          // 保持原有状态不变
+          tableData.value[index] = {
+            ...tableData.value[index],
+            username: formData.username,
+            mobile: formData.studentId,
+            sex: formData.sex,
+            className: formData.className
+          };
+          ElMessage.success('更新成功');
         }
       }
-      
-      ElMessage.success(dialogType.value === 'add' ? '添加成功' : '更新成功');
       dialogVisible.value = false;
     }
   });
@@ -354,6 +354,10 @@ const handleSubmit = () => {
   margin-right: 0;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  
+  ::v-deep(.el-table__header) th {
+    background-color: #E6F2FF !important;
+  }
 }
 .table th, .table td { border: 1px solid #ddd; /* 设置单元格边框，以便看到圆角效果 */ }
 .table th:first-child,.table td:first-child{
@@ -406,6 +410,14 @@ const handleSubmit = () => {
 
 ::v-deep(.el-table__header-wrapper) {
   width: 100% !important;
+  th.el-table__cell {
+    background-color: #E6F2FF !important;
+    font-weight: 600 !important;
+    color: #000000 !important;
+    height: 40px !important;
+    line-height: 40px !important;
+    padding: 8px 0;
+  }
 }
 
 ::v-deep(.el-table__body-wrapper) {
@@ -415,6 +427,7 @@ const handleSubmit = () => {
 ::v-deep(.el-table__header) {
   width: 100% !important;
   table-layout: fixed;
+  background-color: #E6F2FF;
 }
 
 ::v-deep(.el-table__body) {
@@ -440,5 +453,14 @@ const handleSubmit = () => {
 
 .table th, .table td { 
   border: none !important; 
+}
+
+.operation-divider {
+  display: inline-block;
+  width: 1px;
+  height: 14px;
+  background-color: #DCDFE6;
+  margin: 0 8px;
+  vertical-align: middle;
 }
 </style>
