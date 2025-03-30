@@ -1,18 +1,12 @@
 <template>
   <div class="common-layout">
-    <div class="bg-image-container">
-      <img src="~@/assets/BG02.png" alt="背景图片" class="bg-image" />
-      <div class="overlay"></div>
-    </div>
-    
     <el-main class="home-view">
       <!-- 添加轮播图组件 -->
       <div class="carousel-container">
-        <el-carousel :interval="3000" type="card" height="400px">
+        <el-carousel :interval="3000" height="400px">
           <el-carousel-item v-for="item in carouselItems" :key="item.id">
             <div class="carousel-content">
               <img :src="item.imageUrl" :alt="item.title">
-              <div class="carousel-title">{{ item.title }}</div>
             </div>
           </el-carousel-item>
         </el-carousel>
@@ -44,8 +38,8 @@ export default {
       carouselItems: [
         {
           id: 1,
-          title: '知育课研',
-          imageUrl: require('@/assets/制作轮播图 (1).png')
+          title: '智能表情识别',
+          imageUrl: require('@/assets/image(1).png')
         },
         {
           id: 2,
@@ -97,32 +91,9 @@ export default {
   z-index: 0;
 }
 
+/* 移除背景图相关样式 */
 .bg-image-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
-  overflow: hidden;
-}
-
-.bg-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to bottom, rgba(11, 24, 52, 0.1), rgba(22, 41, 86, 0.1));
-  z-index: 1;
+  display: none;
 }
 
 .home-view {
@@ -133,33 +104,26 @@ export default {
   flex-direction: column;
   align-items: center;
   min-height: calc(100vh - 60px);
+  background-color: #fff; /* 添加白色背景 */
 }
 
 .carousel-container {
-  margin: 20px 0;
+  margin: 0;
   padding: 0;
   width: 100%;
-  max-width: 1200px;
   position: relative;
   z-index: 1;
 }
 
-.course-container {
-  width: 100%;
-  max-width: 1400px;
-  padding: 20px 20px;
-  box-sizing: border-box;
-  margin-top: 20px;
-}
-
 :deep(.el-carousel) {
   width: 100%;
-  margin: 0 auto;
+  margin: 0;
 }
 
 :deep(.el-carousel__item) {
-  border-radius: 12px;
-  overflow: hidden;
+  width: 100% !important;
+  height: 100%;
+  border-radius: 0;
 }
 
 .carousel-content {
@@ -172,20 +136,14 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  background-color: #4878ea; /* 图片加载失败时的背景色 */
 }
 
-.carousel-title {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 15px;
-  background: rgba(11, 24, 52, 0.5);
-  color: #fff;
-  font-size: 20px;
-  text-align: center;
-  backdrop-filter: blur(8px);
+.course-container {
+  width: 100%;
+  max-width: 1400px;
+  padding: 20px;
+  box-sizing: border-box;
+  margin-top: 20px;
 }
 
 :deep(.el-carousel__indicators) {
