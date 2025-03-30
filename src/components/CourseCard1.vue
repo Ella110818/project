@@ -18,6 +18,12 @@ export default {
     course: {
       type: Object,
       required: true,
+      default: () => ({}),
+      validator: function(value) {
+        return value.hasOwnProperty('id') && 
+               value.hasOwnProperty('title') && 
+               value.hasOwnProperty('teacherName');
+      }
     },
   },
   methods: {

@@ -40,8 +40,16 @@
           <el-empty v-if="announcements.length === 0" description="暂无公告" />
           <el-card v-for="item in announcements" :key="item.id" class="announcement-item">
             <div class="announcement-header">
-              <h3>{{ item.title }}</h3>
-              <span class="announcement-time">{{ item.time }}</span>
+              <div class="announcement-title">
+                <el-tag :type="item.type" size="small" style="margin-right: 10px;">
+                  {{ getAnnouncementTypeText(item.type) }}
+                </el-tag>
+                <h3>{{ item.title }}</h3>
+              </div>
+              <div class="announcement-info">
+                <span class="publisher">{{ item.publisher?.name || '未知' }}</span>
+                <span class="announcement-time">{{ formatTime(item.time) }}</span>
+              </div>
             </div>
             <p class="announcement-content">{{ item.content }}</p>
           </el-card>
@@ -267,13 +275,14 @@ import {
 } from '@element-plus/icons-vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import api from '@/api'  // 添加api导入
 
-    const route = useRoute()
-    const activeTab = ref('announcements')
-    const classInfo = ref({})
-    const announcements = ref([])
-    const assignments = ref([])
-    const grades = ref([])
+const route = useRoute()
+const activeTab = ref('announcements')
+const classInfo = ref({})
+const announcements = ref([])
+const assignments = ref([])
+const grades = ref([])
 const resources = ref([])
 const assessmentScheme = ref([
   { name: '课堂', score: 30 },
@@ -311,40 +320,40 @@ const todoTasks = ref([
 ])
 
 // 处理标签页切换
-    const handleTabClick = (tab) => {
-      console.log('Tab clicked:', tab.props.name);
-    }
+const handleTabClick = (tab) => {
+  console.log('Tab clicked:', tab.props.name);
+}
 
 // 获取状态对应的类型
-    const getStatusType = (status) => {
-      const types = {
-        '未开始': 'info',
-        '进行中': 'warning',
-        '已提交': 'success',
-        '已截止': 'danger',
-        '已批改': 'success'
-      }
-      return types[status] || 'info'
-    }
+const getStatusType = (status) => {
+  const types = {
+    '未开始': 'info',
+    '进行中': 'warning',
+    '已提交': 'success',
+    '已截止': 'danger',
+    '已批改': 'success'
+  }
+  return types[status] || 'info'
+}
 
 // 获取操作按钮文本
-    const getActionButtonText = (status) => {
-      const texts = {
-        '未开始': '查看详情',
-        '进行中': '开始答题',
-        '已提交': '查看详情',
-        '已截止': '查看详情',
-        '已批改': '查看成绩'
-      }
-      return texts[status] || '查看详情'
-    }
+const getActionButtonText = (status) => {
+  const texts = {
+    '未开始': '查看详情',
+    '进行中': '开始答题',
+    '已提交': '查看详情',
+    '已截止': '查看详情',
+    '已批改': '查看成绩'
+  }
+  return texts[status] || '查看详情'
+}
 
 // 处理作业/考试操作
-    const handleAssignment = (item) => {
-      console.log('处理作业/考试:', item)
+const handleAssignment = (item) => {
+  console.log('处理作业/考试:', item)
   ElMessage.info(`正在打开${item.title}`)
-      // 根据不同状态执行不同操作
-    }
+  // 根据不同状态执行不同操作
+}
 
 // 计算某个类型的成绩
 const calculateComponentGrade = (componentType) => {
@@ -368,15 +377,15 @@ const calculateComponentGrade = (componentType) => {
 }
 
 // 计算总成绩
-    const calculateFinalGrade = () => {
+const calculateFinalGrade = () => {
   if (grades.value.length === 0) return '0.0'
   
   const totalWeight = grades.value.reduce((acc, curr) => acc + curr.weight, 0)
   if (totalWeight === 0) return '0.0'
   
-      const weightedSum = grades.value.reduce((acc, curr) => {
-        return acc + (curr.score / curr.fullScore) * curr.weight
-      }, 0)
+  const weightedSum = grades.value.reduce((acc, curr) => {
+    return acc + (curr.score / curr.fullScore) * curr.weight
+  }, 0)
   
   return weightedSum.toFixed(1)
 }
@@ -451,171 +460,58 @@ onMounted(() => {
   loadClassInfo();
 })
 
-// 加载课程信息及相关数据
+// 修改announcements数据获取逻辑
+const fetchAnnouncements = async () => {
+  try {
+    const courseId = route.params.id
+    if (!courseId) {
+      ElMessage.error('课程ID不能为空')
+      return
+    }
+
+    const response = await api.getCourseAnnouncements(courseId, {
+      page: 1,
+      size: 10
+    })
+
+    if (response.code === 200) {
+      announcements.value = response.data.items.map(item => ({
+        id: item.id,
+        title: item.title,
+        content: item.content,
+        time: item.created_at,
+        type: item.type,
+        publisher: item.publisher_info
+      }))
+    } else {
+      ElMessage.error(response.message || '获取公告列表失败')
+    }
+  } catch (error) {
+    console.error('获取公告列表异常:', error)
+    ElMessage.error('获取公告列表失败，请稍后重试')
+  }
+}
+
+// 修改loadClassInfo方法
 const loadClassInfo = async () => {
   try {
-      const classId = route.params.id
+    const classId = route.params.id
     console.log('加载课程ID:', classId)
     
-        // 模拟数据，实际开发中应替换为API调用
-        classInfo.value = {
-          className: '脑机接口',
-          teacherName: '张教授',
-          location: '主教学楼301'
-        }
-        
-        announcements.value = [
-          {
-            id: 1,
-            title: '关于期中考试安排的通知',
-            content: '各位同学，期中考试将于下周三进行，请做好准备。考试内容包括前六章的所有内容。考试形式为闭卷，时长2小时。',
-            time: '2023-04-15 14:30'
-          },
-          {
-            id: 2,
-            title: '本周课堂安排调整',
-            content: '由于学校活动，本周五的课程将调整到下周一下午2点，地点不变。请各位同学相互通知。',
-            time: '2023-04-10 09:15'
-          }
-        ]
-        
-        assignments.value = [
-          {
-            id: 1,
-            title: '脑机接口第一次作业',
-            type: 'homework',
-            status: '已批改',
-            description: '请完成教材第三章习题1-5，并提交电子版。',
-            deadline: '2023-03-20 23:59',
-            fullScore: 100
-          },
-          {
-            id: 2,
-            title: '期中考试',
-            type: 'exam',
-            status: '进行中',
-            description: '考试范围：第1-6章，考试时长：120分钟',
-            deadline: '2023-04-20 16:00',
-            fullScore: 100
-          },
-          {
-            id: 3,
-            title: '脑机接口第二次作业',
-            type: 'homework',
-            status: '未开始',
-            description: '请完成教材第五章习题8-12，并提交电子版。',
-            deadline: '2023-04-30 23:59',
-            fullScore: 100
-          }
-        ]
-        
-        grades.value = [
-          {
-            id: 1,
-        name: '课堂表现',
-        type: 'class',
-        score: 27,
-        fullScore: 30,
-        weight: 30,
-        submitTime: '2023-04-15'
-      },
-      {
-        id: 2,
-            name: '第一次作业',
-            type: 'homework',
-        score: 18,
-        fullScore: 20,
-            weight: 10,
-            submitTime: '2023-03-19 22:30'
-          },
-          {
-        id: 3,
-            name: '第二次作业',
-            type: 'homework',
-        score: 17,
-        fullScore: 20,
-            weight: 10,
-            submitTime: '2023-04-05 23:40'
-          },
-          {
-        id: 4,
-            name: '期中考试',
-            type: 'exam',
-        score: 42,
-        fullScore: 50,
-        weight: 50,
-            submitTime: '2023-04-20 15:30'
-          }
-        ]
+    // 获取课程信息
+    classInfo.value = {
+      className: '脑机接口',
+      teacherName: '张教授',
+      location: '主教学楼301'
+    }
     
-    resources.value = [
-      {
-        id: 1,
-        name: '脑机接口导论.pdf',
-        type: 'document',
-        size: '2.5MB',
-        uploadTime: '2023-03-01',
-        uploader: '张教授'
-      },
-      {
-        id: 2,
-        name: '脑机接口技术演示视频.mp4',
-        type: 'video',
-        size: '68MB',
-        uploadTime: '2023-03-15',
-        uploader: '张教授'
-      },
-      {
-        id: 3,
-        name: '参考资料.zip',
-        type: 'document',
-        size: '15MB',
-        uploadTime: '2023-03-20',
-        uploader: '张教授'
-      },
-      {
-        id: 4,
-        name: '课件打包.zip',
-        type: 'document',
-        size: '45MB',
-        uploadTime: '2023-04-10',
-        uploader: '张教授'
-      },
-      {
-        id: 5,
-        name: '第一章-脑机接口基础.pptx',
-        type: 'courseware',
-        size: '5.2MB',
-        uploadTime: '2023-02-20',
-        uploader: '张教授'
-      },
-      {
-        id: 6,
-        name: '第二章-信号采集.pptx',
-        type: 'courseware',
-        size: '7.8MB',
-        uploadTime: '2023-03-05',
-        uploader: '张教授'
-      },
-      {
-        id: 7,
-        name: '实验指导书.pdf',
-        type: 'document',
-        size: '3.1MB',
-        uploadTime: '2023-03-25',
-        uploader: '张教授'
-      },
-      {
-        id: 8,
-        name: '实验演示视频.mp4',
-        type: 'video',
-        size: '120MB',
-        uploadTime: '2023-03-30',
-        uploader: '张教授'
-          }
-        ]
-      } catch (error) {
-        console.error('获取数据失败:', error)
+    // 获取公告列表
+    await fetchAnnouncements()
+    
+    // ... 其他数据加载逻辑 ...
+        
+  } catch (error) {
+    console.error('获取数据失败:', error)
     ElMessage.error('加载课程信息失败')
   }
 }
@@ -635,6 +531,28 @@ const getProgressColor = (percentage) => {
   } else {
     return '#67C23A'  // 绿色
   }
+}
+
+// 添加公告类型转换方法
+const getAnnouncementTypeText = (type) => {
+  const types = {
+    'info': '普通公告',
+    'warning': '重要公告',
+    'danger': '紧急公告'
+  }
+  return types[type] || '普通公告'
+}
+
+// 添加时间格式化方法
+const formatTime = (time) => {
+  if (!time) return ''
+  return new Date(time).toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }
 </script>
 
@@ -726,10 +644,20 @@ const getProgressColor = (percentage) => {
   margin-bottom: 12px;
 }
 
-.announcement-header h3 {
-  margin: 0;
-  font-size: 18px;
-  color: #303133;
+.announcement-title {
+  display: flex;
+  align-items: center;
+}
+
+.announcement-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.publisher {
+  color: #666;
+  font-size: 14px;
 }
 
 .announcement-time {

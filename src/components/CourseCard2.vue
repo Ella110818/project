@@ -1,11 +1,11 @@
 <template>
   <el-card class="course-card" shadow="hover">
     <div class="course-header">
-      <img src="@/assets/shuju.png" alt="课程图片" class="course-image" />
+      <img src="@/assets/class.png" alt="课程图片" class="course-image" />
     </div>
     <div class="course-info">
       <h3 class="course-title">{{ course.title }}</h3>
-      <span class="location">{{ course.location || '线上课程' }}</span>
+      <span class="location">{{ displayLocation }}</span>
       <el-button type="primary" @click="viewCourse">课程详情</el-button>
     </div>
   </el-card>
@@ -18,7 +18,18 @@ export default {
     course: {
       type: Object,
       required: true,
+      default: () => ({}),
+      validator: function(value) {
+        return value.hasOwnProperty('id') && 
+               value.hasOwnProperty('title') &&
+               value.hasOwnProperty('location');
+      }
     },
+  },
+  computed: {
+    displayLocation() {
+      return this.course.location || '线上课程';
+    }
   },
   methods: {
     viewCourse() {

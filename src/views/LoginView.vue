@@ -19,7 +19,7 @@
                 <div class="input-icon">
                 <el-icon><User /></el-icon>
                 </div>
-                <input v-model="loginForm.userId" placeholder="学工号" class="login-input" />
+                <input v-model="loginForm.username" placeholder="用户名" class="login-input" />
               </div>
               
               <div class="input-wrapper">
@@ -83,7 +83,7 @@ export default {
 
     // 登录表单数据
     const loginForm = ref({
-      userId: '10001', // 预设学工号
+      username: '10001', // 预设用户名
       password: '123456', // 预设密码
       role: 'student' // 默认为学生身份
     });
@@ -93,25 +93,35 @@ export default {
 
     // 登录表单提交方法
     const submitLoginForm = async () => {
-      if (!loginForm.value.userId || !loginForm.value.password) {
-        ElMessage.error('请输入学工号和密码');
+      if (!loginForm.value.username || !loginForm.value.password) {
+        ElMessage.error('请输入用户名和密码');
         return;
       }
       
       try {
-        // 记录用户角色到本地存储
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userRole', loginForm.value.role);
-        
-        ElMessage.success('登录成功');
-        
-        // 根据角色跳转到对应的数据显示屏
-        if (loginForm.value.role === 'teacher') {
-          router.push('/teacher-display');
-        } else if (loginForm.value.role === 'student') {
-          router.push('/student-display');
+        // 调用登录接口
+        const response = await api.login({
+          username: loginForm.value.username,
+          password: loginForm.value.password
+        });
+
+        if (response.code === 200) {
+          // 记录用户角色到本地存储
+          localStorage.setItem('isAuthenticated', 'true');
+          localStorage.setItem('userRole', response.data.role);
+          
+          ElMessage.success('登录成功');
+          
+          // 根据角色跳转到对应的数据显示屏
+          if (response.data.role === 'teacher') {
+            router.push('/teacher-display');
+          } else if (response.data.role === 'student') {
+            router.push('/student-display');
+          } else {
+            router.push('/datascreen');
+          }
         } else {
-          router.push('/datascreen');
+          ElMessage.error(response.message || '登录失败');
         }
       } catch (error) {
         console.error('登录失败:', error);

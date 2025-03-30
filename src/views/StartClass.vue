@@ -1,9 +1,14 @@
 <template>
   <div class="common-layout">
+    <div class="bg-image-container">
+      <img src="~@/assets/BG02.png" alt="背景图片" class="bg-image" />
+      <div class="overlay"></div>
+    </div>
+    
     <el-main class="home-view">
       <!-- 添加轮播图组件 -->
       <div class="carousel-container">
-        <el-carousel :interval="3000" height="400px">
+        <el-carousel :interval="3000" type="card" height="400px">
           <el-carousel-item v-for="item in carouselItems" :key="item.id">
             <div class="carousel-content">
               <img :src="item.imageUrl" :alt="item.title">
@@ -25,8 +30,8 @@
 
 <script>
 import CourseCard1 from '@/components/CourseCard1.vue';
-import courseService from '@/services/courseService';
- //import Sidebar from '@/components/Sidebar.vue';
+import api from '@/api';
+
 export default {
   name: 'StartClass',
   components: {
@@ -35,6 +40,10 @@ export default {
   data() {
     return {
       courses: [],
+      loading: false,
+      page: 1,
+      pageSize: 10,
+      total: 0,
       carouselItems: [
         {
           id: 1,
@@ -44,7 +53,7 @@ export default {
         {
           id: 2,
           title: '教育定向',
-          imageUrl: require('@/assets/制作轮播图 (2).png')
+          imageUrl: require('@/assets/lunbotu2.png')
         },
         {
           id: 3,
@@ -54,26 +63,63 @@ export default {
       ]
     };
   },
-  created() {
-    // 从共享的课程服务中获取课程数据
-    this.courses = courseService.getAllCourses();
+  async created() {
+    await this.fetchCourses();
   },
   methods: {
-    handleViewCourse(courseId) {
-      console.log('开始上课:', courseId);
-      // 获取课程详情
-      const course = courseService.getCourseById(courseId);
-      if (course) {
-        // 保存当前课程信息到localStorage
-        courseService.saveCurrentCourse(course);
-        // 根据用户角色跳转到不同的实时授课页面
-        const userRole = localStorage.getItem('userRole');
+    // 获取课程列表
+    async fetchCourses() {
+      try {
+        this.loading = true;
+        const response = await api.getCourses(this.page, this.pageSize);
         
-        if (userRole === 'teacher') {
-          this.$router.push(`/live-class/${courseId}`);
-        } else if (userRole === 'student') {
-          this.$router.push(`/student-live-class/${courseId}`);
+        if (response.code === 200) {
+          // 将后端返回的数据格式转换为组件需要的格式
+          this.courses = response.data.items.map(item => ({
+            id: item.course_id,
+            title: item.title,
+            teacherName: item.teacher, // 注意这里可能需要额外调用获取教师信息的接口
+            description: item.description,
+            location: item.location,
+            system: item.system,
+            schedule: item.schedule,
+            semester: item.semester
+          }));
+          this.total = response.data.total;
+        } else {
+          this.$message.error(response.message || '获取课程列表失败');
         }
+      } catch (error) {
+        console.error('获取课程列表异常:', error);
+        this.$message.error('获取课程列表失败，请稍后重试');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async handleViewCourse(courseId) {
+      try {
+        const response = await api.getCourseDetail(courseId);
+        
+        if (response.code === 200) {
+          const course = response.data;
+          // 保存当前课程信息到localStorage
+          localStorage.setItem('currentCourse', JSON.stringify(course));
+          
+          // 根据用户角色跳转到不同的实时授课页面
+          const userRole = localStorage.getItem('userRole');
+          
+          if (userRole === 'teacher') {
+            this.$router.push(`/live-class/${courseId}`);
+          } else if (userRole === 'student') {
+            this.$router.push(`/student-live-class/${courseId}`);
+          }
+        } else {
+          this.$message.error(response.message || '获取课程详情失败');
+        }
+      } catch (error) {
+        console.error('获取课程详情异常:', error);
+        this.$message.error('获取课程详情失败，请稍后重试');
       }
     },
   },
@@ -91,9 +137,32 @@ export default {
   z-index: 0;
 }
 
-/* 移除背景图相关样式 */
 .bg-image-container {
-  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.bg-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(11, 24, 52, 0.1), rgba(22, 41, 86, 0.1));
+  z-index: 1;
 }
 
 .home-view {
@@ -104,46 +173,55 @@ export default {
   flex-direction: column;
   align-items: center;
   min-height: calc(100vh - 60px);
-  background-color: #fff; /* 添加白色背景 */
 }
 
 .carousel-container {
-  margin: 0;
+  margin: 20px 0;
   padding: 0;
   width: 100%;
+  max-width: 1200px;
   position: relative;
   z-index: 1;
+  height: 400px;
 }
 
-:deep(.el-carousel) {
+.course-container {
   width: 100%;
-  margin: 0;
-}
-
-:deep(.el-carousel__item) {
-  width: 100% !important;
-  height: 100%;
-  border-radius: 0;
+  max-width: 1400px;
+  padding: 20px 20px;
+  box-sizing: border-box;
+  margin-top: 20px;
 }
 
 .carousel-content {
   position: relative;
   width: 100%;
   height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .carousel-content img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: fill;
+  background-color: #4878ea;
 }
 
-.course-container {
+:deep(.el-carousel__item) {
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #4878ea;
+}
+
+:deep(.el-carousel) {
   width: 100%;
-  max-width: 1400px;
-  padding: 20px;
-  box-sizing: border-box;
-  margin-top: 20px;
+  height: 100%;
+  margin: 0 auto;
 }
 
 :deep(.el-carousel__indicators) {

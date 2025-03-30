@@ -2,11 +2,23 @@
   <div class="common-layout">
     <el-container>
       <el-main class="home-view">
+        <el-loading v-if="loading" fullscreen />
+        
         <el-row :gutter="20">
           <el-col :xs="24" :sm="12" :md="8" :lg="6" v-for="course in courses" :key="course.id">
             <CourseCard2 :course="course" @view-course="handleViewCourse" />
           </el-col>
         </el-row>
+
+        <el-pagination
+          v-if="total > 0"
+          :current-page="page"
+          :page-size="pageSize"
+          :total="total"
+          layout="total, prev, pager, next"
+          @current-change="handlePageChange"
+          class="pagination"
+        />
       </el-main>
     </el-container>
   </div>
@@ -14,8 +26,8 @@
 
 <script>
 import CourseCard2 from '@/components/CourseCard2.vue';
-import courseService from '@/services/courseService';
- //import Sidebar from '@/components/Sidebar.vue';
+import api from '@/api';
+
 export default {
   name: 'MyClass',
   components: {
@@ -23,33 +35,72 @@ export default {
   },
   data() {
     return {
-      courses: []
+      courses: [],
+      loading: false,
+      page: 1,
+      pageSize: 10,
+      total: 0
     };
   },
-  created() {
-    // 从共享的课程服务中获取课程数据
-    this.courses = courseService.getAllCourses();
+  async created() {
+    await this.fetchCourses();
   },
   methods: {
-    handleViewCourse(courseId) {
-      console.log('查看课程:', courseId);
-      // 获取课程详情
-      const course = courseService.getCourseById(courseId);
-      if (course) {
-        // 保存当前课程信息到localStorage
-        courseService.saveCurrentCourse(course);
+    async fetchCourses() {
+      try {
+        this.loading = true;
+        const response = await api.getCourses(this.page, this.pageSize);
         
-        // 获取用户角色
-        const userRole = localStorage.getItem('userRole');
-        
-        // 根据用户角色跳转到不同的详情页
-        if (userRole === 'teacher') {
-          // 教师端路由
-          this.$router.push(`/class-info/${courseId}`);
+        if (response.code === 200) {
+          this.courses = response.data.items.map(item => ({
+            id: item.course_id,
+            title: item.title,
+            location: item.location,
+            description: item.description,
+            system: item.system,
+            schedule: item.schedule,
+            semester: item.semester
+          }));
+          this.total = response.data.total;
         } else {
-          // 学生端路由
-          this.$router.push(`/student-class-info/${courseId}`);
+          this.$message.error(response.message || '获取课程列表失败');
         }
+      } catch (error) {
+        console.error('获取课程列表异常:', error);
+        this.$message.error('获取课程列表失败，请稍后重试');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async handlePageChange(newPage) {
+      this.page = newPage;
+      await this.fetchCourses();
+    },
+
+    async handleViewCourse(courseId) {
+      try {
+        const response = await api.getCourseDetail(courseId);
+        
+        if (response.code === 200) {
+          const course = response.data;
+          localStorage.setItem('currentCourse', JSON.stringify(course));
+          localStorage.setItem('currentCourseName', course.title);
+          localStorage.setItem('currentCourseId', course.course_id);
+          
+          const userRole = localStorage.getItem('userRole');
+          
+          if (userRole === 'teacher') {
+            this.$router.push(`/class-info/${courseId}`);
+          } else {
+            this.$router.push(`/student-class-info/${courseId}`);
+          }
+        } else {
+          this.$message.error(response.message || '获取课程详情失败');
+        }
+      } catch (error) {
+        console.error('获取课程详情异常:', error);
+        this.$message.error('获取课程详情失败，请稍后重试');
       }
     },
   },
@@ -80,11 +131,16 @@ export default {
 }
 
 .header {
-  box-shadow: 0 1px 0 #ddd; /* 添加底部下划线 */
+  box-shadow: 0 1px 0 #ddd;
   display: flex;
   height: 56px;
-  align-items: center; /* 垂直居中 */
-  padding: 0 20px; /* 添加内边距 */
+  align-items: center;
+  padding: 0 20px;
+}
+
+.pagination {
+  margin-top: 20px;
+  text-align: center;
 }
 </style> 
 

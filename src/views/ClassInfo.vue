@@ -37,7 +37,7 @@
     <el-tabs v-model="activeTab" @tab-click="handleTabClick" class="custom-tabs">
       <el-tab-pane label="发布公告" name="announce">
         <div class="announcement-container">
-          <AnnouncementForm />
+          <AnnouncementForm :course-id="courseId" />
         </div>
       </el-tab-pane>
       <el-tab-pane label="作业/考试" name="homework"> 
@@ -229,7 +229,7 @@
         <Group />
       </el-tab-pane>
       <el-tab-pane label="课程资源" name="resource">
-        <Resource />
+        <Resource :course-id="courseId" />
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -247,7 +247,7 @@ import Resource from '@/components/Resource.vue';
 import { Document, User, Location, Download } from '@element-plus/icons-vue';
 
 const route = useRoute();
-const courseId = computed(() => route.params.id);
+const courseId = ref(route.params.id || route.query.id || '5');
 const courseName = ref('');
 const classInfo = ref({
   studentCount: 0,
