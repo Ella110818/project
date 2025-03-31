@@ -106,57 +106,31 @@
       v-model="uploadDialogVisible"
       title="上传文件"
       width="500px"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
     >
-      <el-form :model="uploadForm" label-width="80px" :rules="uploadRules" ref="uploadFormRef">
-        <el-form-item label="类型" prop="type">
-          <el-select v-model="uploadForm.type" placeholder="请选择资源类型" style="width: 100%;">
-            <el-option
-              v-for="item in resourceTypes"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="描述" prop="description">
-          <el-input
-            v-model="uploadForm.description"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入资源描述"
-          />
-        </el-form-item>
-        <el-upload
-          ref="uploadRef"
-          class="upload-demo"
-          drag
-          :auto-upload="false"
-          :multiple="true"
-          :on-change="handleFileChange"
-          :on-remove="handleRemove"
-          :before-remove="beforeRemove"
-          :file-list="fileList"
-          accept="*"
-        >
-          <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-          <div class="el-upload__text">
-            将文件拖到此处，或<em>点击上传</em>
+      <el-upload
+        class="upload-demo"
+        drag
+        :action="null"
+        :http-request="customUpload"
+        :before-upload="beforeUpload"
+        :on-remove="handleRemove"
+        :before-remove="beforeRemove"
+        multiple
+      >
+        <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+        <div class="el-upload__text">
+          将文件拖到此处，或<em>点击上传</em>
+        </div>
+        <template #tip>
+          <div class="el-upload__tip">
+            支持任意格式文件，单个文件不超过100MB
           </div>
-          <template #tip>
-            <div class="el-upload__tip">
-              支持任意格式文件，单个文件不超过100MB
-            </div>
-          </template>
-        </el-upload>
-      </el-form>
+        </template>
+      </el-upload>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="cancelUpload">取消</el-button>
-          <el-button type="primary" @click="handleUploadSubmit" :loading="uploading">
-            {{ uploading ? '上传中...' : '确认上传' }}
-          </el-button>
+          <el-button @click="uploadDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="confirmUpload">确定</el-button>
         </span>
       </template>
     </el-dialog>
@@ -183,9 +157,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { useRoute } from 'vue-router'
 import api from '@/api'
 import {
   Document,
@@ -199,16 +172,6 @@ import {
   UploadFilled
 } from '@element-plus/icons-vue'
 
-const route = useRoute()
-
-// 定义props
-const props = defineProps({
-  courseId: {
-    type: [String, Number],
-    required: true
-  }
-})
-
 // 状态
 const searchText = ref('')
 const activeCategory = ref('all')
@@ -216,42 +179,80 @@ const currentFolder = ref('')
 const uploadDialogVisible = ref(false)
 const folderDialogVisible = ref(false)
 const folderForm = ref({ name: '' })
+const resources = ref([])
+const loading = ref(false)
 
-// 添加上传相关的状态
-const uploadForm = ref({
-  type: '',
-  description: ''
+// 从props接收courseId
+const props = defineProps({
+  courseId: {
+    type: [String, Number],
+    required: true
+  }
 })
-const fileList = ref([])
-const uploading = ref(false)
-const uploadFormRef = ref(null)
-const uploadRef = ref(null)
 
-// 上传表单验证规则
-const uploadRules = {
-  type: [
-    { required: true, message: '请选择资源类型', trigger: 'change' }
-  ],
-  description: [
-    { required: true, message: '请输入资源描述', trigger: 'blur' }
-  ]
+// 清理函数
+const cleanup = () => {
+  resources.value = []
+  searchText.value = ''
+  activeCategory.value = 'all'
+  currentFolder.value = ''
+  uploadDialogVisible.value = false
+  folderDialogVisible.value = false
+  folderForm.value = { name: '' }
+  loading.value = false
 }
 
-// 资源类型选项
-const resourceTypes = [
-  { label: '课件', value: 'courseware' },
-  { label: '视频', value: 'video' },
-  { label: '文档', value: 'document' },
-  { label: '其他', value: 'other' }
-]
-
-// 移除模拟数据，改用ref
-const resources = ref([])
-
-// 添加初始化方法
-onMounted(async () => {
-  await fetchResources()
+// 组件卸载前清理
+onBeforeUnmount(() => {
+  cleanup()
 })
+
+// 获取资源列表
+const fetchResources = async () => {
+  if (!props.courseId) {
+    console.warn('课程ID未提供')
+    return
+  }
+
+  try {
+    loading.value = true
+    console.log('获取资源列表 - 课程ID:', props.courseId)
+    
+    const params = {
+      page: 1,
+      size: 1000
+    }
+    
+    if (activeCategory.value !== 'all') {
+      params.type = activeCategory.value
+    }
+    
+    if (searchText.value) {
+      params.search = searchText.value
+    }
+    
+    const response = await api.getCourseResources(props.courseId, params)
+    
+    if (response.code === 200 && response.data && Array.isArray(response.data.items)) {
+      resources.value = response.data.items.map(item => ({
+        id: item.id,
+        name: item.name,
+        type: item.type,
+        size: item.size,
+        uploadTime: formatTime(item.upload_time),
+        uploader: item.uploader
+      }))
+    } else {
+      throw new Error(response.message || '获取资源列表失败')
+    }
+  } catch (error) {
+    console.error('获取资源列表异常:', error)
+    ElMessage.error(`获取资源列表失败: ${error.message}`)
+    resources.value = []
+  } finally {
+    loading.value = false
+  }
+}
 
 // 计算属性：过滤后的资源列表
 const filteredResources = computed(() => {
@@ -267,7 +268,7 @@ const filteredResources = computed(() => {
     const keyword = searchText.value.toLowerCase()
     filtered = filtered.filter(item => 
       item.name.toLowerCase().includes(keyword) ||
-      item.uploader.toLowerCase().includes(keyword)
+      item.uploader?.toLowerCase().includes(keyword)
     )
   }
   
@@ -277,6 +278,7 @@ const filteredResources = computed(() => {
 // 方法
 const handleCategorySelect = (index) => {
   activeCategory.value = index
+  fetchResources()
 }
 
 const handleUpload = () => {
@@ -307,262 +309,104 @@ const handleRowClick = (row) => {
 
 const handleDownload = async (file) => {
   try {
-    ElMessage.info(`正在获取下载链接：${file.name}`)
+    ElMessage.info('正在准备下载...')
     const response = await api.downloadResource(file.id)
     
-    // 检查响应类型
     if (response instanceof Blob) {
-      // 处理二进制文件流
-      const blob = new Blob([response], { type: response.type })
-      const downloadUrl = URL.createObjectURL(blob)
-      
+      // 处理文件流
+      const url = window.URL.createObjectURL(response)
       const link = document.createElement('a')
-      link.href = downloadUrl
+      link.href = url
       link.download = file.name
       document.body.appendChild(link)
       link.click()
-      
-      // 清理
       document.body.removeChild(link)
-      URL.revokeObjectURL(downloadUrl)
-      
-      ElMessage.success(`开始下载：${file.name}`)
-    } else if (response.code === 200 && response.data && response.data.downloadUrl) {
+      window.URL.revokeObjectURL(url)
+      ElMessage.success('下载成功')
+    } else if (response.data && response.data.downloadUrl) {
       // 处理下载链接
-      const link = document.createElement('a')
-      link.href = response.data.downloadUrl
-      link.download = file.name
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      
-      ElMessage.success(`开始下载：${file.name}`)
+      window.open(response.data.downloadUrl, '_blank')
+      ElMessage.success('下载成功')
     } else {
-      console.error('下载响应异常:', response)
-      ElMessage.error(response.message || '获取下载链接失败')
+      throw new Error('下载失败：无效的响应格式')
     }
   } catch (error) {
-    console.error('下载文件失败:', error)
-    if (error.response) {
-      const { status, data } = error.response
-      ElMessage.error(`下载失败: ${data?.message || `服务器返回 ${status} 错误`}`)
-    } else if (error.request) {
-      ElMessage.error('下载失败: 无法连接到服务器')
-    } else {
-      ElMessage.error(`下载失败: ${error.message || '未知错误'}`)
-    }
+    console.error('下载失败:', error)
+    ElMessage.error(`下载失败: ${error.message || '未知错误'}`)
   }
 }
 
 const handlePreview = async (file) => {
   try {
     const response = await api.getResourceDetail(file.id)
+    const { type, url } = response.data
     
-    if (response.code === 200) {
-      // 根据资源类型决定预览方式
-      const resourceData = response.data
-      if (resourceData.type === 'video') {
+    switch (type) {
+      case 'video':
         // 视频预览
-        window.open(resourceData.file, '_blank')
-      } else if (resourceData.type === 'document' || resourceData.type === 'courseware') {
+        window.open(url, '_blank')
+        break
+      case 'document':
         // 文档预览
-        window.open(resourceData.file, '_blank')
+        window.open(url, '_blank')
+        break
+      case 'courseware':
+        // 课件预览
+        window.open(url, '_blank')
+        break
+      default:
+        ElMessage.warning('该文件类型暂不支持预览')
+    }
+  } catch (error) {
+    console.error('预览失败:', error)
+    ElMessage.error('预览失败')
+  }
+}
+
+const handleDelete = (file) => {
+  ElMessageBox.confirm(
+    `确定要删除 ${file.name} 吗？`,
+    '警告',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(async () => {
+    try {
+      const response = await api.deleteResource(file.id)
+      if (response.code === 200) {
+        ElMessage.success('删除成功')
+        // 刷新资源列表
+        fetchResources()
       } else {
-        // 其他类型可能无法预览
-        ElMessage.info('该类型文件可能无法预览，建议下载后查看')
+        throw new Error(response.message || '删除失败')
       }
-    } else {
-      ElMessage.error(response.message || '获取资源详情失败')
+    } catch (error) {
+      console.error('删除资源失败:', error)
+      ElMessage.error(error.message || '删除失败')
     }
-  } catch (error) {
-    console.error('预览文件失败:', error)
-    ElMessage.error(`预览失败: ${error.message || '未知错误'}`)
-  }
+  }).catch(() => {
+    // 用户取消删除操作
+  })
 }
 
-const handleDelete = async (file) => {
-  try {
-    await ElMessageBox.confirm(
-      `确定要删除 ${file.name} 吗？`,
-      '警告',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-
-    const response = await api.deleteResource(file.id)
-    
-    if (response.code === 200) {
-      ElMessage.success('删除成功')
-      // 刷新资源列表
-      await fetchResources()
-    } else {
-      ElMessage.error(response.message || '删除失败')
-    }
-  } catch (error) {
-    if (error !== 'cancel') {
-      console.error('删除文件失败:', error)
-      ElMessage.error(`删除失败: ${error.message || '未知错误'}`)
-    }
-  }
-}
-
-const handleFileChange = (uploadFile, uploadFiles) => {
-  console.log('文件改变:', uploadFile, uploadFiles)
-  // 直接使用uploadFiles，不需要.value
-  fileList.value = uploadFiles
-}
-
-const handleRemove = (file, uploadFiles) => {
-  fileList.value = uploadFiles
+const handleRemove = (file, fileList) => {
+  console.log(file, fileList)
 }
 
 const beforeRemove = (uploadFile) => {
-  return ElMessageBox.confirm(`确定移除 ${uploadFile.name} ？`)
-}
-
-const handleUploadSubmit = async () => {
-  if (!uploadFormRef.value) return
-
-  try {
-    // 1. 验证表单
-    await uploadFormRef.value.validate()
-    
-    // 2. 检查是否有文件要上传
-    if (!fileList.value || fileList.value.length === 0) {
-      ElMessage.warning('请选择要上传的文件')
-      return
-    }
-
-    // 3. 检查课程ID
-    if (!props.courseId) {
-      ElMessage.error('课程ID不能为空，请确保正确传入courseId')
-      console.error('当前courseId:', props.courseId)
-      return
-    }
-
-    // 4. 开始上传
-    uploading.value = true
-    
-    try {
-      // 遍历文件列表，逐个上传
-      for (const file of fileList.value) {
-        if (file.status !== 'success') { // 只上传未成功的文件
-          await uploadSingleFile(file)
-        }
-      }
-      
-      // 所有文件上传完成
-      ElMessage.success('所有文件上传完成')
-      // 先关闭对话框
-      cancelUpload()
-      // 然后刷新资源列表
-      await fetchResources()
-    } catch (error) {
-      console.error('上传过程中出错:', error)
-      ElMessage.error('上传过程中出错，请重试')
-    } finally {
-      uploading.value = false
-    }
-  } catch (error) {
-    console.error('表单验证失败:', error)
-    ElMessage.error('请完善表单信息')
-  }
-}
-
-const uploadSingleFile = async (file) => {
-  try {
-    const formData = new FormData()
-    formData.append('file', file.raw)
-    formData.append('name', file.name)
-    formData.append('type', uploadForm.value.type)
-    formData.append('description', uploadForm.value.description)
-
-    console.log('准备上传文件:', {
-      courseId: props.courseId,
-      fileName: file.name,
-      fileSize: file.size,
-      type: uploadForm.value.type,
-      description: uploadForm.value.description
-    })
-
-    const response = await api.uploadCourseResource(props.courseId, formData)
-
-    if (response.code === 200) {
-      file.status = 'success'
-      ElMessage.success(`${file.name} 上传成功`)
-      return true
-    } else {
-      throw new Error(response.message || '服务器错误')
-    }
-  } catch (error) {
-    file.status = 'error'
-    console.error(`文件 ${file.name} 上传失败:`, error)
-    ElMessage.error(`文件 ${file.name} 上传失败: ${error.message || '未知错误'}`)
-    throw error
-  }
-}
-
-const cancelUpload = () => {
-  uploadDialogVisible.value = false
-  uploadForm.value = {
-    type: '',
-    description: ''
-  }
-  fileList.value = []
-  if (uploadRef.value) {
-    uploadRef.value.clearFiles()
-  }
-}
-
-const customUpload = async ({ file }) => {
-  try {
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('name', file.name)
-    formData.append('type', uploadForm.value.type)
-    formData.append('description', uploadForm.value.description)
-
-    // 调试信息
-    console.log('准备上传文件:', {
-      courseId: props.courseId,
-      fileName: file.name,
-      fileSize: file.size,
-      type: uploadForm.value.type,
-      description: uploadForm.value.description
-    })
-
-    const response = await api.uploadCourseResource(props.courseId, formData)
-
-    if (response.code === 200) {
-      ElMessage.success(`${file.name} 上传成功`)
-      // 如果所有文件都上传完成，关闭对话框并刷新列表
-      if (fileList.value.every(f => f.status === 'success')) {
-        cancelUpload()
-        fetchResources()
-      }
-    } else {
-      throw new Error(response.message || '服务器错误')
-    }
-  } catch (error) {
-    console.error('上传文件失败:', error)
-    if (error.response) {
-      const { status, data } = error.response
-      ElMessage.error(`上传失败: ${data?.message || `服务器返回 ${status} 错误`}`)
-    } else if (error.request) {
-      ElMessage.error('上传失败: 无法连接到服务器')
-    } else {
-      ElMessage.error(`上传失败: ${error.message || '未知错误'}`)
-    }
-    // 标记文件上传失败
-    file.status = 'error'
-  }
+  return ElMessageBox.confirm(
+    `确定移除 ${uploadFile.name} ？`
+  ).then(
+    () => true,
+    () => false
+  )
 }
 
 const beforeUpload = (file) => {
-  const maxSize = 100 * 1024 * 1024 // 100MB
+  // 检查文件大小（100MB = 100 * 1024 * 1024 bytes）
+  const maxSize = 100 * 1024 * 1024
   if (file.size > maxSize) {
     ElMessage.error('文件大小不能超过100MB')
     return false
@@ -570,37 +414,50 @@ const beforeUpload = (file) => {
   return true
 }
 
-const fetchResources = async () => {
+const customUpload = async ({ file }) => {
   try {
-    if (!props.courseId) {
-      ElMessage.error('课程ID不能为空')
-      return
-    }
-
-    const params = {
-      page: 1,
-      size: 1000,
-      type: activeCategory.value === 'all' ? undefined : activeCategory.value,
-      search: searchText.value || undefined
-    }
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('name', file.name)
+    formData.append('type', getFileType(file))
     
-    console.log('获取资源列表，参数:', {
-      courseId: props.courseId,
-      params
-    })
-    
-    const response = await api.getCourseResources(props.courseId, params)
+    const response = await api.uploadCourseResource(props.courseId, formData)
     
     if (response.code === 200) {
-      resources.value = response.data.items
-      console.log('资源列表更新成功:', resources.value)
+      ElMessage.success('上传成功')
+      // 刷新资源列表
+      fetchResources()
     } else {
-      throw new Error(response.message || '获取资源列表失败')
+      throw new Error(response.message || '上传失败')
     }
   } catch (error) {
-    console.error('获取资源列表异常:', error)
-    ElMessage.error(`获取资源列表失败: ${error.message}`)
+    console.error('上传文件失败:', error)
+    ElMessage.error(error.message || '上传失败')
   }
+}
+
+const getFileType = (file) => {
+  const extension = file.name.split('.').pop().toLowerCase()
+  const typeMap = {
+    // 文档类型
+    'doc': 'document',
+    'docx': 'document',
+    'pdf': 'document',
+    'txt': 'document',
+    // 课件类型
+    'ppt': 'courseware',
+    'pptx': 'courseware',
+    // 视频类型
+    'mp4': 'video',
+    'avi': 'video',
+    'mov': 'video'
+  }
+  return typeMap[extension] || 'other'
+}
+
+const confirmUpload = () => {
+  uploadDialogVisible.value = false
+  fetchResources()
 }
 
 // 工具方法
@@ -616,12 +473,30 @@ const getFileIcon = (type) => {
 }
 
 const formatFileSize = (bytes) => {
-  if (bytes === 0) return '0 B'
+  if (!bytes || bytes === 0) return '0 B'
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
+
+const formatTime = (time) => {
+  if (!time) return ''
+  return new Date(time).toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+// 组件挂载时获取资源列表
+onMounted(() => {
+  if (props.courseId) {
+    fetchResources()
+  }
+})
 </script>
 
 <style scoped>

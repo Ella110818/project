@@ -41,9 +41,9 @@
         <div class="assignment-info">
           <p>{{ item.description }}</p>
           <div class="assignment-meta">
-            <span><el-icon><Calendar /></el-icon> 开始时间：{{ item.start_time }}</span>
+            <span><el-icon><Calendar /></el-icon> 开始时间：{{ item.startTime }}</span>
             <span><el-icon><Timer /></el-icon> 截止时间：{{ item.deadline }}</span>
-            <span><el-icon><ScaleToOriginal /></el-icon> 满分：{{ item.full_score }}分</span>
+            <span><el-icon><ScaleToOriginal /></el-icon> 满分：{{ item.fullScore }}分</span>
             <span><el-icon><User /></el-icon> 已提交：{{ item.submitted }}/{{ item.total }}</span>
           </div>
         </div>
@@ -60,20 +60,7 @@
             </el-button>
           </el-button-group>
         </div>
-      </el-card>
-    </div>
-
-    <!-- 分页 -->
-    <div class="pagination-container">
-      <el-pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+        </el-card>
     </div>
 
     <!-- 添加/编辑对话框 -->
@@ -147,7 +134,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { 
   Calendar, 
@@ -161,7 +148,6 @@ import {
   Plus, 
   Upload 
 } from '@element-plus/icons-vue';
-import api from '@/api';
 
 // 搜索和筛选
 const searchText = ref('');
@@ -234,38 +220,68 @@ const dateShortcuts = [
 ];
 
 // 作业和考试数据
-const assignments = ref([]);
-const total = ref(0);
-const currentPage = ref(1);
-const pageSize = ref(10);
-const courseId = ref('your_course_id');
-
-// 获取作业和考试列表
-const fetchAssignments = async () => {
-  try {
-    const params = {
-      page: currentPage.value,
-      size: pageSize.value,
-      type: typeFilter.value || undefined,
-      status: statusFilter.value || undefined
-    };
-    
-    const response = await api.getCourseAssignments(courseId, params);
-    
-    if (response.code === 200) {
-      assignments.value = response.data.items.map(item => ({
-        ...item,
-        status: getAssignmentStatus(item.start_time, item.deadline)
-      }));
-      total.value = response.data.total;
-    } else {
-      ElMessage.error(response.message || '获取列表失败');
-    }
-  } catch (error) {
-    console.error('获取作业列表异常:', error);
-    ElMessage.error('获取列表失败，请稍后重试');
-  }
-};
+const assignments = ref([
+  {
+    id: 1,
+        title: '期中考试',
+    type: 'exam',
+    description: '请大家认真准备期中考试。包括第1-5章内容，考试时间2小时。',
+    startTime: '2024-05-15 08:30',
+    deadline: '2024-05-15 10:30',
+    status: '进行中',
+    fullScore: 100,
+    submitted: 28,
+    total: 35
+  },
+  {
+    id: 2,
+    title: '作业1 - 第一章课后习题',
+    type: 'homework',
+    description: '完成第一章的课后习题。请认真思考，独立完成。',
+    startTime: '2024-05-01',
+    deadline: '2024-05-10',
+    status: '已截止',
+    fullScore: 10,
+    submitted: 32,
+    total: 35
+  },
+  {
+    id: 3,
+    title: '作业2 - 第二章复习',
+    type: 'homework',
+    description: '复习第二章内容，完成章节小结。',
+    startTime: '2024-05-03',
+    deadline: '2024-05-12',
+    status: '已截止',
+    fullScore: 10,
+    submitted: 30,
+    total: 35
+  },
+  {
+    id: 4,
+    title: '作业3 - 第三章课后题',
+    type: 'homework',
+    description: '提交第三章的课后习题，包括计算题和论述题。',
+    startTime: '2024-05-05',
+    deadline: '2024-05-18',
+    status: '进行中',
+    fullScore: 15,
+    submitted: 25,
+    total: 35
+  },
+  {
+    id: 5,
+        title: '期末考试',
+    type: 'exam',
+    description: '本学期期末考试，包括所有章节内容。',
+    startTime: '2024-06-01 14:00',
+    deadline: '2024-06-01 16:00',
+    status: '未开始',
+    fullScore: 100,
+    submitted: 0,
+    total: 35
+      },
+    ]);
 
 // 筛选后的作业/考试列表
 const filteredAssignments = computed(() => {
@@ -323,8 +339,8 @@ const handleEdit = (item) => {
     title: item.title,
     type: item.type,
     description: item.description,
-    fullScore: item.full_score,
-    timeRange: [item.start_time, item.deadline],
+    fullScore: item.fullScore,
+    timeRange: [item.startTime, item.deadline],
     fileList: [] // 实际应用中应该加载已有附件
   };
   dialogVisible.value = true;
@@ -366,105 +382,42 @@ const handleExceed = () => {
 };
 
 // 提交表单
-const handleSubmit = async () => {
-  try {
-    const valid = await formRef.value.validate();
+const handleSubmit = () => {
+  formRef.value.validate((valid) => {
     if (valid) {
-      const [startTime, deadline] = formData.value.timeRange;
-      
-      const submitData = {
+      // 构建保存的数据
+      const saveData = {
+        id: isEditing.value ? formData.value.id : assignments.value.length + 1,
         title: formData.value.title,
         type: formData.value.type,
         description: formData.value.description,
-        start_time: startTime,
-        deadline: deadline,
-        full_score: formData.value.fullScore
+        startTime: formData.value.timeRange[0],
+        deadline: formData.value.timeRange[1],
+        fullScore: formData.value.fullScore,
+        status: new Date() > new Date(formData.value.timeRange[0]) ? '进行中' : '未开始',
+        submitted: isEditing.value ? assignments.value.find(a => a.id === formData.value.id)?.submitted || 0 : 0,
+        total: 35
       };
 
-      let response;
       if (isEditing.value) {
-        // TODO: 实现编辑API
-        ElMessage.warning('编辑功能暂未实现');
-        return;
-      } else {
-        response = await api.publishAssignment(courseId, submitData);
-      }
-
-      if (response.code === 200) {
-        ElMessage.success(isEditing.value ? '更新成功' : '添加成功');
-        dialogVisible.value = false;
-        fetchAssignments(); // 刷新列表
-        
-        // 如果有附件，上传附件
-        if (formData.value.fileList.length > 0) {
-          await uploadFiles(response.data.id);
+        // 更新现有项
+        const index = assignments.value.findIndex(a => a.id === formData.value.id);
+        if (index !== -1) {
+          assignments.value[index] = saveData;
         }
+        ElMessage.success('更新成功');
       } else {
-        ElMessage.error(response.message || '操作失败');
+        // 添加新项
+        assignments.value.push(saveData);
+        ElMessage.success('添加成功');
       }
+
+      dialogVisible.value = false;
+    } else {
+      return false;
     }
-  } catch (error) {
-    console.error('提交表单异常:', error);
-    ElMessage.error('操作失败，请稍后重试');
-  }
+  });
 };
-
-// 上传附件
-const uploadFiles = async (assignmentId) => {
-  try {
-    for (const file of formData.value.fileList) {
-      const formData = new FormData();
-      formData.append('file', file.raw);
-      formData.append('name', file.name);
-      formData.append('type', 'assignment');
-      formData.append('description', `作业${assignmentId}的附件`);
-      
-      const response = await api.uploadCourseResource(courseId, formData);
-      
-      if (response.code !== 200) {
-        ElMessage.warning(`文件 ${file.name} 上传失败: ${response.message}`);
-      }
-    }
-  } catch (error) {
-    console.error('上传附件异常:', error);
-    ElMessage.warning('部分附件上传失败');
-  }
-};
-
-// 获取作业状态
-const getAssignmentStatus = (startTime, deadline) => {
-  const now = new Date();
-  const start = new Date(startTime);
-  const end = new Date(deadline);
-  
-  if (now < start) return '未开始';
-  if (now > end) return '已截止';
-  return '进行中';
-};
-
-// 处理页码改变
-const handleCurrentChange = (page) => {
-  currentPage.value = page;
-  fetchAssignments();
-};
-
-// 处理每页条数改变
-const handleSizeChange = (size) => {
-  pageSize.value = size;
-  currentPage.value = 1; // 重置到第一页
-  fetchAssignments();
-};
-
-// 监听筛选条件变化
-watch([typeFilter, statusFilter, searchText], () => {
-  currentPage.value = 1; // 重置到第一页
-  fetchAssignments();
-});
-
-// 在组件挂载时获取数据
-onMounted(() => {
-  fetchAssignments();
-});
 </script>
 
 <style scoped>

@@ -320,8 +320,12 @@ const todoTasks = ref([
 ])
 
 // 处理标签页切换
-const handleTabClick = (tab) => {
-  console.log('Tab clicked:', tab.props.name);
+const handleTabClick = async (tab) => {
+  console.log('Tab clicked:', tab.props.name)
+  if (tab.props.name === 'resources') {
+    console.log('开始获取资源列表')
+    await fetchResources()
+  }
 }
 
 // 获取状态对应的类型
@@ -417,15 +421,80 @@ const handleRowClick = (row) => {
 }
 
 // 处理预览
-const handlePreview = (file) => {
-  ElMessage.info(`预览文件: ${file.name}`)
-  // 在此处添加预览逻辑，如打开PDF预览器或视频播放器
+const handlePreview = async (file) => {
+  try {
+    console.log('开始预览文件:', file)
+    
+    if (!file.id) {
+      throw new Error('文件ID不能为空')
+    }
+    
+    const response = await api.getResourceDetail(file.id)
+    console.log('预览响应:', response)
+    
+    if (response.code === 200) {
+      const resourceData = response.data
+      if (!resourceData.file) {
+        throw new Error('文件URL不能为空')
+      }
+      
+      if (resourceData.type === 'video') {
+        window.open(resourceData.file, '_blank')
+        ElMessage.success('正在打开视频预览')
+      } else if (resourceData.type === 'document' || resourceData.type === 'courseware') {
+        window.open(resourceData.file, '_blank')
+        ElMessage.success('正在打开文档预览')
+      } else {
+        ElMessage.info('该类型文件可能无法预览，建议下载后查看')
+      }
+    } else {
+      throw new Error(response.message || '获取资源详情失败')
+    }
+  } catch (error) {
+    console.error('预览文件失败:', error)
+    ElMessage.error(`预览失败: ${error.message || '未知错误'}`)
+  }
 }
 
 // 处理下载
-const handleDownload = (file) => {
-  ElMessage.success(`开始下载: ${file.name}`)
-  // 在此处添加下载逻辑
+const handleDownload = async (file) => {
+  try {
+    console.log('开始下载文件:', file)
+    ElMessage.info(`正在获取下载链接：${file.name}`)
+    
+    if (!file.id) {
+      throw new Error('文件ID不能为空')
+    }
+    
+    const response = await api.downloadResource(file.id)
+    console.log('下载响应:', response)
+    
+    // 处理文件流响应
+    if (response instanceof Blob) {
+      // 创建下载链接
+      const url = window.URL.createObjectURL(response)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = file.name // 使用文件原始名称
+      document.body.appendChild(link)
+      link.click()
+      
+      // 清理
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      
+      ElMessage.success(`文件 ${file.name} 开始下载`)
+    } else if (response.code === 200 && response.data && response.data.downloadUrl) {
+      // 处理下载链接
+      window.open(response.data.downloadUrl, '_blank')
+      ElMessage.success(`文件 ${file.name} 开始下载`)
+    } else {
+      throw new Error('获取下载链接失败')
+    }
+  } catch (error) {
+    console.error('下载文件失败:', error)
+    ElMessage.error(`下载失败: ${error.message || '未知错误'}`)
+  }
 }
 
 // 筛选资源
@@ -553,6 +622,65 @@ const formatTime = (time) => {
     hour: '2-digit',
     minute: '2-digit'
   })
+}
+
+// 获取资源列表
+const fetchResources = async () => {
+  try {
+    const courseId = route.params.id
+    console.log('获取资源列表 - 课程ID:', courseId)
+    
+    if (!courseId) {
+      ElMessage.error('课程ID不能为空')
+      return
+    }
+
+    const params = {
+      page: 1,
+      size: 1000
+    }
+    
+    // 如果选择了特定分类
+    if (activeCategory.value !== 'all') {
+      params.type = activeCategory.value
+    }
+    
+    // 如果有搜索关键词
+    if (searchText.value) {
+      params.search = searchText.value
+    }
+    
+    console.log('请求参数:', params)
+    
+    const response = await api.getCourseResources(courseId, params)
+    console.log('资源列表响应:', response)
+    
+    if (response.code === 200) {
+      resources.value = response.data.items.map(item => ({
+        id: item.id,
+        name: item.name,
+        type: item.type,
+        size: formatFileSize(item.size || 0),
+        uploadTime: formatTime(item.upload_time),
+        uploader: item.uploader
+      }))
+      console.log('处理后的资源列表:', resources.value)
+    } else {
+      throw new Error(response.message || '获取资源列表失败')
+    }
+  } catch (error) {
+    console.error('获取资源列表异常:', error)
+    ElMessage.error(`获取资源列表失败: ${error.message}`)
+  }
+}
+
+// 添加文件大小格式化函数
+const formatFileSize = (bytes) => {
+  if (!bytes || bytes === 0) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 </script>
 

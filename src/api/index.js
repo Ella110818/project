@@ -290,120 +290,6 @@ const mockApi = {
                 });
             }, 300);
         });
-    },
-
-    // 获取课程资源列表
-    getCourseResources: async (courseId, params) => {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve({
-                    code: 200,
-                    message: "获取成功",
-                    data: {
-                        total: 3,
-                        items: [
-                            {
-                                id: 1,
-                                name: '第一章课件.pptx',
-                                type: 'courseware',
-                                size: 2048576,
-                                uploadTime: '2024-03-20 10:00:00',
-                                uploader: '张老师'
-                            },
-                            {
-                                id: 2,
-                                name: '实验指导.pdf',
-                                type: 'document',
-                                size: 1048576,
-                                uploadTime: '2024-03-19 15:30:00',
-                                uploader: '张老师'
-                            },
-                            {
-                                id: 3,
-                                name: '课程介绍视频.mp4',
-                                type: 'video',
-                                size: 104857600,
-                                uploadTime: '2024-03-18 09:15:00',
-                                uploader: '张老师'
-                            }
-                        ]
-                    }
-                });
-            }, 300);
-        });
-    },
-
-    // 上传课程资源
-    uploadCourseResource: async (courseId, formData) => {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                // 模拟上传成功
-                resolve({
-                    code: 200,
-                    message: "上传成功",
-                    data: {
-                        id: Date.now(),
-                        name: formData.get('name'),
-                        type: formData.get('type'),
-                        size: formData.get('file').size,
-                        uploadTime: new Date().toISOString(),
-                        uploader: '当前用户'
-                    }
-                });
-            }, 1000);
-        });
-    },
-
-    // 获取资源详情
-    getResourceDetail: async (resourceId) => {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve({
-                    code: 200,
-                    message: "获取成功",
-                    data: {
-                        id: resourceId,
-                        name: "示例资源.pdf",
-                        type: "document",
-                        description: "这是一个示例资源",
-                        file: "http://example.com/files/sample.pdf",
-                        size: 1024576,
-                        course: "1",
-                        uploader: "张老师",
-                        upload_time: "2024-03-20 10:00:00",
-                        download_count: 10
-                    }
-                });
-            }, 300);
-        });
-    },
-
-    // 删除资源
-    deleteResource: async (resourceId) => {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve({
-                    code: 200,
-                    message: "删除成功",
-                    data: null
-                });
-            }, 300);
-        });
-    },
-
-    // 下载资源
-    downloadResource: async (resourceId) => {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve({
-                    code: 200,
-                    message: "下载链接生成成功",
-                    data: {
-                        downloadUrl: `http://example.com/download/${resourceId}`
-                    }
-                });
-            }, 300);
-        });
     }
 };
 
@@ -523,103 +409,79 @@ const productionApi = {
         }
     },
 
-    // 获取作业和考试列表
-    getCourseAssignments: async (courseId, params) => {
-        try {
-            const response = await request.get(`/api/advanced/courses/${courseId}/assignments/`, {
-                params: {
-                    type: params.type,
-                    status: params.status,
-                    page: params.page,
-                    size: params.size
-                }
-            });
-            return response;
-        } catch (error) {
-            throw error;
-        }
-    },
-
-    // 发布作业或考试
-    publishAssignment: async (courseId, data) => {
-        try {
-            const response = await request.post(`/api/advanced/courses/${courseId}/assignments/`, {
-                title: data.title,
-                type: data.type,
-                description: data.description,
-                start_time: data.start_time,
-                deadline: data.deadline,
-                full_score: data.full_score
-            });
-            return response;
-        } catch (error) {
-            throw error;
-        }
-    },
-
     // 获取课程资源列表
     getCourseResources: async (courseId, params) => {
         try {
+            console.log('调用获取课程资源API - 课程ID:', courseId, '参数:', params)
             const response = await request.get(`/api/course/courses/${courseId}/resources/`, {
-                params: {
-                    page: params.page,
-                    size: params.size,
-                    type: params.type,
-                    search: params.search
-                }
-            });
-            return response;
+                params: params
+            })
+            console.log('API响应:', response)
+            return response
         } catch (error) {
-            throw error;
+            console.error('获取课程资源列表失败:', error)
+            throw error
         }
     },
 
     // 上传课程资源
     uploadCourseResource: async (courseId, formData) => {
         try {
-            const response = await request.post(`/api/course/courses/${courseId}/resources/`, formData, {
+            const response = await request({
+                url: `/api/course/courses/${courseId}/resources/`,
+                method: 'POST',
                 headers: {
                     'Content-Type': 'multipart/form-data'
-                }
-            });
-            return response;
+                },
+                data: formData
+            })
+            return response
         } catch (error) {
-            throw error;
+            console.error('上传课程资源失败:', error)
+            throw error
         }
     },
 
     // 获取资源详情
     getResourceDetail: async (resourceId) => {
         try {
-            const response = await request.get(`/api/course/resources/${resourceId}/`);
-            return response;
+            const response = await request.get(`/api/course/resources/${resourceId}/`)
+            return response
         } catch (error) {
-            throw error;
-        }
-    },
-
-    // 删除资源
-    deleteResource: async (resourceId) => {
-        try {
-            const response = await request.delete(`/api/course/resources/${resourceId}/`);
-            return response;
-        } catch (error) {
-            throw error;
+            console.error('获取资源详情失败:', error)
+            throw error
         }
     },
 
     // 下载资源
     downloadResource: async (resourceId) => {
         try {
-            const response = await request.get(`/api/course/resources/${resourceId}/download/`, {
-                responseType: 'blob',  // 设置响应类型为blob
+            const response = await request({
+                url: `/api/course/resources/${resourceId}/download/`,
+                method: 'GET',
+                responseType: 'blob',
                 headers: {
-                    'Accept': '*/*'  // 接受所有类型的响应
+                    'Accept': '*/*'
                 }
-            });
-            return response;
+            })
+            return response
         } catch (error) {
-            throw error;
+            console.error('下载资源失败:', error)
+            throw error
+        }
+    },
+
+    // 删除资源
+    deleteResource: async (resourceId) => {
+        try {
+            const response = await request({
+                url: `/api/course/resources/${resourceId}/`,
+                method: 'DELETE'
+            })
+            return response
+        } catch (error) {
+            console.error('删除资源失败:', error)
+            throw error
         }
     }
 };

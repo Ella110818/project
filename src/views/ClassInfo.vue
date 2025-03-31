@@ -229,7 +229,7 @@
         <Group />
       </el-tab-pane>
       <el-tab-pane label="课程资源" name="resource">
-        <Resource :course-id="courseId" />
+        <Resource v-if="courseId" :course-id="courseId" />
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -247,7 +247,10 @@ import Resource from '@/components/Resource.vue';
 import { Document, User, Location, Download } from '@element-plus/icons-vue';
 
 const route = useRoute();
-const courseId = ref(route.params.id || route.query.id || '5');
+const courseId = computed(() => {
+  const id = route.params.id;
+  return id ? Number(id) : null;
+});
 const courseName = ref('');
 const classInfo = ref({
   studentCount: 0,
