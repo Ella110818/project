@@ -4,34 +4,36 @@
     <div class="header">
         <el-button type="primary" style="margin-left: 20px;"  @click="showDialog('add')">新增</el-button>
         <el-select
-        v-model="value1"
+        v-model="selectedClasses"
         multiple
         placeholder="所有班级"
         style="width: 240px; margin-left: 20px;"
+        @change="handleClassChange"
         font-color="black"
         >
         <el-option
-          v-for="item in options"
+          v-for="item in classOptions"
           :key="item.value"
           :label="item.label"
           :value="item.value"
         />
       </el-select>
        <el-input
-      v-model="input2"
+      v-model="searchText"
       style="width: 400px; margin-left: 30px;"
       placeholder="搜索学生的姓名或学号"
       :suffix-icon="Search" 
+      @input="handleSearchChange"
     />
     </div>
     <div class="table"> 
-      <el-table :data="tableData" style="width: 100%" :border="false" :cell-style="{ textAlign: 'center' }">
+      <el-table :data="tableData" style="width: 100%" :border="false" :cell-style="{ textAlign: 'center' }" v-loading="loading">
       <el-table-column type="selection" width="50" align="center" />
       <el-table-column label="班级" prop="className" width="150" align="center" />
       <el-table-column label="学生" width="150" align="center">
         <template #default="scope">
           <div class="user">
-            <img class="avatar" src="/teacher/image/song.png" />
+            <img class="avatar" :src="scope.row.avatar || '/teacher/image/song.png'" />
             <div class="user-info">
               <p class="user-name">{{ scope.row.username }}</p>
             </div>
@@ -53,9 +55,9 @@
       </el-table-column>
       <el-table-column label="操作" width="130" align="center">
         <template #default="scope">
-          <el-button type="primary" :icon="Edit" circle @click="showDialog('edit', scope.row)"/>
+          <el-button type="primary" :icon="Edit" circle @click="handleEdit(scope.row)"/>
           <span class="operation-divider"></span>
-          <el-button type="danger" :icon="Delete" circle @click="deleteUser('delete', scope.row)"/>
+          <el-button type="danger" :icon="Delete" circle @click="handleDelete(scope.row)"/>
         </template>
       </el-table-column>
     </el-table>
@@ -83,7 +85,7 @@
         <el-form-item label="班级" prop="className">
           <el-select v-model="formData.className">
             <el-option
-              v-for="item in options"
+              v-for="item in classOptions"
               :key="item.value"
               :label="item.label"
               :value="item.value"
@@ -104,11 +106,12 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Search } from '@element-plus/icons-vue';
-import { Edit } from '@element-plus/icons-vue';
-import {  Delete } from '@element-plus/icons-vue';
+import { Search, Edit, Delete } from '@element-plus/icons-vue';
+import api from '@/api';
+
 const dialogType = ref('add');
 const dialogVisible = ref(false);
+const loading = ref(false);
 
 const formData = reactive({
   username: '',
@@ -118,84 +121,129 @@ const formData = reactive({
   id: null,
 });
 
-const searchFormRef = ref(null);
-const searchForm = reactive({
-  name: '',
-  phone: '',
-  email: '',
-  account: '',
-  id: '',
-  sex: '',
-  level: '',
-});
+const searchText = ref('');
+const classOptions = ref([]);
+const selectedClasses = ref([]);
+const tableData = ref([]);
 
-const tableData = ref([
-  {
-    id: 1,
-    username: '用户1',
-    email: 'user1@example.com',
-    mobile: '12345678901',
-    sex: 1,
-    dep: '技术部',
-    create_time: '2023-01-01',
-    avatar: '',
-    className: '计算机科学1班'
-  },
-  {
-    id: 2,
-    username: '用户2',
-    email: 'user2@example.com',
-    mobile: '12345678902',
-    sex: 2,
-    dep: '市场部',
-    create_time: '2023-01-02',
-    avatar: '',
-    className: '计算机科学2班'
-  },
-]);
+// 获取教师课程（班级）列表
+const fetchTeacherClasses = async () => {
+  try {
+    loading.value = true;
+    const response = await api.getCourses();
+    if (response.code === 200) {
+      classOptions.value = response.data.items.map(course => ({
+        value: course.course_id,
+        label: `${course.title} (${course.system})`
+      }));
+    } else {
+      ElMessage.error('获取班级列表失败');
+    }
+  } catch (error) {
+    console.error('获取班级列表失败:', error);
+    ElMessage.error('获取班级列表失败');
+  } finally {
+    loading.value = false;
+  }
+};
 
-// 班级选项
-const options = ref([
-  {
-    value: '计算机科学1班',
-    label: '计算机科学1班',
-  },
-  {
-    value: '计算机科学2班',
-    label: '计算机科学2班',
-  },
-  {
-    value: '软件工程1班',
-    label: '软件工程1班',
-  },
-  {
-    value: '人工智能1班',
-    label: '人工智能1班',
-  },
-]);
+// 获取课程学生列表
+const fetchCourseStudents = async (courseId) => {
+  try {
+    loading.value = true;
+    const response = await api.getCourseDetail(courseId);
+    if (response.code === 200 && response.data.students) {
+      // 将学生信息转换为表格所需格式
+      const students = response.data.students.map(student => ({
+        id: student.id,
+        username: student.name,
+        mobile: student.student_id,
+        sex: student.sex || 1,
+        className: response.data.title,
+        email: student.email
+      }));
+      return students;
+    }
+    return [];
+  } catch (error) {
+    console.error('获取学生列表失败:', error);
+    return [];
+  }
+};
 
-const value1 = ref([]);
-const input2 = ref('');
+// 更新学生列表
+const updateStudentList = async () => {
+  try {
+    loading.value = true;
+    let allStudents = [];
+    
+    // 如果没有选择班级，获取所有班级的学生
+    const coursesToFetch = selectedClasses.value.length > 0 
+      ? selectedClasses.value 
+      : classOptions.value.map(option => option.value);
+    
+    // 获取所有选中课程的学生
+    for (const courseId of coursesToFetch) {
+      const students = await fetchCourseStudents(courseId);
+      allStudents = [...allStudents, ...students];
+    }
+    
+    // 如果有搜索文本，进行过滤
+    if (searchText.value) {
+      const searchLower = searchText.value.toLowerCase();
+      allStudents = allStudents.filter(student => 
+        student.username.toLowerCase().includes(searchLower) ||
+        student.mobile.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    tableData.value = allStudents;
+  } catch (error) {
+    console.error('更新学生列表失败:', error);
+    ElMessage.error('更新学生列表失败');
+  } finally {
+    loading.value = false;
+  }
+};
 
-// 从localStorage获取学生头像
-const loadStudentAvatars = () => {
-  // 实际应用中，这里应该从API获取学生数据及其头像
-  // 这里我们使用localStorage模拟
-  const defaultAvatar = localStorage.getItem('userAvatar') || '';
-  
-  tableData.value.forEach(student => {
-    // 如果学生有特定的头像数据，可以在这里获取
-    // 这里简单地使用Profile.vue中的头像作为演示
-    student.avatar = defaultAvatar || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png';
+// 监听班级选择变化
+const handleClassChange = () => {
+  updateStudentList();
+};
+
+// 监听搜索文本变化
+const handleSearchChange = () => {
+  updateStudentList();
+};
+
+// 删除学生
+const handleDelete = (row) => {
+  ElMessageBox.confirm('确定要删除该学生吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    // 这里需要调用后端API删除学生
+    ElMessage.success('删除成功');
+    updateStudentList();
+  }).catch(() => {
+    ElMessage.info('已取消删除');
   });
 };
 
+// 编辑学生
+const handleEdit = (row) => {
+  // 这里需要实现编辑学生的逻辑
+  console.log('编辑学生:', row);
+};
+
+// 组件挂载时获取班级列表
 onMounted(() => {
-  loadStudentAvatars();
+  fetchTeacherClasses();
 });
 
 const resetForm = () => {
-  searchFormRef.value.resetFields();
+  searchText.value = '';
 };
 
 const showDialog = (type, row) => {
@@ -214,60 +262,6 @@ const showDialog = (type, row) => {
     formData.sex = 1;
     formData.className = '';
     formData.id = null;
-  }
-};
-
-const deleteUser = (type, row) => {
-  ElMessageBox.confirm('确定要删除该用户吗？', '删除用户', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
-  }).then(() => {
-    const index = tableData.value.findIndex(item => item.id === row.id);
-    if (index !== -1) {
-      tableData.value.splice(index, 1);
-      ElMessage.success('删除成功');
-    }
-  }).catch(() => {
-    ElMessage.info('已取消删除');
-  });
-};
-
-const search = () => {
-  ElMessage.success('搜索成功');
-};
-
-const filterTag = (value, row) => {
-  return row.status === value;
-};
-
-const getTagType = (status) => {
-  switch (status) {
-    case '1':
-      return 'success';
-    case '2':
-      return 'info';
-    case '3':
-      return 'warning';
-    case '4':
-      return 'danger';
-    default:
-      return 'info';
-  }
-};
-
-const buildTagText = (status) => {
-  switch (status) {
-    case '1':
-      return '在线';
-    case '2':
-      return '离线';
-    case '3':
-      return '异常';
-    case '4':
-      return '注销';
-    default:
-      return '';
   }
 };
 

@@ -483,6 +483,71 @@ const productionApi = {
             console.error('删除资源失败:', error)
             throw error
         }
+    },
+
+    // 获取课程分组列表
+    getCourseGroups: async (courseId) => {
+        try {
+            const response = await request.get(`/api/advanced/courses/${courseId}/groups/`)
+            return response
+        } catch (error) {
+            console.error('获取分组列表失败:', error)
+            throw error
+        }
+    },
+
+    // 创建或更新分组
+    createOrUpdateGroup: async (courseId, data) => {
+        try {
+            const response = await request.post(`/api/advanced/courses/${courseId}/groups/`, {
+                name: data.name,
+                studentIds: data.studentIds
+            })
+            return response
+        } catch (error) {
+            console.error('创建/更新分组失败:', error)
+            throw error
+        }
+    },
+
+    // 自动分组
+    autoCreateGroups: async (courseId, data) => {
+        try {
+            const response = await request.post(`/api/advanced/courses/${courseId}/groups/auto`, {
+                groupCount: data.groupCount,
+                method: data.method
+            })
+            return response
+        } catch (error) {
+            console.error('自动分组失败:', error)
+            throw error
+        }
+    },
+
+    // 获取教师课程列表
+    getTeacherCourses: async () => {
+        try {
+            const response = await request.get('/api/course/courses/', {
+                params: {
+                    role: 'teacher'  // 添加角色参数来过滤教师的课程
+                }
+            });
+            return response;
+        } catch (error) {
+            console.error('获取教师课程列表失败:', error);
+            throw error;
+        }
+    },
+
+    // 获取课程学生列表
+    getCourseStudents: async (courseId) => {
+        try {
+            const response = await request.get(`/api/course/courses/${courseId}/students/`);
+            return response;
+        } catch (error) {
+            console.error('获取课程学生列表失败:', error);
+            throw error;
+        }
     }
 };
 

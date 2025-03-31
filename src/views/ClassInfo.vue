@@ -225,11 +225,11 @@
           </el-card>
         </div>
       </el-tab-pane>
-      <el-tab-pane label="分组" name="group"> 
-        <Group />
-      </el-tab-pane>
       <el-tab-pane label="课程资源" name="resource">
         <Resource v-if="courseId" :course-id="courseId" />
+      </el-tab-pane>
+      <el-tab-pane label="分组管理" name="group">
+        <Group :course-id="courseId" />
       </el-tab-pane>
     </el-tabs>
   </div>

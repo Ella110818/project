@@ -97,152 +97,166 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { Plus } from '@element-plus/icons-vue'
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import api from '@/api'
 
-export default {
-  components: {
-    Plus
-  },
-  setup() {
-    const username = ref('')
-    const userId = ref('')
-    const email = ref('')
-    const role = ref('')
-    const userAvatar = ref('')
-    const backgroundImage = ref('')
-    const isEditing = ref({
-      all: false,
-      id: false,
-      college: false,
-      gender: false,
-      phone: false,
-      intro: false,
-      education: false
-    })
+const username = ref('')
+const userId = ref('')
+const email = ref('')
+const role = ref('')
+const userAvatar = ref('')
+const backgroundImage = ref('')
+const isEditing = ref({
+  all: false,
+  id: false,
+  college: false,
+  gender: false,
+  phone: false,
+  intro: false,
+  education: false
+})
 
-    const userInfo = ref({
-      id: '',
-      college: '未设置',
-      gender: '未设置',
-      phone: '未设置',
-      intro: '未设置',
-      education: '未设置'
-    })
+const userInfo = ref({
+  id: '',
+  college: '未设置',
+  gender: '未设置',
+  phone: '未设置',
+  intro: '未设置',
+  education: '未设置'
+})
 
-    onMounted(() => {
-      // 从 localStorage 获取用户信息
-      username.value = localStorage.getItem('name') || '未登录'
-      userId.value = localStorage.getItem('userId') || '未设置'
-      email.value = localStorage.getItem('email') || '未设置'
-      role.value = localStorage.getItem('userRole') || '未设置'
-      userAvatar.value = localStorage.getItem('userAvatar') || ''
-      backgroundImage.value = localStorage.getItem('backgroundImage') || ''
+// 获取用户信息
+const fetchUserInfo = async () => {
+  try {
+    const storedUserId = localStorage.getItem('userId')
+    if (!storedUserId) {
+      ElMessage.warning('请先登录')
+      return
+    }
+
+    const response = await api.getUserMessages(storedUserId)
+    
+    if (response.code === 200) {
+      const data = response.data
+      username.value = data.name
+      userId.value = data.userId
+      email.value = data.email
+      role.value = data.role
+      userAvatar.value = data.avatar || ''
       
-      // 设置用户信息
-      userInfo.value.id = userId.value
-    })
-
-    const startEditing = () => {
-      isEditing.value.all = true
-      isEditing.value.id = true
-      isEditing.value.college = true
-      isEditing.value.gender = true
-      isEditing.value.phone = true
-      isEditing.value.intro = true
-      isEditing.value.education = true
-    }
-
-    const saveChanges = () => {
-      // 保存修改到 localStorage
-      localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
-      isEditing.value.all = false
-      isEditing.value.id = false
-      isEditing.value.college = false
-      isEditing.value.gender = false
-      isEditing.value.phone = false
-      isEditing.value.intro = false
-      isEditing.value.education = false
-      ElMessage.success('保存成功')
-    }
-
-    const cancelEditing = () => {
-      // 重置编辑状态
-      isEditing.value.all = false
-      isEditing.value.id = false
-      isEditing.value.college = false
-      isEditing.value.gender = false
-      isEditing.value.phone = false
-      isEditing.value.intro = false
-      isEditing.value.education = false
-      // 从 localStorage 恢复数据
-      const savedInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
-      userInfo.value = { ...userInfo.value, ...savedInfo }
-    }
-
-    const handleAvatarSuccess = (response, file) => {
-      userAvatar.value = URL.createObjectURL(file.raw)
-      localStorage.setItem('userAvatar', userAvatar.value)
-      ElMessage.success('头像上传成功')
-    }
-
-    const beforeAvatarUpload = (file) => {
-      const isJPG = file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/gif'
-      const isLt2M = file.size / 1024 / 1024 < 2
-
-      if (!isJPG) {
-        ElMessage.error('上传头像图片只能是 JPG/PNG/GIF 格式!')
+      // 更新用户信息
+      userInfo.value = {
+        id: data.userId,
+        college: data.student_detail?.class_detail?.class_system || '未设置',
+        gender: data.gender || '未设置',
+        phone: data.phone || '未设置',
+        intro: data.intro || '未设置',
+        education: data.education || '未设置'
       }
-      if (!isLt2M) {
-        ElMessage.error('上传头像图片大小不能超过 2MB!')
+      
+      // 保存到localStorage
+      localStorage.setItem('name', data.name)
+      localStorage.setItem('email', data.email)
+      localStorage.setItem('userRole', data.role)
+      if (data.avatar) {
+        localStorage.setItem('userAvatar', data.avatar)
       }
-      return isJPG && isLt2M
+    } else {
+      throw new Error(response.message || '获取用户信息失败')
     }
-
-    const beforeBackgroundUpload = (file) => {
-      const isJPG = file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/gif'
-      const isLt5M = file.size / 1024 / 1024 < 5
-
-      if (!isJPG) {
-        ElMessage.error('上传背景图片只能是 JPG/PNG/GIF 格式!')
-        return false
-      }
-      if (!isLt5M) {
-        ElMessage.error('上传背景图片大小不能超过 5MB!')
-        return false
-      }
-
-      // 创建图片URL并保存
-      const reader = new FileReader()
-      reader.readAsDataURL(file)
-      reader.onload = () => {
-        backgroundImage.value = reader.result
-        localStorage.setItem('backgroundImage', backgroundImage.value)
-        ElMessage.success('背景图片上传成功')
-      }
-
-      return false // 阻止自动上传
-    }
-
-    return {
-      username,
-      userId,
-      email,
-      role,
-      userAvatar,
-      backgroundImage,
-      userInfo,
-      isEditing,
-      handleAvatarSuccess,
-      beforeAvatarUpload,
-      beforeBackgroundUpload,
-      startEditing,
-      saveChanges,
-      cancelEditing
-    }
+  } catch (error) {
+    console.error('获取用户信息失败:', error)
+    ElMessage.error(error.message || '获取用户信息失败')
   }
+}
+
+onMounted(() => {
+  fetchUserInfo()
+  backgroundImage.value = localStorage.getItem('backgroundImage') || ''
+})
+
+const startEditing = () => {
+  isEditing.value.all = true
+  isEditing.value.id = true
+  isEditing.value.college = true
+  isEditing.value.gender = true
+  isEditing.value.phone = true
+  isEditing.value.intro = true
+  isEditing.value.education = true
+}
+
+const saveChanges = () => {
+  // 保存修改到 localStorage
+  localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+  isEditing.value.all = false
+  isEditing.value.id = false
+  isEditing.value.college = false
+  isEditing.value.gender = false
+  isEditing.value.phone = false
+  isEditing.value.intro = false
+  isEditing.value.education = false
+  ElMessage.success('保存成功')
+}
+
+const cancelEditing = () => {
+  // 重置编辑状态
+  isEditing.value.all = false
+  isEditing.value.id = false
+  isEditing.value.college = false
+  isEditing.value.gender = false
+  isEditing.value.phone = false
+  isEditing.value.intro = false
+  isEditing.value.education = false
+  // 从 localStorage 恢复数据
+  const savedInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
+  userInfo.value = { ...userInfo.value, ...savedInfo }
+}
+
+const handleAvatarSuccess = (response, file) => {
+  userAvatar.value = URL.createObjectURL(file.raw)
+  localStorage.setItem('userAvatar', userAvatar.value)
+  ElMessage.success('头像上传成功')
+}
+
+const beforeAvatarUpload = (file) => {
+  const isJPG = file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/gif'
+  const isLt2M = file.size / 1024 / 1024 < 2
+
+  if (!isJPG) {
+    ElMessage.error('上传头像图片只能是 JPG/PNG/GIF 格式!')
+  }
+  if (!isLt2M) {
+    ElMessage.error('上传头像图片大小不能超过 2MB!')
+  }
+  return isJPG && isLt2M
+}
+
+const beforeBackgroundUpload = (file) => {
+  const isJPG = file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/gif'
+  const isLt5M = file.size / 1024 / 1024 < 5
+
+  if (!isJPG) {
+    ElMessage.error('上传背景图片只能是 JPG/PNG/GIF 格式!')
+    return false
+  }
+  if (!isLt5M) {
+    ElMessage.error('上传背景图片大小不能超过 5MB!')
+    return false
+  }
+
+  // 创建图片URL并保存
+  const reader = new FileReader()
+  reader.readAsDataURL(file)
+  reader.onload = () => {
+    backgroundImage.value = reader.result
+    localStorage.setItem('backgroundImage', backgroundImage.value)
+    ElMessage.success('背景图片上传成功')
+  }
+
+  return false // 阻止自动上传
 }
 </script>
 

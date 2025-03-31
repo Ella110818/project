@@ -140,10 +140,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ref, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import draggable from 'vuedraggable'
 import { Search, More } from '@element-plus/icons-vue'
+import api from '@/api'
 
 const searchText = ref('')
 const autoGroupDialog = ref(false)
@@ -152,52 +153,101 @@ const autoGroupForm = ref({
   method: 'random'
 })
 
-// 模拟数据
-const unassignedStudents = ref([
-  { id: 1, name: '张三', studentId: '2021001', avatar: '' },
-  { id: 2, name: '李四', studentId: '2021002', avatar: '' },
-  { id: 3, name: '王五', studentId: '2021003', avatar: '' },
-  { id: 4, name: '赵六', studentId: '2021004', avatar: '' },
-  { id: 5, name: '钱七', studentId: '2021005', avatar: '' },
-  { id: 6, name: '孙八', studentId: '2021006', avatar: '' }
-])
-
-const groups = ref([
-  {
-    id: 1,
-    name: '第一组',
-    students: []
-  },
-  {
-    id: 2,
-    name: '第二组',
-    students: []
+// 从props接收courseId
+const props = defineProps({
+  courseId: {
+    type: [String, Number],
+    required: true
   }
-])
+})
+
+// 状态数据
+const unassignedStudents = ref([])
+const groups = ref([])
+const loading = ref(false)
+
+// 获取分组数据
+const fetchGroups = async () => {
+  try {
+    loading.value = true
+    const response = await api.getCourseGroups(props.courseId)
+    
+    if (response.code === 200) {
+      unassignedStudents.value = response.data.unassignedStudents
+      groups.value = response.data.groups
+    } else {
+      throw new Error(response.message || '获取分组数据失败')
+    }
+  } catch (error) {
+    console.error('获取分组数据失败:', error)
+    ElMessage.error(error.message || '获取分组数据失败')
+  } finally {
+    loading.value = false
+  }
+}
 
 // 处理拖拽结束
-const onDragEnd = () => {
-  // 可以在这里保存分组状态
-  console.log('Groups updated:', groups.value)
+const onDragEnd = async () => {
+  try {
+    // 更新被修改的分组
+    for (const group of groups.value) {
+      await api.createOrUpdateGroup(props.courseId, {
+        name: group.name,
+        studentIds: group.students.map(student => student.id)
+      })
+    }
+    ElMessage.success('分组更新成功')
+  } catch (error) {
+    console.error('更新分组失败:', error)
+    ElMessage.error('更新分组失败，请重试')
+    // 刷新数据
+    await fetchGroups()
+  }
 }
 
 // 添加新分组
-const handleAddGroup = () => {
-  const newGroup = {
-    id: Date.now(),
-    name: `第${groups.value.length + 1}组`,
-    students: []
+const handleAddGroup = async () => {
+  try {
+    const newGroup = {
+      name: `第${groups.value.length + 1}组`,
+      studentIds: []
+    }
+    
+    const response = await api.createOrUpdateGroup(props.courseId, newGroup)
+    
+    if (response.code === 200) {
+      groups.value.push(response.data)
+      ElMessage.success('新建分组成功')
+    } else {
+      throw new Error(response.message || '新建分组失败')
+    }
+  } catch (error) {
+    console.error('新建分组失败:', error)
+    ElMessage.error(error.message || '新建分组失败')
   }
-  groups.value.push(newGroup)
 }
 
 // 删除分组
-const deleteGroup = (index) => {
-  const group = groups.value[index]
-  // 将组内学生移回未分组列表
-  unassignedStudents.value.push(...group.students)
-  groups.value.splice(index, 1)
-  ElMessage.success('分组已删除')
+const deleteGroup = async (index) => {
+  try {
+    const group = groups.value[index]
+    // 将组内学生移回未分组列表
+    unassignedStudents.value.push(...group.students)
+    
+    // 更新未分组学生状态
+    await api.createOrUpdateGroup(props.courseId, {
+      name: '未分组',
+      studentIds: unassignedStudents.value.map(student => student.id)
+    })
+    
+    groups.value.splice(index, 1)
+    ElMessage.success('分组已删除')
+  } catch (error) {
+    console.error('删除分组失败:', error)
+    ElMessage.error('删除分组失败，请重试')
+    // 刷新数据
+    await fetchGroups()
+  }
 }
 
 // 重命名分组
@@ -206,9 +256,24 @@ const renameGroup = (group) => {
 }
 
 // 更新分组名称
-const updateGroupName = (group) => {
-  // 实现更新分组名称的逻辑
-  console.log('Group name updated:', group.name)
+const updateGroupName = async (group) => {
+  try {
+    const response = await api.createOrUpdateGroup(props.courseId, {
+      name: group.name,
+      studentIds: group.students.map(student => student.id)
+    })
+    
+    if (response.code === 200) {
+      ElMessage.success('更新分组名称成功')
+    } else {
+      throw new Error(response.message || '更新分组名称失败')
+    }
+  } catch (error) {
+    console.error('更新分组名称失败:', error)
+    ElMessage.error(error.message || '更新分组名称失败')
+    // 刷新数据
+    await fetchGroups()
+  }
 }
 
 // 打开自动分组对话框
@@ -217,42 +282,33 @@ const handleAutoGroup = () => {
 }
 
 // 确认自动分组
-const confirmAutoGroup = () => {
-  const { groupCount, method } = autoGroupForm.value
-  const allStudents = [...unassignedStudents.value]
-  
-  // 清空现有分组
-  groups.value = []
-  
-  if (method === 'random') {
-    // 随机打乱学生顺序
-    for (let i = allStudents.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [allStudents[i], allStudents[j]] = [allStudents[j], allStudents[i]]
-    }
-  }
-  
-  // 创建新分组
-  for (let i = 0; i < groupCount; i++) {
-    groups.value.push({
-      id: Date.now() + i,
-      name: `第${i + 1}组`,
-      students: []
+const confirmAutoGroup = async () => {
+  try {
+    const response = await api.autoCreateGroups(props.courseId, {
+      groupCount: autoGroupForm.value.groupCount,
+      method: autoGroupForm.value.method
     })
+    
+    if (response.code === 200) {
+      groups.value = response.data.groups
+      unassignedStudents.value = []
+      autoGroupDialog.value = false
+      ElMessage.success('自动分组完成')
+    } else {
+      throw new Error(response.message || '自动分组失败')
+    }
+  } catch (error) {
+    console.error('自动分组失败:', error)
+    ElMessage.error(error.message || '自动分组失败')
   }
-  
-  // 分配学生
-  allStudents.forEach((student, index) => {
-    const groupIndex = index % groupCount
-    groups.value[groupIndex].students.push(student)
-  })
-  
-  // 清空未分组学生列表
-  unassignedStudents.value = []
-  
-  autoGroupDialog.value = false
-  ElMessage.success('自动分组完成')
 }
+
+// 组件挂载时获取分组数据
+onMounted(() => {
+  if (props.courseId) {
+    fetchGroups()
+  }
+})
 </script>
 
 <style scoped>
