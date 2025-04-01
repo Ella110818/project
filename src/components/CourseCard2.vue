@@ -1,7 +1,8 @@
 <template>
   <el-card class="course-card" shadow="hover">
     <div class="course-header">
-      <img src="@/assets/shuju.png" alt="课程图片" class="course-image" />
+      <img :src="courseImage" alt="课程图片" class="course-image" />
+      <div class="course-overlay"></div>
     </div>
     <div class="course-info">
       <h3 class="course-title">{{ course.title }}</h3>
@@ -12,6 +13,11 @@
 </template>
 
 <script>
+import kehuan2 from '@/assets/kehuan2.jpg'
+import kehuan3 from '@/assets/kehuan3.jpg'
+import kehuan4 from '@/assets/kehuan4.png'
+import shuju from '@/assets/shuju.png'
+
 export default {
   name: 'CourseCard2',
   props: {
@@ -20,25 +26,35 @@ export default {
       required: true,
       default: () => ({}),
       validator: function(value) {
-        return value.hasOwnProperty('id') && 
+        return value.hasOwnProperty('course_id') && 
                value.hasOwnProperty('title') &&
                value.hasOwnProperty('location');
       }
     },
   },
+  data() {
+    return {
+      courseImages: [kehuan4, shuju, kehuan2, kehuan3]
+    }
+  },
   computed: {
     displayLocation() {
       return this.course.location || '线上课程';
+    },
+    courseImage() {
+      // 使用 course_id 来选择图片
+      const index = this.course.course_id ? (Math.abs(this.course.course_id) + 2) % this.courseImages.length : 0;
+      return this.courseImages[index];
     }
   },
   methods: {
     viewCourse() {
-      // 在路由跳转前，保存课程信息到localStorage，以便在详情页面访问
+      // 使用 course_id
       localStorage.setItem('currentCourseName', this.course.title);
-      localStorage.setItem('currentCourseId', this.course.id);
+      localStorage.setItem('currentCourseId', this.course.course_id);
       
-      // 触发自定义事件，将课程ID传递给父组件
-      this.$emit('view-course', this.course.id);
+      // 触发自定义事件，使用 course_id
+      this.$emit('view-course', this.course.course_id);
     },
   },
 };
@@ -61,14 +77,35 @@ export default {
 
 .course-header {
   width: 100%;
-  height: 140px;
+  height: 200px;
   overflow: hidden;
+  position: relative;
 }
 
 .course-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.course-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.4));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.course-card:hover .course-image {
+  transform: scale(1.05);
+}
+
+.course-card:hover .course-overlay {
+  opacity: 1;
 }
 
 .course-info {

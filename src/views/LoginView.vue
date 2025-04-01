@@ -106,9 +106,14 @@ export default {
         });
 
         if (response.code === 200) {
-          // 记录用户角色到本地存储
+          // 记录用户信息到本地存储
           localStorage.setItem('isAuthenticated', 'true');
           localStorage.setItem('userRole', response.data.role);
+          localStorage.setItem('username', response.data.username);
+          localStorage.setItem('userId', response.data.userId);
+          if (response.data.avatar) {
+            localStorage.setItem('userAvatar', response.data.avatar);
+          }
           
           ElMessage.success('登录成功');
           
@@ -313,9 +318,25 @@ export default {
 }
 
 .login-input:focus {
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.4);
   border-color: rgba(24, 144, 255, 0.35);
   box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
+}
+
+/* 添加输入状态的样式 */
+.login-input:not(:placeholder-shown) {
+  background-color: rgba(0, 0, 0, 0.3);
+  color: white;
+}
+
+/* 自动填充时的样式 */
+.login-input:-webkit-autofill,
+.login-input:-webkit-autofill:hover,
+.login-input:-webkit-autofill:focus,
+.login-input:-webkit-autofill:active {
+  -webkit-text-fill-color: white !important;
+  -webkit-box-shadow: 0 0 0 30px rgba(0, 0, 0, 0.3) inset !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 .password-input-wrapper {

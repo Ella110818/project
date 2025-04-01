@@ -10,7 +10,8 @@
     </div>
     
     <div v-if="activeTab === 'homework'" class="assignments-list">
-      <el-card v-for="assignment in assignments" :key="assignment.id" class="assignment-card">
+      <el-empty v-if="assignments.length === 0" description="暂无作业" />
+      <el-card v-else v-loading="loading" v-for="assignment in assignments" :key="assignment.id" class="assignment-card">
         <div class="assignment-header">
           <h3>{{ assignment.title }}</h3>
           <el-tag :type="getStatusType(assignment.status)">{{ assignment.status }}</el-tag>
@@ -41,7 +42,8 @@
     </div>
 
     <div v-else-if="activeTab === 'exam'" class="assignments-list">
-      <el-card v-for="exam in exams" :key="exam.id" class="assignment-card">
+      <el-empty v-if="exams.length === 0" description="暂无考试" />
+      <el-card v-else v-loading="loading" v-for="exam in exams" :key="exam.id" class="assignment-card">
         <div class="assignment-header">
           <h3>{{ exam.title }}</h3>
           <el-tag :type="getStatusType(exam.status)">{{ exam.status }}</el-tag>
@@ -71,12 +73,26 @@
         </div>
       </el-card>
     </div>
+
+    <div class="pagination-container">
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handlePageChange"
+        layout="total, sizes, prev, pager, next, jumper"
+      />
+    </div>
   </div>
 </template>
 
 <script>
 import { Calendar, Timer, Document } from '@element-plus/icons-vue'
 import { Decoration2 } from '@kjgl77/datav-vue3'
+import api from '@/api'
+import { ElMessage } from 'element-plus'
 
 export default {
   name: 'StudentAssignments',
@@ -90,26 +106,11 @@ export default {
     return {
       activeTab: 'homework',
       assignments: [],
-      exams: [
-        {
-          id: 1,
-          title: '期中考试',
-          description: '本次考试范围为第1-5章',
-          examTime: '2024-04-15 14:00',
-          duration: 120,
-          totalScore: 100,
-          status: '未开始'
-        },
-        {
-          id: 2,
-          title: '第一次测验',
-          description: '本次测验范围为第1-2章',
-          examTime: '2024-03-10 10:00',
-          duration: 60,
-          totalScore: 100,
-          status: '已完成'
-        }
-      ]
+      exams: [],
+      loading: false,
+      currentPage: 1,
+      pageSize: 10,
+      total: 0
     }
   },
   created() {
@@ -119,15 +120,19 @@ export default {
       this.activeTab = typeParam;
     }
     
-    // 模拟获取作业数据
-    this.getAssignments();
+    // 加载作业数据
+    this.loadAssignments();
   },
   watch: {
     // 监听路由变化
     '$route.query.type': function(newType) {
       if (newType) {
         this.activeTab = newType;
+        this.loadAssignments();
       }
+    },
+    activeTab() {
+      this.loadAssignments();
     }
   },
   methods: {
@@ -140,6 +145,83 @@ export default {
         '进行中': 'primary'
       }
       return statusMap[status]
+    },
+    async loadAssignments() {
+      try {
+        this.loading = true;
+        const courseId = localStorage.getItem('currentCourseId');
+        if (!courseId) {
+          ElMessage.error('未找到课程信息');
+          return;
+        }
+
+        const params = {
+          type: this.activeTab === 'homework' ? 'assignment' : 'exam',
+          page: this.currentPage,
+          size: this.pageSize
+        };
+
+        const response = await api.getAssignments(courseId, params);
+        if (response.code === 200) {
+          if (this.activeTab === 'homework') {
+            this.assignments = response.data.items.map(item => ({
+              id: item.id,
+              title: item.title,
+              description: item.description,
+              deadline: item.deadline,
+              score: item.full_score,
+              status: this.getAssignmentStatus(item)
+            }));
+          } else {
+            this.exams = response.data.items.map(item => ({
+              id: item.id,
+              title: item.title,
+              description: item.description,
+              examTime: item.start_time,
+              duration: this.calculateDuration(item.start_time, item.deadline),
+              totalScore: item.full_score,
+              status: this.getExamStatus(item)
+            }));
+          }
+          this.total = response.data.total;
+        } else {
+          ElMessage.error(response.message || '获取数据失败');
+        }
+      } catch (error) {
+        console.error('加载失败:', error);
+        ElMessage.error('加载失败');
+      } finally {
+        this.loading = false;
+      }
+    },
+    getAssignmentStatus(item) {
+      const now = new Date();
+      const deadline = new Date(item.deadline);
+      if (item.submitted) return '已提交';
+      if (now > deadline) return '已截止';
+      return '未提交';
+    },
+    getExamStatus(item) {
+      const now = new Date();
+      const startTime = new Date(item.start_time);
+      const deadline = new Date(item.deadline);
+      if (now < startTime) return '未开始';
+      if (now > deadline) return '已完成';
+      return '进行中';
+    },
+    calculateDuration(startTime, deadline) {
+      const start = new Date(startTime);
+      const end = new Date(deadline);
+      return Math.round((end - start) / (1000 * 60)); // 返回分钟数
+    },
+    handlePageChange(page) {
+      this.currentPage = page;
+      this.loadAssignments();
+    },
+    handleSizeChange(size) {
+      this.pageSize = size;
+      this.currentPage = 1;
+      this.loadAssignments();
     },
     handleSubmit(assignment) {
       console.log('提交作业:', assignment)
@@ -160,27 +242,6 @@ export default {
         '已完成': '查看成绩'
       }
       return textMap[status]
-    },
-    getAssignments() {
-      // 模拟获取作业数据
-      this.assignments = [
-        {
-          id: 1,
-          title: '第一次作业',
-          description: '完成教材第一章的练习题1-5',
-          deadline: '2024-03-20 23:59',
-          score: 100,
-          status: '未提交'
-        },
-        {
-          id: 2,
-          title: '第二次作业',
-          description: '完成课后实验报告',
-          deadline: '2024-03-25 23:59',
-          score: 100,
-          status: '已提交'
-        }
-      ];
     }
   }
 }
@@ -337,5 +398,11 @@ export default {
 
 :deep(.el-tag) {
   border-radius: 4px;
+}
+
+.pagination-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
 }
 </style> 

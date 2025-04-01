@@ -132,6 +132,7 @@ const userInfo = ref({
 const fetchUserInfo = async () => {
   try {
     const storedUserId = localStorage.getItem('userId')
+    const storedUsername = localStorage.getItem('username')
     if (!storedUserId) {
       ElMessage.warning('请先登录')
       return
@@ -141,7 +142,7 @@ const fetchUserInfo = async () => {
     
     if (response.code === 200) {
       const data = response.data
-      username.value = data.name
+      username.value = storedUsername || data.name
       userId.value = data.userId
       email.value = data.email
       role.value = data.role

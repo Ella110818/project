@@ -218,8 +218,8 @@ export default {
   },
   data() {
     return {
-      userAvatar: 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png', // 默认头像
-      userName: '李同学' // 默认用户名
+      userAvatar: localStorage.getItem('userAvatar') || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png', // 从localStorage获取头像
+      userName: localStorage.getItem('username') || '未登录' // 从localStorage获取用户名
     }
   },
   methods: {
@@ -241,7 +241,7 @@ export default {
           // 清除所有相关的 localStorage 数据
           localStorage.removeItem('isAuthenticated');
           localStorage.removeItem('userRole');
-          localStorage.removeItem('name');
+          localStorage.removeItem('username');
           localStorage.removeItem('userAvatar');
           // 跳转到登录页
           this.$router.push('/login');

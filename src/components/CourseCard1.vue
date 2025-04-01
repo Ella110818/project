@@ -1,7 +1,7 @@
 <template>
   <el-card class="course-card" shadow="hover">
     <div class="course-header">
-      <img src="@/assets/shuju.png" alt="课程图片" class="course-image" />
+      <img :src="courseImage" alt="课程图片" class="course-image" />
     </div>
     <div class="course-info">
       <h3 class="course-title">{{ course.title }}</h3>
@@ -12,6 +12,11 @@
 </template>
 
 <script>
+import kehuan2 from '@/assets/kehuan2.jpg'
+import kehuan3 from '@/assets/kehuan3.jpg'
+import kehuan4 from '@/assets/kehuan4.png'
+import shuju from '@/assets/shuju.png'
+
 export default {
   name: 'CourseCard1',
   props: {
@@ -25,6 +30,18 @@ export default {
                value.hasOwnProperty('teacherName');
       }
     },
+  },
+  data() {
+    return {
+      courseImages: [shuju, kehuan2, kehuan3, kehuan4]
+    }
+  },
+  computed: {
+    courseImage() {
+      // 根据课程ID来选择图片，确保同一个课程始终显示相同的图片
+      const index = this.course.id ? Math.abs(this.course.id) % this.courseImages.length : 0;
+      return this.courseImages[index];
+    }
   },
   methods: {
     viewCourse() {
@@ -52,14 +69,20 @@ export default {
 
 .course-header {
   width: 100%;
-  height: 140px;
+  height: 200px; /* 增加图片高度以更好地展示科技风格图片 */
   overflow: hidden;
+  position: relative;
 }
 
 .course-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.course-card:hover .course-image {
+  transform: scale(1.05); /* 添加悬停时的图片放大效果 */
 }
 
 .course-info {

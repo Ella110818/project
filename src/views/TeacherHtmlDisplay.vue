@@ -1,7 +1,7 @@
 <template>
   <div class="display-container">
     <iframe 
-      :src="'/teacher/Teacher.html'" 
+      :src="'./teacher/index.html'" 
       frameborder="0" 
       class="display-frame"
     ></iframe>

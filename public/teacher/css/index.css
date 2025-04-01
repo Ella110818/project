@@ -528,4 +528,28 @@ li {
         opacity: 0;
     }
 }
-
+.course-selector {
+    margin: 15px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.data-select {
+    margin-left: 12%;
+    margin-top: 3%;
+    padding: 8px 15px;
+    border: 1px solid #4a90e2;
+    border-radius: 4px;
+    background-color: rgba(74, 144, 226, 0.1);
+    color: #ffffff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.data-select:hover {
+    background-color: rgba(74, 144, 226, 0.2);
+}
+.data-select option {
+    background-color: #fff;
+    color: #333;
+}

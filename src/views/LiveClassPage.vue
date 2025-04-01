@@ -6,7 +6,8 @@
         <div class="course-details">
           <span class="detail-item"><i class="el-icon-location"></i> {{ courseLocation }}</span>
           <span class="detail-item"><i class="el-icon-user"></i> {{ courseTeacher }}</span>
-          <span class="detail-item"><i class="el-icon-user-solid"></i> {{ studentCount }}人</span>
+          <span class="detail-item">{{ studentCount }}</span>
+          <span class="detail-item">在线：{{ onlineCount }}人</span>
           <span class="live-badge">实时授课中</span>
         </div>
       </div>
@@ -18,20 +19,22 @@
     <div class="class-content">
       <div class="main-content">
         <div class="video-container">
-          <div class="video-placeholder">
-            <i class="el-icon-video-camera"></i>
-            <h3>视频画面</h3>
-            <p>教师端实时授课视频流将在此处显示</p>
+          <video ref="videoRef" autoplay playsinline class="camera-video"></video>
+          <div v-if="!cameraActive" class="video-placeholder">
+            <div class="placeholder-content">
+              <div class="title">视频画面</div>
+              <div class="subtitle">教师端实时授课视频流将在此处显示</div>
+            </div>
           </div>
         </div>
 
         <div class="control-panel">
           <el-button-group>
             <el-button type="primary" size="medium" icon="el-icon-microphone">麦克风</el-button>
-            <el-button type="primary" size="medium" icon="el-icon-video-camera">摄像头</el-button>
+            <el-button :type="cameraActive ? 'success' : 'primary'" size="medium" icon="el-icon-video-camera" @click="toggleCamera">摄像头</el-button>
             <el-button type="primary" size="medium" icon="el-icon-monitor">共享屏幕</el-button>
             <el-button type="warning" size="medium" icon="el-icon-upload">上传课件</el-button>
-            <el-button type="success" size="medium" icon="el-icon-s-claim">点名</el-button>
+            <el-button type="success" size="medium" icon="el-icon-s-claim" @click="captureImage">点名</el-button>
             <el-button type="info" size="medium" icon="el-icon-data-analysis">课堂统计</el-button>
           </el-button-group>
         </div>
@@ -91,13 +94,73 @@
         </div>
       </div>
     </div>
+
+    <!-- 添加预览对话框 -->
+    <el-dialog
+      title="签到照片预览"
+      v-model="previewVisible"
+      width="50%"
+      :before-close="handleClosePreview"
+    >
+      <div class="preview-container">
+        <img :src="previewImage" class="preview-image" alt="签到照片" />
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="handleClosePreview">取消</el-button>
+          <el-button type="primary" :loading="uploadLoading" @click="handleConfirmUpload">开始点名</el-button>
+        </span>
+      </template>
+    </el-dialog>
+
+    <!-- 添加点名结果对话框 -->
+    <el-dialog
+      title="点名结果"
+      v-model="attendanceResultVisible"
+      width="60%"
+    >
+      <div class="attendance-result">
+        <el-alert
+          v-if="attendanceResult.message"
+          :title="attendanceResult.message"
+          type="success"
+          :closable="false"
+          class="mb-20"
+        />
+        
+        <el-table :data="attendanceResult.attendance_records" border>
+          <el-table-column prop="name" label="姓名" />
+          <el-table-column prop="present" label="出勤状态">
+            <template #default="scope">
+              <el-tag :type="scope.row.present ? 'success' : 'danger'">
+                {{ scope.row.present ? '已到' : '未识别' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="confidence" label="置信度">
+            <template #default="scope">
+              <el-progress 
+                :percentage="Math.round(scope.row.confidence * 100)"
+                :status="scope.row.confidence > 0.7 ? 'success' : 'warning'"
+              />
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button type="primary" @click="attendanceResultVisible = false">确定</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessageBox, ElMessage } from 'element-plus';
+import api from '@/api';
 
 export default {
   name: 'LiveClassPage',
@@ -107,14 +170,201 @@ export default {
     const courseLocation = ref('');
     const courseTeacher = ref('');
     const studentCount = ref(0);
+    const onlineCount = ref(0);
     const chatMessage = ref('');
+    const videoRef = ref(null);
+    const cameraActive = ref(false);
+    const previewVisible = ref(false);
+    const previewImage = ref('');
+    const uploadLoading = ref(false);
+    const attendanceResultVisible = ref(false);
+    const attendanceResult = ref({
+      message: '',
+      attendance_records: []
+    });
+    let stream = null;
+    let capturedImageData = null;
+
+    // 获取课程详情
+    const fetchCourseDetail = async () => {
+      try {
+        const courseId = localStorage.getItem('currentCourseId');
+        if (!courseId) {
+          ElMessage.error('课程ID不存在');
+          return;
+        }
+
+        const response = await api.getCourseDetail(courseId);
+        if (response.code === 200) {
+          const courseData = response.data;
+          courseName.value = courseData.title;
+          courseLocation.value = courseData.location;
+          courseTeacher.value = courseData.teacher;
+          studentCount.value = courseData.students_count || 0;
+          onlineCount.value = 0;
+        } else {
+          ElMessage.error(response.message || '获取课程信息失败');
+        }
+      } catch (error) {
+        console.error('获取课程信息失败:', error);
+        ElMessage.error('获取课程信息失败，请稍后重试');
+      }
+    };
+
+    // 开启摄像头
+    const startCamera = async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false
+        });
+        videoRef.value.srcObject = stream;
+        cameraActive.value = true;
+      } catch (error) {
+        ElMessage.error('无法访问摄像头：' + error.message);
+      }
+    };
+
+    // 关闭摄像头
+    const stopCamera = () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+        videoRef.value.srcObject = null;
+        cameraActive.value = false;
+      }
+    };
+
+    // 切换摄像头状态
+    const toggleCamera = async () => {
+      if (cameraActive.value) {
+        stopCamera();
+      } else {
+        await startCamera();
+      }
+    };
+
+    // 截取当前帧
+    const captureImage = () => {
+      if (!cameraActive.value) {
+        ElMessage.warning('请先开启摄像头');
+        return;
+      }
+
+      try {
+        const video = videoRef.value;
+        const canvas = document.createElement('canvas');
+        
+        // 降低图片尺寸以减小文件大小
+        const maxWidth = 800;
+        const maxHeight = 600;
+        let width = video.videoWidth;
+        let height = video.videoHeight;
+        
+        // 保持宽高比的情况下调整尺寸
+        if (width > maxWidth) {
+          const ratio = maxWidth / width;
+          width = maxWidth;
+          height = Math.round(height * ratio);
+        }
+        if (height > maxHeight) {
+          const ratio = maxHeight / height;
+          height = maxHeight;
+          width = Math.round(width * ratio);
+        }
+        
+        // 确保尺寸为整数
+        width = Math.floor(width);
+        height = Math.floor(height);
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const context = canvas.getContext('2d');
+        // 添加白色背景以确保图片格式正确
+        context.fillStyle = '#FFFFFF';
+        context.fillRect(0, 0, width, height);
+        
+        // 确保图像清晰
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = 'high';
+        context.drawImage(video, 0, 0, width, height);
+        
+        // 将图片转换为 base64 格式，降低质量以减小文件大小
+        const imageBase64 = canvas.toDataURL('image/jpeg', 0.7);
+        
+        // 保存图片数据并显示预览
+        capturedImageData = imageBase64;
+        previewImage.value = imageBase64;
+        previewVisible.value = true;
+      } catch (error) {
+        console.error('截图失败:', error);
+        ElMessage.error('截图失败：' + error.message);
+      }
+    };
+
+    // 关闭预览
+    const handleClosePreview = () => {
+      previewVisible.value = false;
+      previewImage.value = '';
+      capturedImageData = null;
+    };
+
+    // 确认上传并开始点名
+    const handleConfirmUpload = async () => {
+      if (!capturedImageData) {
+        ElMessage.warning('没有可用的图片数据');
+        return;
+      }
+
+      uploadLoading.value = true;
+      try {
+        // 调用人脸识别API
+        const response = await api.checkAttendance(capturedImageData);
+        
+        // 检查响应状态
+        if (response.status === 'error') {
+          ElMessage.error(response.message || '点名失败');
+          return;
+        }
+
+        // 确保attendance_records存在且是数组
+        const records = Array.isArray(response.attendance_records) ? response.attendance_records : [];
+        
+        // 更新考勤结果
+        attendanceResult.value = {
+          message: response.message || '点名完成',
+          attendance_records: records.map(record => ({
+            name: record.name || '未知',
+            present: record.present === 1,
+            confidence: record.confidence || 0
+          }))
+        };
+        
+        // 只有在有考勤记录时才显示结果
+        if (records.length > 0) {
+          handleClosePreview();
+          attendanceResultVisible.value = true;
+          ElMessage.success(response.message || '点名完成');
+        } else {
+          ElMessage.warning('未检测到有效的考勤记录');
+        }
+      } catch (error) {
+        console.error('点名失败:', error);
+        ElMessage.error('点名失败，请检查网络连接或稍后重试');
+      } finally {
+        uploadLoading.value = false;
+      }
+    };
 
     onMounted(() => {
-      // 从localStorage获取课程信息
-      courseName.value = localStorage.getItem('currentCourseName') || '未知课程';
-      courseLocation.value = localStorage.getItem('currentCourseLocation') || '未知位置';
-      courseTeacher.value = localStorage.getItem('currentCourseTeacher') || '未知教师';
-      studentCount.value = localStorage.getItem('currentCourseStudentCount') || 0;
+      // 获取课程详情
+      fetchCourseDetail();
+    });
+
+    onUnmounted(() => {
+      // 关闭摄像头
+      stopCamera();
     });
 
     const endClass = () => {
@@ -141,8 +391,20 @@ export default {
       courseLocation,
       courseTeacher,
       studentCount,
+      onlineCount,
       chatMessage,
       endClass,
+      videoRef,
+      cameraActive,
+      toggleCamera,
+      captureImage,
+      previewVisible,
+      previewImage,
+      handleClosePreview,
+      handleConfirmUpload,
+      uploadLoading,
+      attendanceResultVisible,
+      attendanceResult
     };
   },
 };
@@ -214,28 +476,48 @@ export default {
   background-color: #f9f9f9;
   border-radius: 8px;
   overflow: hidden;
+  position: relative;
+  min-height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .video-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   height: 100%;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  color: #909399;
+  background-color: #f9f9f9;
 }
 
-.video-placeholder i {
-  font-size: 48px;
-  margin-bottom: 10px;
+.placeholder-content {
+  text-align: center;
 }
 
-.video-placeholder h3 {
-  margin: 0 0 10px 0;
+.placeholder-content .title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
 }
 
-.video-placeholder p {
-  margin: 0;
+.placeholder-content .subtitle {
+  font-size: 14px;
+  color: #666;
+}
+
+.camera-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .control-panel {
@@ -370,5 +652,37 @@ export default {
 
 .message-input .el-textarea {
   flex: 1;
+}
+
+.preview-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+.attendance-result {
+  padding: 20px;
+}
+
+.attendance-result .el-table {
+  margin-top: 20px;
 }
 </style> 

@@ -63,6 +63,19 @@
         </el-card>
     </div>
 
+    <!-- 分页 -->
+    <div class="pagination-container">
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handlePageChange"
+        layout="total, sizes, prev, pager, next, jumper"
+      />
+    </div>
+
     <!-- 添加/编辑对话框 -->
     <el-dialog
       v-model="dialogVisible"
@@ -134,8 +147,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import api from '@/api';
 import { 
   Calendar, 
   Timer, 
@@ -153,6 +167,84 @@ import {
 const searchText = ref('');
 const typeFilter = ref('');
 const statusFilter = ref('');
+
+// 分页参数
+const currentPage = ref(1);
+const pageSize = ref(10);
+const total = ref(0);
+
+// 作业列表数据
+const assignments = ref([]);
+
+// 获取作业列表
+const loadAssignments = async () => {
+  try {
+    const courseId = localStorage.getItem('currentCourseId');
+    if (!courseId) {
+      ElMessage.error('未找到课程信息');
+      return;
+    }
+
+    const response = await api.getAssignments(courseId, {
+      type: typeFilter.value,
+      status: statusFilter.value,
+      page: currentPage.value,
+      size: pageSize.value
+    });
+
+    if (response.code === 200) {
+      assignments.value = response.data.items.map(item => ({
+        id: item.id,
+        title: item.title,
+        type: item.type,
+        description: item.description,
+        startTime: item.start_time,
+        deadline: item.deadline,
+        status: item.status,
+        fullScore: item.full_score,
+        submitted: item.submitted,
+        total: item.total
+      }));
+      total.value = response.data.total;
+    } else {
+      ElMessage.error(response.message || '获取作业列表失败');
+    }
+  } catch (error) {
+    console.error('加载作业列表失败:', error);
+    ElMessage.error('加载作业列表失败');
+  }
+};
+
+// 监听筛选条件变化
+watch([typeFilter, statusFilter], () => {
+  currentPage.value = 1;
+  loadAssignments();
+});
+
+// 处理分页变化
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  loadAssignments();
+};
+
+const handleSizeChange = (size) => {
+  pageSize.value = size;
+  currentPage.value = 1;
+  loadAssignments();
+};
+
+// 筛选后的作业/考试列表
+const filteredAssignments = computed(() => {
+  if (!searchText.value) {
+    return assignments.value;
+  }
+  
+  const searchQuery = searchText.value.toLowerCase();
+  return assignments.value.filter(item => 
+    item.title.toLowerCase().includes(searchQuery) || 
+    item.description.toLowerCase().includes(searchQuery)
+  );
+});
 
 // 表单数据
 const dialogVisible = ref(false);
@@ -218,85 +310,6 @@ const dateShortcuts = [
     },
   },
 ];
-
-// 作业和考试数据
-const assignments = ref([
-  {
-    id: 1,
-        title: '期中考试',
-    type: 'exam',
-    description: '请大家认真准备期中考试。包括第1-5章内容，考试时间2小时。',
-    startTime: '2024-05-15 08:30',
-    deadline: '2024-05-15 10:30',
-    status: '进行中',
-    fullScore: 100,
-    submitted: 28,
-    total: 35
-  },
-  {
-    id: 2,
-    title: '作业1 - 第一章课后习题',
-    type: 'homework',
-    description: '完成第一章的课后习题。请认真思考，独立完成。',
-    startTime: '2024-05-01',
-    deadline: '2024-05-10',
-    status: '已截止',
-    fullScore: 10,
-    submitted: 32,
-    total: 35
-  },
-  {
-    id: 3,
-    title: '作业2 - 第二章复习',
-    type: 'homework',
-    description: '复习第二章内容，完成章节小结。',
-    startTime: '2024-05-03',
-    deadline: '2024-05-12',
-    status: '已截止',
-    fullScore: 10,
-    submitted: 30,
-    total: 35
-  },
-  {
-    id: 4,
-    title: '作业3 - 第三章课后题',
-    type: 'homework',
-    description: '提交第三章的课后习题，包括计算题和论述题。',
-    startTime: '2024-05-05',
-    deadline: '2024-05-18',
-    status: '进行中',
-    fullScore: 15,
-    submitted: 25,
-    total: 35
-  },
-  {
-    id: 5,
-        title: '期末考试',
-    type: 'exam',
-    description: '本学期期末考试，包括所有章节内容。',
-    startTime: '2024-06-01 14:00',
-    deadline: '2024-06-01 16:00',
-    status: '未开始',
-    fullScore: 100,
-    submitted: 0,
-    total: 35
-      },
-    ]);
-
-// 筛选后的作业/考试列表
-const filteredAssignments = computed(() => {
-  return assignments.value.filter(item => {
-    const matchesSearch = searchText.value ? 
-      item.title.toLowerCase().includes(searchText.value.toLowerCase()) || 
-      item.description.toLowerCase().includes(searchText.value.toLowerCase()) : 
-      true;
-    
-    const matchesType = typeFilter.value ? item.type === typeFilter.value : true;
-    const matchesStatus = statusFilter.value ? item.status === statusFilter.value : true;
-    
-    return matchesSearch && matchesType && matchesStatus;
-  });
-});
 
 // 获取状态对应的类型
 const getStatusType = (status) => {
@@ -382,42 +395,49 @@ const handleExceed = () => {
 };
 
 // 提交表单
-const handleSubmit = () => {
-  formRef.value.validate((valid) => {
+const handleSubmit = async () => {
+  formRef.value.validate(async (valid) => {
     if (valid) {
-      // 构建保存的数据
-      const saveData = {
-        id: isEditing.value ? formData.value.id : assignments.value.length + 1,
-        title: formData.value.title,
-        type: formData.value.type,
-        description: formData.value.description,
-        startTime: formData.value.timeRange[0],
-        deadline: formData.value.timeRange[1],
-        fullScore: formData.value.fullScore,
-        status: new Date() > new Date(formData.value.timeRange[0]) ? '进行中' : '未开始',
-        submitted: isEditing.value ? assignments.value.find(a => a.id === formData.value.id)?.submitted || 0 : 0,
-        total: 35
-      };
-
-      if (isEditing.value) {
-        // 更新现有项
-        const index = assignments.value.findIndex(a => a.id === formData.value.id);
-        if (index !== -1) {
-          assignments.value[index] = saveData;
+      try {
+        const courseId = localStorage.getItem('currentCourseId');
+        if (!courseId) {
+          ElMessage.error('未找到课程信息');
+          return;
         }
-        ElMessage.success('更新成功');
-      } else {
-        // 添加新项
-        assignments.value.push(saveData);
-        ElMessage.success('添加成功');
-      }
 
-      dialogVisible.value = false;
+        // 构建保存的数据
+        const saveData = {
+          title: formData.value.title,
+          type: formData.value.type,
+          description: formData.value.description,
+          start_time: formData.value.timeRange[0],
+          deadline: formData.value.timeRange[1],
+          full_score: formData.value.fullScore
+        };
+
+        const response = await api.createAssignment(courseId, saveData);
+        
+        if (response.code === 200) {
+          ElMessage.success(isEditing.value ? '更新成功' : '添加成功');
+          dialogVisible.value = false;
+          loadAssignments(); // 重新加载列表
+        } else {
+          ElMessage.error(response.message || '保存失败');
+        }
+      } catch (error) {
+        console.error('保存失败:', error);
+        ElMessage.error('保存失败');
+      }
     } else {
       return false;
     }
   });
 };
+
+// 组件挂载时加载数据
+onMounted(() => {
+  loadAssignments();
+});
 </script>
 
 <style scoped>
@@ -537,5 +557,11 @@ const handleSubmit = () => {
   color: #909399;
   font-size: 12px;
   margin-top: 8px;
+}
+
+.pagination-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

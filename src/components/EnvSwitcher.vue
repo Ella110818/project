@@ -22,7 +22,7 @@
         <div class="env-info">
           <p>当前环境: <strong>{{ isLocal ? '本地模拟' : '生产环境' }}</strong></p>
           <p v-if="isLocal" class="env-note">使用localStorage存储的模拟数据</p>
-          <p v-else class="env-note">连接到: https://wstier477.pythonanywhere.com</p>
+          <p v-else class="env-note">连接到: http://47.238.113.163</p>
         </div>
       </div>
     </el-popover>

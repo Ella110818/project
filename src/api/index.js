@@ -22,17 +22,24 @@ export const ApiEnv = {
     PRODUCTION: 'production'
 };
 
-// 默认环境为生产环境，可以通过localStorage存储用户的偏好
+// 当前环境
 const currentEnv = localStorage.getItem('api_environment') || ApiEnv.PRODUCTION;
+
+// 获取API基础URL
+const getBaseUrl = () => {
+    return currentEnv === ApiEnv.PRODUCTION
+        ? 'http://47.238.113.163'  // 生产环境地址
+        : 'http://localhost:3000';  // 本地开发环境地址
+};
 
 // 创建axios实例
 const request = axios.create({
-    baseURL: 'http://47.238.113.163',
+    baseURL: getBaseUrl(),
     timeout: 15000,
     headers: {
         'Content-Type': 'application/json'
     },
-    withCredentials: false
+    withCredentials: false  // 改为 false，因为后端使用 * 通配符
 });
 
 // 请求拦截器
@@ -302,17 +309,13 @@ const productionApi = {
                 username: loginData.username,
                 password: loginData.password
             });
-
-            // 如果登录成功，保存token到localStorage
+            // 如果登录成功，保存token
             if (response.code === 200 && response.data.token) {
                 localStorage.setItem('token', response.data.token);
-                localStorage.setItem('userRole', response.data.role);
-                localStorage.setItem('userId', response.data.userId);
-                localStorage.setItem('username', response.data.username);
             }
-
             return response;
         } catch (error) {
+            console.error('登录失败:', error);
             throw error;
         }
     },
@@ -548,6 +551,92 @@ const productionApi = {
             console.error('获取课程学生列表失败:', error);
             throw error;
         }
+    },
+
+    // 获取作业和考试列表
+    getAssignments: async (courseId, params = {}) => {
+        try {
+            const response = await request.get(`/api/advanced/courses/${courseId}/assignments/`, {
+                params: {
+                    type: params.type,
+                    status: params.status,
+                    page: params.page || 1,
+                    size: params.size || 10
+                }
+            });
+            return response;
+        } catch (error) {
+            console.error('获取作业和考试列表失败:', error);
+            throw error;
+        }
+    },
+
+    // 发布作业或考试
+    createAssignment: async (courseId, data) => {
+        try {
+            const response = await request.post(`/api/advanced/courses/${courseId}/assignments/`, {
+                title: data.title,
+                type: data.type,
+                description: data.description,
+                start_time: data.start_time,
+                deadline: data.deadline,
+                full_score: data.full_score
+            });
+            return response;
+        } catch (error) {
+            console.error('发布作业或考试失败:', error);
+            throw error;
+        }
+    },
+
+    // 人脸识别考勤
+    checkAttendance: async (imageData) => {
+        try {
+            // 直接发送base64图像数据
+            const response = await request({
+                url: '/face_recognition/check_attendance/',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                data: {
+                    image: imageData  // 直接发送完整的base64字符串
+                }
+            });
+
+            // 检查响应数据的完整性
+            if (!response || typeof response !== 'object') {
+                return {
+                    status: 'error',
+                    message: '服务器响应格式错误',
+                    attendance_records: []
+                };
+            }
+
+            // 确保返回数据符合预期格式
+            return {
+                status: response.status || 'error',
+                message: response.message || '服务器响应异常',
+                file_path: response.file_path || '',
+                attendance_records: Array.isArray(response.attendance_records) ? response.attendance_records : []
+            };
+        } catch (error) {
+            console.error('人脸识别考勤失败:', error);
+            // 处理500错误
+            if (error.response && error.response.status === 500) {
+                return {
+                    status: 'error',
+                    message: '服务器内部错误，请稍后重试',
+                    attendance_records: []
+                };
+            }
+            // 处理其他错误
+            return {
+                status: 'error',
+                message: error.response?.data?.message || error.message || '人脸识别考勤失败',
+                attendance_records: []
+            };
+        }
     }
 };
 
@@ -558,19 +647,17 @@ const apiImplementation = currentEnv === ApiEnv.LOCAL ? mockApi : productionApi;
 const api = {
     ...apiImplementation,
 
-    // 切换API环境
-    switchEnvironment: (env) => {
-        if (env === ApiEnv.LOCAL || env === ApiEnv.PRODUCTION) {
-            localStorage.setItem('api_environment', env);
-            // 提示用户环境已切换并自动刷新页面
-            alert('环境已切换，页面将自动刷新以应用更改');
-            window.location.reload();
-        }
+    // 获取当前环境
+    getCurrentEnvironment() {
+        return currentEnv;
     },
 
-    // 获取当前环境
-    getCurrentEnvironment: () => {
-        return localStorage.getItem('api_environment') || ApiEnv.PRODUCTION;
+    // 切换环境
+    switchEnvironment(env) {
+        if (env === ApiEnv.LOCAL || env === ApiEnv.PRODUCTION) {
+            localStorage.setItem('api_environment', env);
+            window.location.reload();
+        }
     }
 };
 

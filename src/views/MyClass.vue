@@ -52,15 +52,7 @@ export default {
         const response = await api.getCourses(this.page, this.pageSize);
         
         if (response.code === 200) {
-          this.courses = response.data.items.map(item => ({
-            id: item.course_id,
-            title: item.title,
-            location: item.location,
-            description: item.description,
-            system: item.system,
-            schedule: item.schedule,
-            semester: item.semester
-          }));
+          this.courses = response.data.items;
           this.total = response.data.total;
         } else {
           this.$message.error(response.message || '获取课程列表失败');
