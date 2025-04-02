@@ -176,39 +176,69 @@ const total = ref(0);
 // 作业列表数据
 const assignments = ref([]);
 
-// 获取作业列表
+// 模拟数据
+const mockAssignments = [
+  {
+    id: 1,
+    title: '第一章课后作业',
+    type: 'homework',
+    description: '完成教材第15-20页的习题',
+    startTime: '2023-11-01 08:00',
+    deadline: '2023-11-10 23:59',
+    status: '已截止',
+    fullScore: 100,
+    submitted: 18,
+    total: 24
+  },
+  {
+    id: 2,
+    title: '第二章编程实验',
+    type: 'homework',
+    description: '完成实验指导书中的编程任务，并提交源代码和报告',
+    startTime: '2023-11-15 08:00',
+    deadline: '2023-11-25 23:59',
+    status: '进行中',
+    fullScore: 100,
+    submitted: 10,
+    total: 24
+  },
+  {
+    id: 3,
+    title: '期中考试',
+    type: 'exam',
+    description: '考试范围：第1-5章，闭卷，时长120分钟',
+    startTime: '2023-12-01 14:00',
+    deadline: '2023-12-01 16:00',
+    status: '未开始',
+    fullScore: 100,
+    submitted: 0,
+    total: 24
+  }
+];
+
+// 获取作业列表 - 使用本地数据代替API调用
 const loadAssignments = async () => {
   try {
-    const courseId = localStorage.getItem('currentCourseId');
-    if (!courseId) {
-      ElMessage.error('未找到课程信息');
-      return;
-    }
-
-    const response = await api.getAssignments(courseId, {
-      type: typeFilter.value,
-      status: statusFilter.value,
-      page: currentPage.value,
-      size: pageSize.value
-    });
-
-    if (response.code === 200) {
-      assignments.value = response.data.items.map(item => ({
-        id: item.id,
-        title: item.title,
-        type: item.type,
-        description: item.description,
-        startTime: item.start_time,
-        deadline: item.deadline,
-        status: item.status,
-        fullScore: item.full_score,
-        submitted: item.submitted,
-        total: item.total
-      }));
-      total.value = response.data.total;
-    } else {
-      ElMessage.error(response.message || '获取作业列表失败');
-    }
+    // 模拟加载延迟
+    setTimeout(() => {
+      // 过滤数据
+      let filtered = [...mockAssignments];
+      
+      if (typeFilter.value) {
+        filtered = filtered.filter(item => item.type === typeFilter.value);
+      }
+      
+      if (statusFilter.value) {
+        filtered = filtered.filter(item => item.status === statusFilter.value);
+      }
+      
+      // 模拟分页
+      const start = (currentPage.value - 1) * pageSize.value;
+      const end = start + pageSize.value;
+      assignments.value = filtered.slice(start, end);
+      total.value = filtered.length;
+      
+    }, 300);
   } catch (error) {
     console.error('加载作业列表失败:', error);
     ElMessage.error('加载作业列表失败');
@@ -377,10 +407,11 @@ const handleDelete = (item) => {
     }
   )
     .then(() => {
-      // 从列表中删除
-      const index = assignments.value.findIndex(a => a.id === item.id);
+      // 从模拟数据中删除
+      const index = mockAssignments.findIndex(a => a.id === item.id);
       if (index !== -1) {
-        assignments.value.splice(index, 1);
+        mockAssignments.splice(index, 1);
+        loadAssignments(); // 重新加载列表
       }
       ElMessage.success('删除成功');
     })
@@ -415,15 +446,43 @@ const handleSubmit = async () => {
           full_score: formData.value.fullScore
         };
 
-        const response = await api.createAssignment(courseId, saveData);
-        
-        if (response.code === 200) {
+        // 模拟API保存
+        setTimeout(() => {
+          if (isEditing.value) {
+            // 更新已有作业
+            const index = mockAssignments.findIndex(item => item.id === formData.value.id);
+            if (index !== -1) {
+              mockAssignments[index] = {
+                ...mockAssignments[index],
+                title: saveData.title,
+                type: saveData.type,
+                description: saveData.description,
+                startTime: saveData.start_time,
+                deadline: saveData.deadline,
+                fullScore: saveData.full_score
+              };
+            }
+          } else {
+            // 添加新作业
+            const newItem = {
+              id: Date.now(),
+              title: saveData.title,
+              type: saveData.type,
+              description: saveData.description,
+              startTime: saveData.start_time,
+              deadline: saveData.deadline,
+              status: '未开始',
+              fullScore: saveData.full_score,
+              submitted: 0,
+              total: 24
+            };
+            mockAssignments.push(newItem);
+          }
+          
           ElMessage.success(isEditing.value ? '更新成功' : '添加成功');
           dialogVisible.value = false;
           loadAssignments(); // 重新加载列表
-        } else {
-          ElMessage.error(response.message || '保存失败');
-        }
+        }, 300);
       } catch (error) {
         console.error('保存失败:', error);
         ElMessage.error('保存失败');

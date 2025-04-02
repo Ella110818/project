@@ -9,16 +9,6 @@
             <CourseCard2 :course="course" @view-course="handleViewCourse" />
           </el-col>
         </el-row>
-
-        <el-pagination
-          v-if="total > 0"
-          :current-page="page"
-          :page-size="pageSize"
-          :total="total"
-          layout="total, prev, pager, next"
-          @current-change="handlePageChange"
-          class="pagination"
-        />
       </el-main>
     </el-container>
   </div>
@@ -36,10 +26,7 @@ export default {
   data() {
     return {
       courses: [],
-      loading: false,
-      page: 1,
-      pageSize: 10,
-      total: 0
+      loading: false
     };
   },
   async created() {
@@ -49,11 +36,10 @@ export default {
     async fetchCourses() {
       try {
         this.loading = true;
-        const response = await api.getCourses(this.page, this.pageSize);
+        const response = await api.getCourses();
         
         if (response.code === 200) {
           this.courses = response.data.items;
-          this.total = response.data.total;
         } else {
           this.$message.error(response.message || '获取课程列表失败');
         }
@@ -63,11 +49,6 @@ export default {
       } finally {
         this.loading = false;
       }
-    },
-
-    async handlePageChange(newPage) {
-      this.page = newPage;
-      await this.fetchCourses();
     },
 
     async handleViewCourse(courseId) {
@@ -101,11 +82,31 @@ export default {
 
 <style scoped>
 .common-layout {
+  position: relative;
   width: 100%;
+  min-height: 100vh;
+  padding-top: 20px;
+  box-sizing: border-box;
+}
+
+.common-layout::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-image: url('@/assets/BG02.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -1;
 }
 
 .home-view {
+  position: relative;
   padding: 20px 40px;
+  z-index: 1;
 }
 
 :deep(.el-row) {
@@ -128,11 +129,6 @@ export default {
   height: 56px;
   align-items: center;
   padding: 0 20px;
-}
-
-.pagination {
-  margin-top: 20px;
-  text-align: center;
 }
 </style> 
 

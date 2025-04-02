@@ -73,18 +73,6 @@
         </div>
       </el-card>
     </div>
-
-    <div class="pagination-container">
-      <el-pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :page-sizes="[10, 20, 50, 100]"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handlePageChange"
-        layout="total, sizes, prev, pager, next, jumper"
-      />
-    </div>
   </div>
 </template>
 
@@ -105,12 +93,45 @@ export default {
   data() {
     return {
       activeTab: 'homework',
-      assignments: [],
-      exams: [],
-      loading: false,
-      currentPage: 1,
-      pageSize: 10,
-      total: 0
+      assignments: [
+        {
+          id: 1,
+          title: '第一章作业',
+          description: '完成第一章课后习题1-10',
+          deadline: '2024-03-20 23:59',
+          score: 100,
+          status: '未提交'
+        },
+        {
+          id: 2,
+          title: '第二章作业',
+          description: '完成第二章编程练习',
+          deadline: '2024-03-25 23:59',
+          score: 100,
+          status: '已提交'
+        }
+      ],
+      exams: [
+        {
+          id: 1,
+          title: '期中考试',
+          description: '覆盖第1-5章内容',
+          examTime: '2024-04-15 14:00',
+          duration: 120,
+          totalScore: 100,
+          status: '未开始'
+        },
+        {
+          id: 2,
+          title: '第一次单元测试',
+          description: '第一章和第二章内容测试',
+          examTime: '2024-03-10 10:00',
+          duration: 60,
+          totalScore: 50,
+          status: '已完成'
+        }
+      ],
+      loading: false
     }
   },
   created() {
@@ -119,9 +140,6 @@ export default {
     if (typeParam) {
       this.activeTab = typeParam;
     }
-    
-    // 加载作业数据
-    this.loadAssignments();
   },
   watch: {
     // 监听路由变化
@@ -147,93 +165,29 @@ export default {
       return statusMap[status]
     },
     async loadAssignments() {
-      try {
-        this.loading = true;
-        const courseId = localStorage.getItem('currentCourseId');
-        if (!courseId) {
-          ElMessage.error('未找到课程信息');
-          return;
-        }
-
-        const params = {
-          type: this.activeTab === 'homework' ? 'assignment' : 'exam',
-          page: this.currentPage,
-          size: this.pageSize
-        };
-
-        const response = await api.getAssignments(courseId, params);
-        if (response.code === 200) {
-          if (this.activeTab === 'homework') {
-            this.assignments = response.data.items.map(item => ({
-              id: item.id,
-              title: item.title,
-              description: item.description,
-              deadline: item.deadline,
-              score: item.full_score,
-              status: this.getAssignmentStatus(item)
-            }));
-          } else {
-            this.exams = response.data.items.map(item => ({
-              id: item.id,
-              title: item.title,
-              description: item.description,
-              examTime: item.start_time,
-              duration: this.calculateDuration(item.start_time, item.deadline),
-              totalScore: item.full_score,
-              status: this.getExamStatus(item)
-            }));
-          }
-          this.total = response.data.total;
-        } else {
-          ElMessage.error(response.message || '获取数据失败');
-        }
-      } catch (error) {
-        console.error('加载失败:', error);
-        ElMessage.error('加载失败');
-      } finally {
+      // 模拟加载延迟
+      this.loading = true;
+      setTimeout(() => {
         this.loading = false;
-      }
-    },
-    getAssignmentStatus(item) {
-      const now = new Date();
-      const deadline = new Date(item.deadline);
-      if (item.submitted) return '已提交';
-      if (now > deadline) return '已截止';
-      return '未提交';
-    },
-    getExamStatus(item) {
-      const now = new Date();
-      const startTime = new Date(item.start_time);
-      const deadline = new Date(item.deadline);
-      if (now < startTime) return '未开始';
-      if (now > deadline) return '已完成';
-      return '进行中';
-    },
-    calculateDuration(startTime, deadline) {
-      const start = new Date(startTime);
-      const end = new Date(deadline);
-      return Math.round((end - start) / (1000 * 60)); // 返回分钟数
-    },
-    handlePageChange(page) {
-      this.currentPage = page;
-      this.loadAssignments();
-    },
-    handleSizeChange(size) {
-      this.pageSize = size;
-      this.currentPage = 1;
-      this.loadAssignments();
+      }, 500);
     },
     handleSubmit(assignment) {
-      console.log('提交作业:', assignment)
+      ElMessage.success(`准备提交作业: ${assignment.title}`);
     },
     viewDetails(assignment) {
-      console.log('查看作业详情:', assignment)
+      ElMessage.info(`查看作业详情: ${assignment.title}`);
     },
     startExam(exam) {
-      console.log('开始考试:', exam)
+      if (exam.status === '未开始') {
+        ElMessage.success(`准备开始考试: ${exam.title}`);
+      } else if (exam.status === '进行中') {
+        ElMessage.info(`继续进行考试: ${exam.title}`);
+      } else {
+        ElMessage.info(`查看考试成绩: ${exam.title}`);
+      }
     },
     viewExamDetails(exam) {
-      console.log('查看考试详情:', exam)
+      ElMessage.info(`查看考试详情: ${exam.title}`);
     },
     getExamButtonText(status) {
       const textMap = {
@@ -398,11 +352,5 @@ export default {
 
 :deep(.el-tag) {
   border-radius: 4px;
-}
-
-.pagination-container {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
 }
 </style> 

@@ -166,22 +166,48 @@ const unassignedStudents = ref([])
 const groups = ref([])
 const loading = ref(false)
 
-// 获取分组数据
+// 模拟数据
+const mockUnassignedStudents = [
+  { id: 1, name: '张三', studentId: '202301001', avatar: '' },
+  { id: 2, name: '李四', studentId: '202301002', avatar: '' },
+  { id: 3, name: '王五', studentId: '202301003', avatar: '' },
+  { id: 4, name: '赵六', studentId: '202301004', avatar: '' },
+  { id: 5, name: '钱七', studentId: '202301005', avatar: '' }
+]
+
+const mockGroups = [
+  { 
+    id: 1, 
+    name: '第1组', 
+    students: [
+      { id: 6, name: '孙八', studentId: '202301006', avatar: '' },
+      { id: 7, name: '周九', studentId: '202301007', avatar: '' }
+    ] 
+  },
+  { 
+    id: 2, 
+    name: '第2组', 
+    students: [
+      { id: 8, name: '吴十', studentId: '202301008', avatar: '' },
+      { id: 9, name: '郑十一', studentId: '202301009', avatar: '' }
+    ] 
+  }
+]
+
+// 获取分组数据 - 使用本地数据代替API调用
 const fetchGroups = async () => {
   try {
     loading.value = true
-    const response = await api.getCourseGroups(props.courseId)
     
-    if (response.code === 200) {
-      unassignedStudents.value = response.data.unassignedStudents
-      groups.value = response.data.groups
-    } else {
-      throw new Error(response.message || '获取分组数据失败')
-    }
+    // 模拟加载延迟
+    setTimeout(() => {
+      unassignedStudents.value = [...mockUnassignedStudents]
+      groups.value = JSON.parse(JSON.stringify(mockGroups)) // 深拷贝防止相互影响
+      loading.value = false
+    }, 300)
   } catch (error) {
     console.error('获取分组数据失败:', error)
     ElMessage.error(error.message || '获取分组数据失败')
-  } finally {
     loading.value = false
   }
 }
@@ -189,38 +215,36 @@ const fetchGroups = async () => {
 // 处理拖拽结束
 const onDragEnd = async () => {
   try {
-    // 更新被修改的分组
-    for (const group of groups.value) {
-      await api.createOrUpdateGroup(props.courseId, {
-        name: group.name,
-        studentIds: group.students.map(student => student.id)
+    // 模拟更新成功
+    setTimeout(() => {
+      ElMessage.success('分组更新成功')
+      // 更新模拟数据
+      mockGroups.forEach((group, index) => {
+        group.students = [...groups.value[index].students]
       })
-    }
-    ElMessage.success('分组更新成功')
+      mockUnassignedStudents.length = 0
+      mockUnassignedStudents.push(...unassignedStudents.value)
+    }, 300)
   } catch (error) {
     console.error('更新分组失败:', error)
     ElMessage.error('更新分组失败，请重试')
-    // 刷新数据
-    await fetchGroups()
   }
 }
 
 // 添加新分组
 const handleAddGroup = async () => {
   try {
+    const newGroupId = Math.max(0, ...groups.value.map(g => g.id)) + 1
     const newGroup = {
+      id: newGroupId,
       name: `第${groups.value.length + 1}组`,
-      studentIds: []
+      students: []
     }
     
-    const response = await api.createOrUpdateGroup(props.courseId, newGroup)
+    groups.value.push(newGroup)
+    mockGroups.push({ ...newGroup }) // 更新模拟数据
     
-    if (response.code === 200) {
-      groups.value.push(response.data)
-      ElMessage.success('新建分组成功')
-    } else {
-      throw new Error(response.message || '新建分组失败')
-    }
+    ElMessage.success('新建分组成功')
   } catch (error) {
     console.error('新建分组失败:', error)
     ElMessage.error(error.message || '新建分组失败')
@@ -234,19 +258,21 @@ const deleteGroup = async (index) => {
     // 将组内学生移回未分组列表
     unassignedStudents.value.push(...group.students)
     
-    // 更新未分组学生状态
-    await api.createOrUpdateGroup(props.courseId, {
-      name: '未分组',
-      studentIds: unassignedStudents.value.map(student => student.id)
-    })
+    // 从模拟数据中也移除该组
+    const mockIndex = mockGroups.findIndex(g => g.id === group.id)
+    if (mockIndex !== -1) {
+      mockGroups.splice(mockIndex, 1)
+    }
+    
+    // 更新未分组学生模拟数据
+    mockUnassignedStudents.length = 0
+    mockUnassignedStudents.push(...unassignedStudents.value)
     
     groups.value.splice(index, 1)
     ElMessage.success('分组已删除')
   } catch (error) {
     console.error('删除分组失败:', error)
     ElMessage.error('删除分组失败，请重试')
-    // 刷新数据
-    await fetchGroups()
   }
 }
 
@@ -258,21 +284,16 @@ const renameGroup = (group) => {
 // 更新分组名称
 const updateGroupName = async (group) => {
   try {
-    const response = await api.createOrUpdateGroup(props.courseId, {
-      name: group.name,
-      studentIds: group.students.map(student => student.id)
-    })
-    
-    if (response.code === 200) {
-      ElMessage.success('更新分组名称成功')
-    } else {
-      throw new Error(response.message || '更新分组名称失败')
+    // 更新模拟数据
+    const mockGroup = mockGroups.find(g => g.id === group.id)
+    if (mockGroup) {
+      mockGroup.name = group.name
     }
+    
+    ElMessage.success('更新分组名称成功')
   } catch (error) {
     console.error('更新分组名称失败:', error)
     ElMessage.error(error.message || '更新分组名称失败')
-    // 刷新数据
-    await fetchGroups()
   }
 }
 
@@ -284,19 +305,45 @@ const handleAutoGroup = () => {
 // 确认自动分组
 const confirmAutoGroup = async () => {
   try {
-    const response = await api.autoCreateGroups(props.courseId, {
-      groupCount: autoGroupForm.value.groupCount,
-      method: autoGroupForm.value.method
+    const totalStudents = [
+      ...unassignedStudents.value,
+      ...groups.value.flatMap(group => group.students)
+    ]
+    
+    // 清空现有分组
+    groups.value = []
+    
+    // 根据设置的分组数量创建新分组
+    const groupCount = autoGroupForm.value.groupCount
+    const newGroups = []
+    
+    for (let i = 0; i < groupCount; i++) {
+      newGroups.push({
+        id: i + 1,
+        name: `第${i + 1}组`,
+        students: []
+      })
+    }
+    
+    // 随机分配学生
+    const shuffledStudents = [...totalStudents].sort(() => Math.random() - 0.5)
+    
+    shuffledStudents.forEach((student, index) => {
+      const groupIndex = index % groupCount
+      newGroups[groupIndex].students.push(student)
     })
     
-    if (response.code === 200) {
-      groups.value = response.data.groups
-      unassignedStudents.value = []
-      autoGroupDialog.value = false
-      ElMessage.success('自动分组完成')
-    } else {
-      throw new Error(response.message || '自动分组失败')
-    }
+    // 更新分组
+    groups.value = newGroups
+    unassignedStudents.value = []
+    
+    // 更新模拟数据
+    mockGroups.length = 0
+    mockGroups.push(...JSON.parse(JSON.stringify(newGroups)))
+    mockUnassignedStudents.length = 0
+    
+    autoGroupDialog.value = false
+    ElMessage.success('自动分组完成')
   } catch (error) {
     console.error('自动分组失败:', error)
     ElMessage.error(error.message || '自动分组失败')

@@ -1,10 +1,5 @@
 <template>
   <div class="common-layout">
-    <div class="bg-image-container">
-      <img src="~@/assets/BG02.png" alt="背景图片" class="bg-image" />
-      <div class="overlay"></div>
-    </div>
-    
     <el-main class="home-view">
       <!-- 添加轮播图组件 -->
       <div class="carousel-container">
@@ -58,7 +53,7 @@ export default {
         {
           id: 3,
           title: '知育课研',
-          imageUrl: require('@/assets/制作轮播图 (3).png')
+          imageUrl: require('@/assets/design.png')
         }
       ]
     };
@@ -134,35 +129,7 @@ export default {
   margin: 0;
   overflow: hidden;
   position: relative;
-  z-index: 0;
-}
-
-.bg-image-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
-  overflow: hidden;
-}
-
-.bg-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to bottom, rgba(11, 24, 52, 0.1), rgba(22, 41, 86, 0.1));
-  z-index: 1;
+  background-color: #f5f7fa;
 }
 
 .home-view {
@@ -173,6 +140,7 @@ export default {
   flex-direction: column;
   align-items: center;
   min-height: calc(100vh - 60px);
+  background-color: #f5f7fa;
 }
 
 .carousel-container {

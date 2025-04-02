@@ -230,9 +230,11 @@ export default {
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
         stream = null;
-        videoRef.value.srcObject = null;
-        cameraActive.value = false;
       }
+      if (videoRef.value) {
+        videoRef.value.srcObject = null;
+      }
+      cameraActive.value = false;
     };
 
     // 切换摄像头状态

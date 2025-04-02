@@ -281,7 +281,6 @@ const route = useRoute()
 const activeTab = ref('announcements')
 const classInfo = ref({})
 const announcements = ref([])
-const assignments = ref([])
 const grades = ref([])
 const resources = ref([])
 const assessmentScheme = ref([
@@ -319,10 +318,53 @@ const todoTasks = ref([
   { title: '第二章 线性表上机作业', completed: false }
 ])
 
+// 添加加载状态
+const announcementsLoading = ref(false)
+
+// 添加课程加载状态
+const courseLoading = ref(false)
+
+// 添加资源加载状态
+const resourcesLoading = ref(false)
+
+// 移除原有的 assignments 声明
+const mockAssignments = [
+  {
+    id: 1,
+    title: '第一章作业',
+    type: 'homework',
+    description: '完成第一章课后习题',
+    deadline: '2024-03-20 23:59',
+    fullScore: 100,
+    status: '未提交'
+  },
+  {
+    id: 2,
+    title: '期中考试',
+    type: 'exam',
+    description: '第1-5章内容考试',
+    deadline: '2024-03-25 14:00',
+    fullScore: 100,
+    status: '未开始'
+  },
+  {
+    id: 3,
+    title: '第二章实验报告',
+    type: 'homework',
+    description: '提交第二章实验报告和源代码',
+    deadline: '2024-03-30 23:59',
+    fullScore: 100,
+    status: '已提交'
+  }
+];
+
+// 使用 mockAssignments 作为初始值
+const assignments = ref(mockAssignments);
+
 // 处理标签页切换
 const handleTabClick = async (tab) => {
   console.log('Tab clicked:', tab.props.name)
-  if (tab.props.name === 'resources') {
+  if (tab.props.name === 'resources' && resources.value.length === 0) {
     console.log('开始获取资源列表')
     await fetchResources()
   }
@@ -352,12 +394,18 @@ const getActionButtonText = (status) => {
   return texts[status] || '查看详情'
 }
 
-// 处理作业/考试操作
+// 修改 handleAssignment 方法
 const handleAssignment = (item) => {
-  console.log('处理作业/考试:', item)
-  ElMessage.info(`正在打开${item.title}`)
-  // 根据不同状态执行不同操作
-}
+  ElMessage.info(`正在打开${item.title}`);
+  // 这里可以根据不同状态执行不同操作
+  if (item.status === '未提交') {
+    ElMessage.info('准备提交作业');
+  } else if (item.status === '已提交') {
+    ElMessage.info('查看已提交的作业');
+  } else if (item.status === '已截止') {
+    ElMessage.warning('作业已截止');
+  }
+};
 
 // 计算某个类型的成绩
 const calculateComponentGrade = (componentType) => {
@@ -530,20 +578,25 @@ onMounted(() => {
 })
 
 // 修改announcements数据获取逻辑
-const fetchAnnouncements = async () => {
+const fetchAnnouncements = async (retry = 0) => {
+  if (announcementsLoading.value) return
+  
   try {
+    announcementsLoading.value = true
     const courseId = route.params.id
     if (!courseId) {
       ElMessage.error('课程ID不能为空')
       return
     }
 
+    console.log('开始获取公告列表 - 课程ID:', courseId)
     const response = await api.getCourseAnnouncements(courseId, {
       page: 1,
       size: 10
     })
 
     if (response.code === 200) {
+      console.log('获取公告成功:', response.data)
       announcements.value = response.data.items.map(item => ({
         id: item.id,
         title: item.title,
@@ -553,25 +606,80 @@ const fetchAnnouncements = async () => {
         publisher: item.publisher_info
       }))
     } else {
+      console.warn('获取公告列表返回错误码:', response.code, response.message)
       ElMessage.error(response.message || '获取公告列表失败')
     }
   } catch (error) {
     console.error('获取公告列表异常:', error)
-    ElMessage.error('获取公告列表失败，请稍后重试')
+    
+    // 超时或网络错误时，最多重试2次
+    if (retry < 2 && (error.code === 'ECONNABORTED' || !error.response)) {
+      console.log(`获取公告列表失败，第${retry + 1}次重试...`)
+      // 使用指数退避策略增加延迟
+      const delay = 1000 * Math.pow(2, retry)
+      setTimeout(() => {
+        fetchAnnouncements(retry + 1)
+      }, delay)
+      return
+    }
+    
+    // 设置默认数据，避免界面空白
+    announcements.value = []
+    ElMessage.error(`获取公告列表失败: ${error.message || '请检查网络连接'}`)
+  } finally {
+    announcementsLoading.value = false
   }
 }
 
 // 修改loadClassInfo方法
-const loadClassInfo = async () => {
+const loadClassInfo = async (retry = 0) => {
+  if (courseLoading.value) return
+  
   try {
-    const classId = route.params.id
-    console.log('加载课程ID:', classId)
+    courseLoading.value = true
+    const courseId = route.params.id
+    console.log('加载课程ID:', courseId)
     
-    // 获取课程信息
-    classInfo.value = {
-      className: '脑机接口',
-      teacherName: '张教授',
-      location: '主教学楼301'
+    if (!courseId) {
+      ElMessage.error('课程ID不能为空')
+      return
+    }
+    
+    // 获取课程详情
+    console.log('开始获取课程详情...')
+    const courseResponse = await api.getCourseDetail(courseId)
+    
+    if (courseResponse.code === 200) {
+      console.log('课程详情获取成功:', courseResponse.data)
+      // 设置课程基本信息
+      const courseData = courseResponse.data
+      classInfo.value = {
+        className: courseData.title,
+        location: courseData.location,
+        teacherName: ''  // 先设为空，稍后获取教师信息
+      }
+      
+      // 获取教师信息
+      if (courseData.teacher) {
+        try {
+          console.log('开始获取教师信息:', courseData.teacher)
+          const teacherResponse = await api.getUserMessages(courseData.teacher)
+          if (teacherResponse.code === 200 && teacherResponse.data) {
+            classInfo.value.teacherName = teacherResponse.data.name || teacherResponse.data.username
+            console.log('教师信息获取成功:', classInfo.value.teacherName)
+          }
+        } catch (teacherError) {
+          console.error('获取教师信息失败:', teacherError)
+          // 获取教师信息失败时使用教师ID
+          classInfo.value.teacherName = courseData.teacher
+        }
+      }
+      
+      // 保存课程名称到本地存储
+      localStorage.setItem('currentCourseName', courseData.title)
+      currentCourseName.value = courseData.title
+    } else {
+      throw new Error(courseResponse.message || '获取课程详情失败')
     }
     
     // 获取公告列表
@@ -581,7 +689,30 @@ const loadClassInfo = async () => {
         
   } catch (error) {
     console.error('获取数据失败:', error)
-    ElMessage.error('加载课程信息失败')
+    
+    // 超时或网络错误时，最多重试2次
+    if (retry < 2 && (error.code === 'ECONNABORTED' || !error.response)) {
+      console.log(`获取课程信息失败，第${retry + 1}次重试...`)
+      // 使用指数退避策略增加延迟
+      const delay = 1000 * Math.pow(2, retry)
+      setTimeout(() => {
+        loadClassInfo(retry + 1)
+      }, delay)
+      return
+    }
+    
+    // 设置默认数据，避免界面空白
+    if (!classInfo.value.className) {
+      classInfo.value = {
+        className: currentCourseName.value || '课程名称',
+        teacherName: '未知',
+        location: '未知'
+      }
+    }
+    
+    ElMessage.error('加载课程信息失败: ' + (error.message || '请检查网络连接'))
+  } finally {
+    courseLoading.value = false
   }
 }
 
@@ -625,8 +756,11 @@ const formatTime = (time) => {
 }
 
 // 获取资源列表
-const fetchResources = async () => {
+const fetchResources = async (retry = 0) => {
+  if (resourcesLoading.value) return
+  
   try {
+    resourcesLoading.value = true
     const courseId = route.params.id
     console.log('获取资源列表 - 课程ID:', courseId)
     
@@ -670,7 +804,23 @@ const fetchResources = async () => {
     }
   } catch (error) {
     console.error('获取资源列表异常:', error)
-    ElMessage.error(`获取资源列表失败: ${error.message}`)
+    
+    // 超时或网络错误时，最多重试2次
+    if (retry < 2 && (error.code === 'ECONNABORTED' || !error.response)) {
+      console.log(`获取资源列表失败，第${retry + 1}次重试...`)
+      // 使用指数退避策略增加延迟
+      const delay = 1000 * Math.pow(2, retry)
+      setTimeout(() => {
+        fetchResources(retry + 1)
+      }, delay)
+      return
+    }
+    
+    // 设置默认为空数组
+    resources.value = []
+    ElMessage.error(`获取资源列表失败: ${error.message || '请检查网络连接'}`)
+  } finally {
+    resourcesLoading.value = false
   }
 }
 
@@ -700,28 +850,50 @@ const formatFileSize = (bytes) => {
 }
 
 .stat-card {
-  background: #fff;
+  background: linear-gradient(135deg, #ff9b44, #fc6076);
+  border-radius: 12px;
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
   display: flex;
   align-items: center;
-  flex: 1;
+  gap: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+  height: 100px;
+}
+
+.stat-card:nth-child(1) {
+  background: linear-gradient(135deg, #ff9b44, #fc6076);
+}
+
+.stat-card:nth-child(2) {
+  background: linear-gradient(135deg, #4CAF50, #2E7D32);
+}
+
+.stat-card:nth-child(3) {
+  background: linear-gradient(135deg, #2196F3, #1976D2);
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px 0 rgba(0,0,0,0.15);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .stat-icon {
   font-size: 24px;
   margin-right: 16px;
-  color: #409EFF;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.3s ease;
 }
 
 .stat-info {
@@ -732,12 +904,12 @@ const formatFileSize = (bytes) => {
 .stat-value {
   font-size: 20px;
   font-weight: bold;
-  color: #303133;
+  color: #ffffff;
 }
 
 .stat-label {
   font-size: 14px;
-  color: #909399;
+  color: rgba(255, 255, 255, 0.9);
   margin-top: 4px;
 }
 
@@ -1030,7 +1202,7 @@ const formatFileSize = (bytes) => {
     flex-direction: column;
   }
   
-  .resource-item {
+ .resource-item {
     width: 100%;
   }
 }

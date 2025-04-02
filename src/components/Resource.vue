@@ -116,6 +116,7 @@
         :on-remove="handleRemove"
         :before-remove="beforeRemove"
         multiple
+        :show-file-list="false"
       >
         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
         <div class="el-upload__text">
@@ -158,7 +159,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import api from '@/api'
 import {
   Document,
@@ -415,26 +416,61 @@ const beforeUpload = (file) => {
 }
 
 const customUpload = async ({ file }) => {
+  let loadingInstance = null;
   try {
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('name', file.name)
-    formData.append('type', getFileType(file))
+    // 显示上传进度
+    loadingInstance = ElLoading.service({
+      text: '正在上传...',
+      background: 'rgba(0, 0, 0, 0.7)'
+    });
+
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    formData.append('name', file.name);
+    formData.append('type', getFileType(file));
+    formData.append('course_id', props.courseId);
     
-    const response = await api.uploadCourseResource(props.courseId, formData)
+    console.log('准备上传文件:', {
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+      courseId: props.courseId
+    });
+    
+    const response = await api.uploadCourseResource(props.courseId, formData);
     
     if (response.code === 200) {
-      ElMessage.success('上传成功')
+      ElMessage.success('上传成功');
       // 刷新资源列表
-      fetchResources()
+      await fetchResources();
+      // 关闭上传对话框
+      uploadDialogVisible.value = false;
     } else {
-      throw new Error(response.message || '上传失败')
+      throw new Error(response.message || '上传失败');
     }
   } catch (error) {
-    console.error('上传文件失败:', error)
-    ElMessage.error(error.message || '上传失败')
+    console.error('上传文件失败:', error);
+    let errorMessage = '上传失败';
+    
+    if (error.response) {
+      // 服务器返回了错误响应
+      errorMessage = `上传失败: ${error.response.data?.detail || error.response.data?.message || error.message}`;
+    } else if (error.request) {
+      // 请求已发送但没有收到响应
+      errorMessage = '服务器无响应，请检查网络连接';
+    } else {
+      // 请求设置时发生错误
+      errorMessage = `上传出错: ${error.message}`;
+    }
+    
+    ElMessage.error(errorMessage);
+  } finally {
+    // 关闭加载提示
+    if (loadingInstance) {
+      loadingInstance.close();
+    }
   }
-}
+};
 
 const getFileType = (file) => {
   const extension = file.name.split('.').pop().toLowerCase()

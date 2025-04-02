@@ -35,11 +35,10 @@ const getBaseUrl = () => {
 // 创建axios实例
 const request = axios.create({
     baseURL: getBaseUrl(),
-    timeout: 15000,
+    timeout: 30000,  // 增加到30秒
     headers: {
         'Content-Type': 'application/json'
-    },
-    withCredentials: false  // 改为 false，因为后端使用 * 通配符
+    }
 });
 
 // 请求拦截器
@@ -49,6 +48,10 @@ request.interceptors.request.use(
         const token = localStorage.getItem('token');
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        // 只有当不是文件上传时，才设置 Content-Type 为 application/json
+        if (config.method === 'post' && !config.headers['Content-Type']) {
+            config.headers['Content-Type'] = 'application/json';
         }
         return config;
     },
@@ -63,6 +66,16 @@ request.interceptors.response.use(
         return response.data;
     },
     error => {
+        if (error.code === 'ECONNABORTED' && error.message.includes('timeout')) {
+            console.log('请求超时：', error.config.url);
+            // 可以在这里添加请求超时的特殊处理
+            return Promise.reject({
+                code: 408,
+                message: '请求超时，请检查网络连接或稍后重试',
+                data: null
+            });
+        }
+
         if (error.response) {
             // 处理后端返回的错误
             const { status, data } = error.response;
@@ -77,7 +90,7 @@ request.interceptors.response.use(
                     console.error('权限不足');
                     break;
                 default:
-                    console.error('请求失败:', data.message || '未知错误');
+                    console.error('请求失败:', data?.message || '未知错误');
             }
         }
         return Promise.reject(error);
@@ -305,17 +318,26 @@ const productionApi = {
     // 用户登录
     login: async (loginData) => {
         try {
-            const response = await request.post('/api/user/login/', {
-                username: loginData.username,
-                password: loginData.password
+            const response = await request({
+                url: '/api/user/login/',
+                method: 'post',
+                data: {
+                    username: loginData.username,
+                    password: loginData.password
+                }
             });
-            // 如果登录成功，保存token
+
+            // 如果登录成功，保存token到localStorage
             if (response.code === 200 && response.data.token) {
                 localStorage.setItem('token', response.data.token);
+                localStorage.setItem('userRole', response.data.role);
+                localStorage.setItem('userId', response.data.userId);
+                localStorage.setItem('username', response.data.username);
             }
+
             return response;
         } catch (error) {
-            console.error('登录失败:', error);
+            console.error('登录请求失败:', error);
             throw error;
         }
     },
@@ -337,26 +359,17 @@ const productionApi = {
         }
     },
 
-    // 获取用户消息 - GET方法
+    // 获取用户信息
     getUserMessages: async (userId) => {
         try {
-            const response = await request.get('/api/user/user/messages/', {
+            const response = await request({
+                url: '/api/user/user/messages/',
+                method: 'get',
                 params: { user_id: userId }
             });
             return response;
         } catch (error) {
-            throw error;
-        }
-    },
-
-    // 获取用户消息 - POST方法
-    getUserMessagesByPost: async (userId) => {
-        try {
-            const response = await request.post('/api/user/user/messages/', {
-                user_id: userId
-            });
-            return response;
-        } catch (error) {
+            console.error('获取用户信息失败:', error);
             throw error;
         }
     },
@@ -430,18 +443,33 @@ const productionApi = {
     // 上传课程资源
     uploadCourseResource: async (courseId, formData) => {
         try {
+            console.log('开始上传课程资源 - 课程ID:', courseId);
+            console.log('FormData内容:', Array.from(formData.entries()));
+
             const response = await request({
                 url: `/api/course/courses/${courseId}/resources/`,
                 method: 'POST',
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 },
-                data: formData
-            })
-            return response
+                data: formData,
+                timeout: 60000,
+                onUploadProgress: (progressEvent) => {
+                    const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    console.log('上传进度:', percentCompleted + '%');
+                }
+            });
+
+            console.log('上传响应:', response);
+            return response;
         } catch (error) {
-            console.error('上传课程资源失败:', error)
-            throw error
+            console.error('上传课程资源失败:', error);
+            console.error('错误详情:', {
+                message: error.message,
+                response: error.response?.data || error.response,
+                request: error.request
+            });
+            throw error;
         }
     },
 
@@ -656,7 +684,7 @@ const api = {
     switchEnvironment(env) {
         if (env === ApiEnv.LOCAL || env === ApiEnv.PRODUCTION) {
             localStorage.setItem('api_environment', env);
-            window.location.reload();
+            window.location.reload(); // 重新加载页面以应用新环境
         }
     }
 };

@@ -5,17 +5,19 @@
     </div>
     <div class="course-info">
       <h3 class="course-title">{{ course.title }}</h3>
-      <span class="teacher">{{ course.teacherName }}</span>
+      <span class="teacher">{{ teacherName }}</span>
       <el-button type="primary" @click="viewCourse">开始上课</el-button>
     </div>
   </el-card>
 </template>
 
 <script>
+import { ref, computed, onMounted } from 'vue';
 import kehuan2 from '@/assets/kehuan2.jpg'
 import kehuan3 from '@/assets/kehuan3.jpg'
 import kehuan4 from '@/assets/kehuan4.png'
 import shuju from '@/assets/shuju.png'
+import api from '@/api';
 
 export default {
   name: 'CourseCard1',
@@ -31,23 +33,45 @@ export default {
       }
     },
   },
-  data() {
-    return {
-      courseImages: [shuju, kehuan2, kehuan3, kehuan4]
-    }
-  },
-  computed: {
-    courseImage() {
-      // 根据课程ID来选择图片，确保同一个课程始终显示相同的图片
-      const index = this.course.id ? Math.abs(this.course.id) % this.courseImages.length : 0;
-      return this.courseImages[index];
-    }
-  },
-  methods: {
-    viewCourse() {
+  setup(props, { emit }) {
+    const teacherName = ref('');
+
+    // 获取教师信息
+    const fetchTeacherInfo = async () => {
+      try {
+        if (props.course.teacherName) {
+          const response = await api.getUserMessages(props.course.teacherName);
+          if (response.code === 200 && response.data) {
+            teacherName.value = response.data.name || response.data.username;
+          }
+        }
+      } catch (error) {
+        console.error('获取教师信息失败:', error);
+        teacherName.value = props.course.teacherName; // 如果获取失败，显示原始值
+      }
+    };
+
+    const courseImages = [shuju, kehuan2, kehuan3, kehuan4];
+    
+    const courseImage = computed(() => {
+      const index = props.course.id ? Math.abs(props.course.id) % courseImages.length : 0;
+      return courseImages[index];
+    });
+
+    onMounted(() => {
+      fetchTeacherInfo();
+    });
+
+    const viewCourse = () => {
       // 触发自定义事件，将课程ID传递给父组件
-      this.$emit('view-course', this.course.id);
-    },
+      emit('view-course', props.course.id);
+    };
+
+    return {
+      courseImage,
+      viewCourse,
+      teacherName
+    };
   },
 };
 </script>
@@ -69,7 +93,7 @@ export default {
 
 .course-header {
   width: 100%;
-  height: 200px; /* 增加图片高度以更好地展示科技风格图片 */
+  height: 180px; /* 增加图片高度以更好地展示科技风格图片 */
   overflow: hidden;
   position: relative;
 }

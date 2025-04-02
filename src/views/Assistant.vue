@@ -57,11 +57,6 @@
                 <el-icon><Microphone /></el-icon>
               </el-button>
             </el-tooltip>
-            <el-tooltip content="表情" placement="top">
-              <el-button class="tool-btn" circle>
-                <el-icon><SmileFilled /></el-icon>
-              </el-button>
-            </el-tooltip>
           </div>
 
           <!-- 输入框 -->
@@ -396,12 +391,12 @@ function loadHistory(history) {
 
 .message.assistant .message-text {
   border-bottom-left-radius: 0;
-  border-left: 2px solid #67C2FF;
+  border-left: 2px solid #FFB366;
 }
 
 .message.user .message-text {
   border-bottom-right-radius: 0;
-  border-right: 2px solid #67FFD4;
+  border-right: 2px solid #FF9966;
   color: #ffffff;
 }
 
@@ -475,16 +470,45 @@ function loadHistory(history) {
 .tool-btn {
   padding: 8px;
   font-size: 18px;
-  color: #0066FF;
   background: transparent;
-  border: 1px solid #0066FF;
   transition: all 0.3s;
+  border: none;
 }
 
-.tool-btn:hover {
+/* 图片上传按钮 */
+.tool-btn:nth-child(1) {
+  color: #FF9966;
+  border: 1px solid #FF9966;
+}
+
+.tool-btn:nth-child(1):hover {
   color: #fff;
-  background: rgba(0, 102, 255, 0.2);
-  box-shadow: 0 0 10px rgba(0, 102, 255, 0.5);
+  background: rgba(255, 153, 102, 0.2);
+  box-shadow: 0 0 10px rgba(255, 153, 102, 0.5);
+}
+
+/* 文件按钮 */
+.tool-btn:nth-child(2) {
+  color: #FFB366;
+  border: 1px solid #FFB366;
+}
+
+.tool-btn:nth-child(2):hover {
+  color: #fff;
+  background: rgba(255, 179, 102, 0.2);
+  box-shadow: 0 0 10px rgba(255, 179, 102, 0.5);
+}
+
+/* 录音按钮 */
+.tool-btn:nth-child(3) {
+  color: #FFCC66;
+  border: 1px solid #FFCC66;
+}
+
+.tool-btn:nth-child(3):hover {
+  color: #fff;
+  background: rgba(255, 204, 102, 0.2);
+  box-shadow: 0 0 10px rgba(255, 204, 102, 0.5);
 }
 
 .chat-input {
@@ -495,23 +519,23 @@ function loadHistory(history) {
 
 .send-btn {
   padding: 8px 16px;
-  background: linear-gradient(135deg, #0D4D9A, #157EB5);
-  border: 1px solid #67C2FF;
+  background: linear-gradient(135deg, #FF9966, #FFB366);
+  border: 1px solid #FFB366;
   color: #fff;
-  box-shadow: 0 0 10px rgba(103, 194, 255, 0.3);
+  box-shadow: 0 0 10px rgba(255, 179, 102, 0.3);
   transition: all 0.3s;
 }
 
 .send-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #157EB5, #0D4D9A);
-  box-shadow: 0 0 15px rgba(103, 194, 255, 0.5);
+  background: linear-gradient(135deg, #FFB366, #FF9966);
+  box-shadow: 0 0 15px rgba(255, 179, 102, 0.5);
   transform: translateY(-2px);
 }
 
 .send-btn:disabled {
   opacity: 0.5;
-  background: #1e3c68;
-  border-color: rgba(103, 194, 255, 0.2);
+  background: linear-gradient(135deg, #8B6B5D, #A68069);
+  border-color: rgba(255, 179, 102, 0.2);
 }
 
 :deep(.el-textarea__inner) {

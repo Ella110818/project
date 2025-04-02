@@ -77,7 +77,7 @@ export default {
 
 .course-header {
   width: 100%;
-  height: 200px;
+  height: 180px;
   overflow: hidden;
   position: relative;
 }
