@@ -166,7 +166,14 @@ export default {
     }
 
     onMounted(() => {
-      initChart()
+      // 添加一个小延时来确保 DOM 已经完全渲染
+      setTimeout(() => {
+        initChart()
+        // 添加窗口大小变化监听
+        window.addEventListener('resize', () => {
+          chart?.resize()
+        })
+      }, 100)
       // 模拟获取任务完成数据
       taskCompletion.value = [
         { id: 1, name: '张三', class: '计科1班', completionRate: 95 },

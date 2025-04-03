@@ -1,7 +1,7 @@
 <template>
   <div class="assignments-container">
     <div class="bg-image-container">
-      <img src="~@/assets/BG02.png" alt="背景图片" class="bg-image" />
+      <img src="~@/assets/kehuan4.png" alt="背景图片" class="bg-image" />
       <div class="overlay"></div>
     </div>
     

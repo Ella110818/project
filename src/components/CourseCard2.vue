@@ -42,10 +42,18 @@ export default {
       return this.course.location || '线上课程';
     },
     courseImage() {
-      // 使用 course_id 来选择图片
-      const index = this.course.course_id ? (Math.abs(this.course.course_id) + 2) % this.courseImages.length : 0;
+      // 使用 course_id 来选择图片，如果没有 course_id 则轮流使用图片
+      const index = typeof this.course.course_id === 'number' ? 
+        Math.abs(this.course.course_id) % this.courseImages.length :
+        Math.floor(Math.random() * this.courseImages.length);
+      console.log('Course ID:', this.course.course_id, 'Selected image index:', index);
       return this.courseImages[index];
     }
+  },
+  mounted() {
+    // 调试信息
+    console.log('Course object:', this.course);
+    console.log('Selected image:', this.courseImage);
   },
   methods: {
     viewCourse() {

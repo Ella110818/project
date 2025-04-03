@@ -1,7 +1,12 @@
 <template>
   <el-card class="course-card" shadow="hover">
     <div class="course-header">
-      <img :src="courseImage" alt="课程图片" class="course-image" />
+      <img 
+        :src="courseImage" 
+        alt="课程图片" 
+        class="course-image"
+        @error="handleImageError" 
+      />
     </div>
     <div class="course-info">
       <h3 class="course-title">{{ course.title }}</h3>
@@ -35,6 +40,7 @@ export default {
   },
   setup(props, { emit }) {
     const teacherName = ref('');
+    const defaultImage = ref(shuju);
 
     // 获取教师信息
     const fetchTeacherInfo = async () => {
@@ -54,12 +60,31 @@ export default {
     const courseImages = [shuju, kehuan2, kehuan3, kehuan4];
     
     const courseImage = computed(() => {
-      const index = props.course.id ? Math.abs(props.course.id) % courseImages.length : 0;
-      return courseImages[index];
+      // 确保对字符串类型的ID也能正确处理
+      if (!props.course.id) return courseImages[0];
+      
+      // 如果ID是字符串类型，使用字符串的长度或字符代码和来计算索引
+      if (typeof props.course.id === 'string') {
+        // 使用字符串的字符代码和来计算一个数字
+        const sum = props.course.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        return courseImages[sum % courseImages.length];
+      }
+      
+      // 如果ID是数字，按原来的逻辑处理
+      return courseImages[Math.abs(props.course.id) % courseImages.length];
     });
+
+    // 处理图片加载错误
+    const handleImageError = (e) => {
+      console.error('课程图片加载失败，使用默认图片');
+      e.target.src = defaultImage.value;
+    };
 
     onMounted(() => {
       fetchTeacherInfo();
+      // 添加调试日志
+      console.log('课程对象:', props.course);
+      console.log('计算的课程图片:', courseImage.value);
     });
 
     const viewCourse = () => {
@@ -70,7 +95,8 @@ export default {
     return {
       courseImage,
       viewCourse,
-      teacherName
+      teacherName,
+      handleImageError
     };
   },
 };

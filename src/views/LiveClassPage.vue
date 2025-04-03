@@ -30,12 +30,12 @@
 
         <div class="control-panel">
           <el-button-group>
-            <el-button type="primary" size="medium" icon="el-icon-microphone">麦克风</el-button>
-            <el-button :type="cameraActive ? 'success' : 'primary'" size="medium" icon="el-icon-video-camera" @click="toggleCamera">摄像头</el-button>
-            <el-button type="primary" size="medium" icon="el-icon-monitor">共享屏幕</el-button>
-            <el-button type="warning" size="medium" icon="el-icon-upload">上传课件</el-button>
-            <el-button type="success" size="medium" icon="el-icon-s-claim" @click="captureImage">点名</el-button>
-            <el-button type="info" size="medium" icon="el-icon-data-analysis">课堂统计</el-button>
+            <el-button type="primary" size="default" icon="el-icon-microphone">麦克风</el-button>
+            <el-button :type="cameraActive ? 'success' : 'primary'" size="default" icon="el-icon-video-camera" @click="toggleCamera">摄像头</el-button>
+            <el-button type="primary" size="default" icon="el-icon-monitor">共享屏幕</el-button>
+            <el-button type="warning" size="default" icon="el-icon-upload">上传课件</el-button>
+            <el-button type="success" size="default" icon="el-icon-s-claim" @click="captureImage">点名</el-button>
+            <el-button type="info" size="default" icon="el-icon-data-analysis">课堂统计</el-button>
           </el-button-group>
         </div>
       </div>
@@ -137,14 +137,6 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="confidence" label="置信度">
-            <template #default="scope">
-              <el-progress 
-                :percentage="Math.round(scope.row.confidence * 100)"
-                :status="scope.row.confidence > 0.7 ? 'success' : 'warning'"
-              />
-            </template>
-          </el-table-column>
         </el-table>
       </div>
       <template #footer>
@@ -218,9 +210,15 @@ export default {
           video: true,
           audio: false
         });
+        if (!stream) {
+          ElMessage.error('无法获取摄像头流');
+          return;
+        }
+        console.log('摄像头流获取成功:', stream);
         videoRef.value.srcObject = stream;
         cameraActive.value = true;
       } catch (error) {
+        console.error('摄像头访问错误:', error);
         ElMessage.error('无法访问摄像头：' + error.message);
       }
     };
@@ -255,6 +253,12 @@ export default {
 
       try {
         const video = videoRef.value;
+        if (!video || !video.videoWidth) {
+          console.error('视频元素未就绪:', video);
+          ElMessage.error('摄像头未就绪，请稍后重试');
+          return;
+        }
+
         const canvas = document.createElement('canvas');
         
         // 降低图片尺寸以减小文件大小
@@ -262,6 +266,8 @@ export default {
         const maxHeight = 600;
         let width = video.videoWidth;
         let height = video.videoHeight;
+        
+        console.log('原始视频尺寸:', width, 'x', height);
         
         // 保持宽高比的情况下调整尺寸
         if (width > maxWidth) {
@@ -275,6 +281,8 @@ export default {
           width = Math.round(width * ratio);
         }
         
+        console.log('调整后尺寸:', width, 'x', height);
+        
         // 确保尺寸为整数
         width = Math.floor(width);
         height = Math.floor(height);
@@ -283,6 +291,12 @@ export default {
         canvas.height = height;
         
         const context = canvas.getContext('2d');
+        if (!context) {
+          console.error('无法获取 canvas 上下文');
+          ElMessage.error('截图失败：无法创建图像上下文');
+          return;
+        }
+
         // 添加白色背景以确保图片格式正确
         context.fillStyle = '#FFFFFF';
         context.fillRect(0, 0, width, height);
@@ -294,6 +308,13 @@ export default {
         
         // 将图片转换为 base64 格式，降低质量以减小文件大小
         const imageBase64 = canvas.toDataURL('image/jpeg', 0.7);
+        console.log('生成的图片大小:', Math.round(imageBase64.length / 1024), 'KB');
+        
+        if (!imageBase64.startsWith('data:image/jpeg;base64,')) {
+          console.error('图片格式不正确');
+          ElMessage.error('截图失败：图片格式不正确');
+          return;
+        }
         
         // 保存图片数据并显示预览
         capturedImageData = imageBase64;
@@ -315,45 +336,65 @@ export default {
     // 确认上传并开始点名
     const handleConfirmUpload = async () => {
       if (!capturedImageData) {
+        console.error('没有可用的图片数据');
         ElMessage.warning('没有可用的图片数据');
+        return;
+      }
+
+      if (!capturedImageData.startsWith('data:image/jpeg;base64,')) {
+        console.error('图片数据格式不正确');
+        ElMessage.error('图片数据格式不正确');
         return;
       }
 
       uploadLoading.value = true;
       try {
-        // 调用人脸识别API
-        const response = await api.checkAttendance(capturedImageData);
+        // 将Base64转换为Blob
+        const base64Data = capturedImageData.replace('data:image/jpeg;base64,', '');
+        const byteCharacters = atob(base64Data);
+        const byteArrays = [];
+        
+        for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
+          const slice = byteCharacters.slice(offset, offset + 1024);
+          const byteNumbers = new Array(slice.length);
+          for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          byteArrays.push(byteArray);
+        }
+        
+        const blob = new Blob(byteArrays, { type: 'image/jpeg' });
+        const file = new File([blob], 'attendance.jpg', { type: 'image/jpeg' });
+        
+        console.log('准备上传文件，大小:', file.size, 'bytes');
+        const response = await api.checkAttendance(file);
+        console.log('服务器响应:', response);
         
         // 检查响应状态
-        if (response.status === 'error') {
+        if (response.status === 'error' && !response.message.includes('测试模式')) {
+          console.error('点名失败:', response.message);
           ElMessage.error(response.message || '点名失败');
           return;
         }
 
-        // 确保attendance_records存在且是数组
-        const records = Array.isArray(response.attendance_records) ? response.attendance_records : [];
-        
         // 更新考勤结果
         attendanceResult.value = {
           message: response.message || '点名完成',
-          attendance_records: records.map(record => ({
+          attendance_records: Array.isArray(response.attendance_records) ? response.attendance_records.map(record => ({
             name: record.name || '未知',
             present: record.present === 1,
             confidence: record.confidence || 0
-          }))
+          })) : []
         };
         
-        // 只有在有考勤记录时才显示结果
-        if (records.length > 0) {
-          handleClosePreview();
-          attendanceResultVisible.value = true;
-          ElMessage.success(response.message || '点名完成');
-        } else {
-          ElMessage.warning('未检测到有效的考勤记录');
-        }
+        // 显示结果
+        handleClosePreview();
+        attendanceResultVisible.value = true;
+        ElMessage.success(response.message || '点名完成');
       } catch (error) {
         console.error('点名失败:', error);
-        ElMessage.error('点名失败，请检查网络连接或稍后重试');
+        ElMessage.error(error.message || '点名失败，请稍后重试');
       } finally {
         uploadLoading.value = false;
       }

@@ -1,20 +1,39 @@
 <template>
   <div class="common-layout">
+    <div class="bg-image-container">
+      <img src="@/assets/design2.png" alt="背景图片" class="bg-image" />
+      <div class="overlay"></div>
+    </div>
+    
     <el-main class="home-view">
-      <!-- 添加轮播图组件 -->
+      <!-- 轮播图容器 -->
       <div class="carousel-container">
-        <el-carousel :interval="3000" type="card" height="400px">
+        <el-carousel 
+          :interval="3000" 
+          height="400px"
+          :autoplay="true"
+          indicator-position="none"
+          arrow="always"
+          type="card"
+        >
           <el-carousel-item v-for="item in carouselItems" :key="item.id">
-            <div class="carousel-content">
-              <img :src="item.imageUrl" :alt="item.title">
+            <div class="carousel-card">
+              <img :src="item.imageUrl" :alt="item.title" class="carousel-image"/>
             </div>
           </el-carousel-item>
         </el-carousel>
       </div>
-      
+
       <div class="course-container">
-        <el-row :gutter="20">
-          <el-col :xs="24" :sm="12" :md="8" :lg="6" v-for="course in courses" :key="course.id">
+        <el-row :gutter="60">
+          <el-col 
+            v-for="course in courses" 
+            :key="course.id"
+            :xs="24"
+            :sm="12"
+            :md="8"
+            :lg="6"
+          >
             <CourseCard1 :course="course" @view-course="handleViewCourse" />
           </el-col>
         </el-row>
@@ -42,17 +61,17 @@ export default {
       carouselItems: [
         {
           id: 1,
-          title: '智能表情识别',
-          imageUrl: require('@/assets/image(1).png')
+          title: '专注·困惑·分心',
+          imageUrl: require('@/assets/background2.png')
         },
         {
           id: 2,
-          title: '教育定向',
-          imageUrl: require('@/assets/lunbotu2.png')
+          title: '智能表情识别',
+          imageUrl: require('@/assets/lunbotuimg.png')
         },
         {
           id: 3,
-          title: '知育课研',
+          title: '从表情到策略',
           imageUrl: require('@/assets/design.png')
         }
       ]
@@ -127,9 +146,36 @@ export default {
   min-height: 100vh;
   padding: 0;
   margin: 0;
-  overflow: hidden;
   position: relative;
-  background-color: #f5f7fa;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.bg-image-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.bg-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(11, 24, 52, 0.3), rgba(22, 41, 86, 0.3));
+  z-index: 1;
 }
 
 .home-view {
@@ -140,72 +186,18 @@ export default {
   flex-direction: column;
   align-items: center;
   min-height: calc(100vh - 60px);
-  background-color: #f5f7fa;
-}
-
-.carousel-container {
-  margin: 20px 0;
-  padding: 0;
-  width: 100%;
-  max-width: 1200px;
   position: relative;
   z-index: 1;
-  height: 400px;
 }
 
 .course-container {
   width: 100%;
   max-width: 1400px;
-  padding: 20px 20px;
+  padding: 20px 0;
   box-sizing: border-box;
   margin-top: 20px;
-}
-
-.carousel-content {
   position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.carousel-content img {
-  width: 100%;
-  height: 100%;
-  object-fit: fill;
-  background-color: #4878ea;
-}
-
-:deep(.el-carousel__item) {
-  border-radius: 12px;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #4878ea;
-}
-
-:deep(.el-carousel) {
-  width: 100%;
-  height: 100%;
-  margin: 0 auto;
-}
-
-:deep(.el-carousel__indicators) {
-  transform: translateY(20px);
-}
-
-:deep(.el-carousel__button) {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: #00d8ff;
-  opacity: 0.6;
-}
-
-:deep(.el-carousel__indicator--active .el-carousel__button) {
-  opacity: 1;
+  z-index: 1;
 }
 
 :deep(.el-row) {
@@ -215,10 +207,12 @@ export default {
   flex-wrap: wrap;
   justify-content: flex-start;
   gap: 60px;
+  padding: 0 20px;
+  box-sizing: border-box;
 }
 
 :deep(.el-col) {
-  padding: 10px;
+  padding: 0;
   display: flex;
   justify-content: center;
   box-sizing: border-box;
@@ -232,28 +226,79 @@ export default {
   
   .carousel-container,
   .course-container {
-    max-width: 100%;
     padding: 10px;
   }
   
-  :deep(.el-carousel) {
-    height: 300px;
-  }
-
   :deep(.el-row) {
     gap: 20px;
+    padding: 0 10px;
   }
 
   :deep(.el-col) {
-    padding: 5px;
     margin-bottom: 10px;
   }
 }
 
-.h1 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #fff;
+.carousel-container {
+  margin: 20px auto;
+  padding: 40px 0;
+  width: 100%;
+  max-width: 1400px;
+  position: relative;
+}
+
+:deep(.el-carousel__item) {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+:deep(.el-carousel__item--card) {
+  width: 50%;
+}
+
+:deep(.el-carousel__item--card.is-active) {
+  transform: translateX(0) scale(1.05);
+  z-index: 2;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.carousel-card {
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  background: #fff;
+}
+
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+:deep(.el-carousel__arrow) {
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 20px;
+  z-index: 3;
+}
+
+:deep(.el-carousel__arrow:hover) {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+:deep(.el-carousel__arrow--left) {
+  left: 20px;
+}
+
+:deep(.el-carousel__arrow--right) {
+  right: 20px;
 }
 </style> 
 

@@ -24,9 +24,9 @@
 
         <div class="control-panel">
           <el-button-group>
-            <el-button type="primary" size="medium" icon="el-icon-microphone">麦克风</el-button>
-            <el-button type="primary" size="medium" icon="el-icon-video-camera">摄像头</el-button>
-            <el-button type="primary" size="medium" icon="el-icon-hand">举手提问</el-button>
+            <el-button type="primary" size="default" icon="el-icon-microphone">麦克风</el-button>
+            <el-button type="primary" size="default" icon="el-icon-video-camera">摄像头</el-button>
+            <el-button type="primary" size="default" icon="el-icon-hand">举手提问</el-button>
           </el-button-group>
         </div>
       </div>

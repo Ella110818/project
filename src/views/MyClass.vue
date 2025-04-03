@@ -96,7 +96,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100vh;
-  background-image: url('@/assets/BG02.png');
+  background-image: url('@/assets/blue3.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

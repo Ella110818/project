@@ -49,10 +49,15 @@ request.interceptors.request.use(
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
         }
-        // 只有当不是文件上传时，才设置 Content-Type 为 application/json
-        if (config.method === 'post' && !config.headers['Content-Type']) {
+
+        // 如果是 FormData 类型的数据，不要设置 Content-Type，让浏览器自动设置
+        if (config.data instanceof FormData) {
+            delete config.headers['Content-Type'];
+        } else if (config.method === 'post' && !config.headers['Content-Type']) {
+            // 对于非 FormData 的 POST 请求，设置默认的 Content-Type
             config.headers['Content-Type'] = 'application/json';
         }
+
         return config;
     },
     error => {
@@ -103,11 +108,24 @@ const mockApi = {
     login: async (loginData) => {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
-                // 模拟登录验证
-                if (loginData.username === '10001' && loginData.password === '123456') {
-                    // 生成模拟token
+                // 模拟教师账号
+                if (loginData.username === '20001' && loginData.password === '123456') {
                     const token = `mock_token_${Date.now()}`;
-
+                    resolve({
+                        code: 200,
+                        message: '登录成功',
+                        data: {
+                            token: token,
+                            userId: '20001',
+                            username: 'teacher_user',
+                            role: 'teacher',
+                            avatar: ''
+                        }
+                    });
+                }
+                // 模拟学生账号
+                else if (loginData.username === '10001' && loginData.password === '123456') {
+                    const token = `mock_token_${Date.now()}`;
                     resolve({
                         code: 200,
                         message: '登录成功',
@@ -620,48 +638,44 @@ const productionApi = {
     // 人脸识别考勤
     checkAttendance: async (imageData) => {
         try {
-            // 直接发送base64图像数据
+            // 创建FormData对象
+            const formData = new FormData();
+            // 确保使用正确的字段名 'image'
+            formData.append('image', imageData, 'attendance.jpg');
+
+            console.log('发送考勤请求，图像数据大小:', imageData.size, 'bytes');
+
+            // 发送请求到生产环境服务器
             const response = await request({
                 url: '/face_recognition/check_attendance/',
                 method: 'POST',
+                data: formData,
                 headers: {
-                    'Content-Type': 'application/json'
-                },
-                data: {
-                    image: imageData  // 直接发送完整的base64字符串
+                    'Content-Type': 'multipart/form-data'
                 }
             });
 
-            // 检查响应数据的完整性
-            if (!response || typeof response !== 'object') {
-                return {
-                    status: 'error',
-                    message: '服务器响应格式错误',
-                    attendance_records: []
-                };
+            console.log('服务器原始响应:', response);
+
+            // 如果响应是错误状态，抛出错误
+            if (response.status === 'error') {
+                throw new Error(response.message || '考勤失败');
             }
 
-            // 确保返回数据符合预期格式
+            // 返回规范化的响应格式
             return {
                 status: response.status || 'error',
-                message: response.message || '服务器响应异常',
-                file_path: response.file_path || '',
-                attendance_records: Array.isArray(response.attendance_records) ? response.attendance_records : []
+                message: response.message || '未知响应',
+                file_path: response.file_path,
+                attendance_records: response.attendance_records || []
             };
         } catch (error) {
             console.error('人脸识别考勤失败:', error);
-            // 处理500错误
-            if (error.response && error.response.status === 500) {
-                return {
-                    status: 'error',
-                    message: '服务器内部错误，请稍后重试',
-                    attendance_records: []
-                };
-            }
-            // 处理其他错误
+            // 返回统一的错误响应格式
             return {
                 status: 'error',
-                message: error.response?.data?.message || error.message || '人脸识别考勤失败',
+                message: error.message || '考勤失败',
+                file_path: undefined,
                 attendance_records: []
             };
         }

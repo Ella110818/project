@@ -342,7 +342,7 @@ const handleSubmit = () => {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
   
   ::v-deep(.el-table__header) th {
-    background-color: #E6F2FF !important;
+    background-color:#E6F2FF !important;
   }
 }
 .table th, .table td { border: 1px solid #ddd; /* 设置单元格边框，以便看到圆角效果 */ }
