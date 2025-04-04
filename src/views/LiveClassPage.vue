@@ -191,7 +191,20 @@ export default {
           const courseData = response.data;
           courseName.value = courseData.title;
           courseLocation.value = courseData.location;
-          courseTeacher.value = courseData.teacher;
+          
+          // 获取教师信息
+          try {
+            const teacherResponse = await api.getUserMessages(courseData.teacher);
+            if (teacherResponse.code === 200 && teacherResponse.data && teacherResponse.data.username) {
+              courseTeacher.value = teacherResponse.data.username;
+            } else {
+              courseTeacher.value = '未知教师';
+            }
+          } catch (error) {
+            console.error('获取教师信息失败:', error);
+            courseTeacher.value = '未知教师';
+          }
+          
           studentCount.value = courseData.students_count || 0;
           onlineCount.value = 0;
         } else {
@@ -371,17 +384,43 @@ export default {
         const response = await api.checkAttendance(file);
         console.log('服务器响应:', response);
         
-        // 检查响应状态
-        if (response.status === 'error' && !response.message.includes('测试模式')) {
-          console.error('点名失败:', response.message);
-          ElMessage.error(response.message || '点名失败');
-          return;
+        // 解析考勤记录和消息
+        let attendanceRecords = [];
+        let resultMessage = '';
+        
+        // 根据不同的返回格式处理数据
+        if (response.code === 200 && response.data) {
+          // 标准格式响应 {code, message, data}
+          attendanceRecords = response.data.attendance_records || [];
+          resultMessage = response.message || '点名完成';
+        } else if (response.status === 'success' && response.attendance_records) {
+          // 旧版格式响应 {status, message, attendance_records}
+          attendanceRecords = response.attendance_records;
+          resultMessage = response.message || '点名完成';
+        } else if (response.status === 'error') {
+          // 错误响应
+          if (!response.message.includes('测试模式')) {
+            console.error('点名失败:', response.message);
+            ElMessage.error(response.message || '点名失败');
+            return;
+          }
+          resultMessage = response.message;
+          attendanceRecords = response.attendance_records || [];
+        } else {
+          // 未知格式，尝试从各种可能的位置获取数据
+          console.warn('未知的API响应格式，尝试解析:', response);
+          attendanceRecords = response.attendance_records || 
+                             response.data?.attendance_records || 
+                             [];
+          resultMessage = response.message || 
+                         response.data?.message || 
+                         '点名完成';
         }
-
+        
         // 更新考勤结果
         attendanceResult.value = {
-          message: response.message || '点名完成',
-          attendance_records: Array.isArray(response.attendance_records) ? response.attendance_records.map(record => ({
+          message: resultMessage,
+          attendance_records: Array.isArray(attendanceRecords) ? attendanceRecords.map(record => ({
             name: record.name || '未知',
             present: record.present === 1,
             confidence: record.confidence || 0
@@ -391,7 +430,7 @@ export default {
         // 显示结果
         handleClosePreview();
         attendanceResultVisible.value = true;
-        ElMessage.success(response.message || '点名完成');
+        ElMessage.success(resultMessage);
       } catch (error) {
         console.error('点名失败:', error);
         ElMessage.error(error.message || '点名失败，请稍后重试');

@@ -89,16 +89,31 @@ export default {
         
         if (response.code === 200) {
           // 将后端返回的数据格式转换为组件需要的格式
-          this.courses = response.data.items.map(item => ({
-            id: item.course_id,
-            title: item.title,
-            teacherName: item.teacher, // 注意这里可能需要额外调用获取教师信息的接口
-            description: item.description,
-            location: item.location,
-            system: item.system,
-            schedule: item.schedule,
-            semester: item.semester
+          const coursesWithTeacherInfo = await Promise.all(response.data.items.map(async item => {
+            // 获取教师信息
+            let teacherName = '未知教师'; // 默认值
+            try {
+              const teacherResponse = await api.getUserMessages(item.teacher);
+              if (teacherResponse.code === 200 && teacherResponse.data && teacherResponse.data.username) {
+                teacherName = teacherResponse.data.username;
+              }
+            } catch (error) {
+              console.error('获取教师信息失败:', error);
+            }
+            
+            return {
+              id: item.course_id,
+              title: item.title,
+              teacherName: teacherName,
+              description: item.description,
+              location: item.location,
+              system: item.system,
+              schedule: item.schedule,
+              semester: item.semester
+            };
           }));
+          
+          this.courses = coursesWithTeacherInfo;
           this.total = response.data.total;
         } else {
           this.$message.error(response.message || '获取课程列表失败');
@@ -254,6 +269,7 @@ export default {
 
 :deep(.el-carousel__item--card) {
   width: 50%;
+  border: none;
 }
 
 :deep(.el-carousel__item--card.is-active) {
@@ -262,13 +278,17 @@ export default {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
+:deep(.el-carousel__mask) {
+  display: none;
+}
+
 .carousel-card {
   width: 100%;
   height: 100%;
   border-radius: 16px;
   overflow: hidden;
   position: relative;
-  background: #fff;
+  background: transparent;
 }
 
 .carousel-image {
@@ -276,6 +296,7 @@ export default {
   height: 100%;
   object-fit: contain;
   display: block;
+  background: transparent;
 }
 
 :deep(.el-carousel__arrow) {
@@ -299,6 +320,16 @@ export default {
 
 :deep(.el-carousel__arrow--right) {
   right: 20px;
+}
+
+:deep(.el-carousel__container) {
+  height: 400px;
+  padding: 0;
+}
+
+:deep(.el-carousel) {
+  padding: 0;
+  margin: 0;
 }
 </style> 
 

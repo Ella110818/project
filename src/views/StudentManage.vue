@@ -4,15 +4,15 @@
     <div class="header">
         <el-button type="primary" style="margin-left: 20px;"  @click="showDialog('add')">新增</el-button>
         <el-select
-        v-model="selectedClasses"
+        v-model="selectedCourses"
         multiple
-        placeholder="所有班级"
+        placeholder="所有课程"
         style="width: 240px; margin-left: 20px;"
-        @change="handleClassChange"
+        @change="handleCourseChange"
         font-color="black"
         >
         <el-option
-          v-for="item in classOptions"
+          v-for="item in courseOptions"
           :key="item.value"
           :label="item.label"
           :value="item.value"
@@ -30,10 +30,11 @@
       <el-table :data="tableData" style="width: 100%" :border="false" :cell-style="{ textAlign: 'center' }" v-loading="loading">
       <el-table-column type="selection" width="50" align="center" />
       <el-table-column label="班级" prop="className" width="150" align="center" />
+      <el-table-column label="系统" prop="classSystem" width="150" align="center" />
       <el-table-column label="学生" width="150" align="center">
         <template #default="scope">
           <div class="user">
-            <img class="avatar" :src="scope.row.avatar || '/teacher/image/song.png'" />
+            <img class="avatar" :src="scope.row.avatar" />
             <div class="user-info">
               <p class="user-name">{{ scope.row.username }}</p>
             </div>
@@ -41,18 +42,7 @@
         </template>
       </el-table-column>
       <el-table-column label="学号" prop="mobile" width="150" align="center" />
-      <el-table-column label="性别" prop="sex" width="100" align="center">
-        <template #default="scope">
-          {{ scope.row.sex === 1 ? '男' : '女' }}
-        </template>
-      </el-table-column>
-      <el-table-column label="详情" width="130" align="center">
-        <template #default="{ row }">
-          <router-link :to="{ name: 'details', params: { id: row.id } }">
-            <el-button type="primary">查看详情</el-button>
-          </router-link>
-        </template>
-      </el-table-column>
+      <el-table-column label="邮箱" prop="email" width="200" align="center" />
       <el-table-column label="操作" width="130" align="center">
         <template #default="scope">
           <el-button type="primary" :icon="Edit" circle @click="handleEdit(scope.row)"/>
@@ -107,47 +97,129 @@
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Search, Edit, Delete } from '@element-plus/icons-vue';
+import api from '@/api';  // 导入 api
 
 const dialogType = ref('add');
 const dialogVisible = ref(false);
 const loading = ref(false);
 
-// 添加模拟数据
-const mockClassOptions = [
-  { value: '1', label: '计算机科学与技术1班 (2023)' },
-  { value: '2', label: '软件工程1班 (2023)' },
-  { value: '3', label: '人工智能1班 (2023)' }
-];
+// 课程选项
+const courseOptions = ref([]);
+const selectedCourses = ref([]);
 
-const mockStudents = [
-  {
-    id: 1,
-    username: '张三',
-    mobile: '20230100101',
-    sex: 1,
-    className: '计算机科学与技术1班 (2023)',
-    email: 'zhangsan@example.com',
-    avatar: '/teacher/image/song.png'
-  },
-  {
-    id: 2,
-    username: '李四',
-    mobile: '20230100102',
-    sex: 2,
-    className: '软件工程1班 (2023)',
-    email: 'lisi@example.com',
-    avatar: '/teacher/image/song.png'
-  },
-  {
-    id: 3,
-    username: '王五',
-    mobile: '20230100103',
-    sex: 1,
-    className: '人工智能1班 (2023)',
-    email: 'wangwu@example.com',
-    avatar: '/teacher/image/song.png'
+// 获取课程列表
+const fetchCourses = async () => {
+  try {
+    const response = await api.getTeacherCourses();
+    if (response.code === 200) {
+      courseOptions.value = response.data.items.map(course => ({
+        value: course.course_id,
+        label: course.title
+      }));
+    } else {
+      ElMessage.error(response.message || '获取课程列表失败');
+    }
+  } catch (error) {
+    console.error('获取课程列表失败:', error);
+    ElMessage.error('获取课程列表失败，请稍后重试');
   }
-];
+};
+
+// 获取选中课程的学生列表
+const fetchStudents = async (courseId) => {
+  try {
+    loading.value = true;
+    console.log(`正在获取课程 ${courseId} 的学生列表...`);
+    const response = await api.getCourseStudents(courseId);
+    console.log(`课程 ${courseId} 的响应数据:`, response);
+
+    if (response.code === 200) {
+      const students = response.data.items.map(item => ({
+        id: item.student_id,
+        username: item.name || item.student_id,
+        mobile: item.student_id,
+        email: item.email,
+        className: item.class_name,
+        classSystem: item.class_system,
+        avatar: item.image || '/teacher/image/song.png'
+      }));
+      return students;
+    } else {
+      console.warn(`获取课程 ${courseId} 的学生列表失败:`, response.message);
+      ElMessage.warning(response.message || `获取课程 ${courseId} 的学生列表失败`);
+      return [];
+    }
+  } catch (error) {
+    console.error(`获取课程 ${courseId} 的学生列表失败:`, error);
+    if (error.response) {
+      console.error('错误响应:', error.response);
+      ElMessage.error(error.response.data?.message || `获取课程 ${courseId} 的学生列表失败`);
+    } else {
+      ElMessage.error(`获取课程 ${courseId} 的学生列表失败，请检查网络连接`);
+    }
+    return [];
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 更新学生列表
+const updateStudentList = async () => {
+  try {
+    loading.value = true;
+    let allStudents = [];
+    
+    // 获取所有选中课程的学生
+    if (selectedCourses.value.length > 0) {
+      console.log('选中的课程:', selectedCourses.value);
+      for (const courseId of selectedCourses.value) {
+        const students = await fetchStudents(courseId);
+        allStudents = [...allStudents, ...students];
+      }
+    }
+    
+    // 如果有搜索文本，进行过滤
+    if (searchText.value) {
+      const searchLower = searchText.value.toLowerCase();
+      allStudents = allStudents.filter(student => 
+        student.username.toLowerCase().includes(searchLower) ||
+        student.mobile.toLowerCase().includes(searchLower) ||
+        student.email.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    console.log('更新后的学生列表:', allStudents);
+    tableData.value = allStudents;
+
+    // 如果没有数据，显示提示
+    if (allStudents.length === 0 && selectedCourses.value.length > 0) {
+      ElMessage.info('未找到符合条件的学生');
+    }
+  } catch (error) {
+    console.error('更新学生列表失败:', error);
+    ElMessage.error('更新学生列表失败，请稍后重试');
+  } finally {
+    loading.value = false;
+  }
+};
+
+const searchText = ref('');
+const tableData = ref([]);
+
+// 监听课程选择变化
+const handleCourseChange = () => {
+  updateStudentList();
+};
+
+// 监听搜索文本变化
+const handleSearchChange = () => {
+  updateStudentList();
+};
+
+// 组件挂载时初始化数据
+onMounted(() => {
+  fetchCourses();
+});
 
 const formData = reactive({
   username: '',
@@ -157,51 +229,7 @@ const formData = reactive({
   id: null,
 });
 
-const searchText = ref('');
-const classOptions = ref(mockClassOptions);
-const selectedClasses = ref([]);
-const tableData = ref(mockStudents);
-
-// 更新学生列表
-const updateStudentList = () => {
-  try {
-    loading.value = true;
-    let filteredStudents = [...mockStudents];
-    
-    // 如果选择了特定班级,进行过滤
-    if (selectedClasses.value.length > 0) {
-      const selectedClassNames = selectedClasses.value.map(value => 
-        mockClassOptions.find(option => option.value === value)?.label
-      );
-      filteredStudents = filteredStudents.filter(student =>
-        selectedClassNames.includes(student.className)
-      );
-    }
-    
-    // 如果有搜索文本,进行过滤
-    if (searchText.value) {
-      const searchLower = searchText.value.toLowerCase();
-      filteredStudents = filteredStudents.filter(student => 
-        student.username.toLowerCase().includes(searchLower) ||
-        student.mobile.toLowerCase().includes(searchLower)
-      );
-    }
-    
-    tableData.value = filteredStudents;
-  } finally {
-    loading.value = false;
-  }
-};
-
-// 监听班级选择变化
-const handleClassChange = () => {
-  updateStudentList();
-};
-
-// 监听搜索文本变化
-const handleSearchChange = () => {
-  updateStudentList();
-};
+const classOptions = ref([]);
 
 // 删除学生
 const handleDelete = (row) => {
@@ -210,9 +238,9 @@ const handleDelete = (row) => {
     cancelButtonText: '取消',
     type: 'warning'
   }).then(() => {
-    const index = mockStudents.findIndex(student => student.id === row.id);
+    const index = tableData.value.findIndex(student => student.id === row.id);
     if (index !== -1) {
-      mockStudents.splice(index, 1);
+      tableData.value.splice(index, 1);
       updateStudentList();
       ElMessage.success('删除成功');
     }
@@ -224,16 +252,6 @@ const handleDelete = (row) => {
 // 编辑学生
 const handleEdit = (row) => {
   showDialog('edit', row);
-};
-
-// 组件挂载时初始化数据
-onMounted(() => {
-  updateStudentList();
-});
-
-const resetForm = () => {
-  searchText.value = '';
-  updateStudentList();
 };
 
 const showDialog = (type, row) => {
@@ -275,7 +293,7 @@ const handleSubmit = () => {
     if (valid) {
       if (dialogType.value === 'add') {
         const newUser = {
-          id: mockStudents.length + 1,
+          id: tableData.value.length + 1,
           username: formData.username,
           mobile: formData.studentId,
           sex: formData.sex,
@@ -283,13 +301,13 @@ const handleSubmit = () => {
           avatar: '/teacher/image/song.png',
           email: `${formData.username}@example.com`
         };
-        mockStudents.push(newUser);
+        tableData.value.push(newUser);
         ElMessage.success('添加成功');
       } else {
-        const index = mockStudents.findIndex(item => item.id === formData.id);
+        const index = tableData.value.findIndex(item => item.id === formData.id);
         if (index !== -1) {
-          mockStudents[index] = {
-            ...mockStudents[index],
+          tableData.value[index] = {
+            ...tableData.value[index],
             username: formData.username,
             mobile: formData.studentId,
             sex: formData.sex,

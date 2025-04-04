@@ -175,75 +175,94 @@ const total = ref(0);
 
 // 作业列表数据
 const assignments = ref([]);
+const loading = ref(false);
 
-// 模拟数据
-const mockAssignments = [
-  {
-    id: 1,
-    title: '第一章课后作业',
-    type: 'homework',
-    description: '完成教材第15-20页的习题',
-    startTime: '2023-11-01 08:00',
-    deadline: '2023-11-10 23:59',
-    status: '已截止',
-    fullScore: 100,
-    submitted: 18,
-    total: 24
-  },
-  {
-    id: 2,
-    title: '第二章编程实验',
-    type: 'homework',
-    description: '完成实验指导书中的编程任务，并提交源代码和报告',
-    startTime: '2023-11-15 08:00',
-    deadline: '2023-11-25 23:59',
-    status: '进行中',
-    fullScore: 100,
-    submitted: 10,
-    total: 24
-  },
-  {
-    id: 3,
-    title: '期中考试',
-    type: 'exam',
-    description: '考试范围：第1-5章，闭卷，时长120分钟',
-    startTime: '2023-12-01 14:00',
-    deadline: '2023-12-01 16:00',
-    status: '未开始',
-    fullScore: 100,
-    submitted: 0,
-    total: 24
-  }
-];
-
-// 获取作业列表 - 使用本地数据代替API调用
+// 获取作业列表
 const loadAssignments = async () => {
   try {
-    // 模拟加载延迟
-    setTimeout(() => {
-      // 过滤数据
-      let filtered = [...mockAssignments];
-      
-      if (typeFilter.value) {
-        filtered = filtered.filter(item => item.type === typeFilter.value);
-      }
-      
-      if (statusFilter.value) {
-        filtered = filtered.filter(item => item.status === statusFilter.value);
-      }
-      
-      // 模拟分页
-      const start = (currentPage.value - 1) * pageSize.value;
-      const end = start + pageSize.value;
-      assignments.value = filtered.slice(start, end);
-      total.value = filtered.length;
-      
-    }, 300);
+    loading.value = true;
+    const courseId = localStorage.getItem('currentCourseId');
+    if (!courseId) {
+      ElMessage.error('未找到课程信息');
+      return;
+    }
+
+    // 构建请求参数
+    const params = {
+      page: currentPage.value,
+      size: pageSize.value
+    };
+
+    // 添加筛选条件
+    if (typeFilter.value) {
+      params.type = typeFilter.value;
+    }
+    if (statusFilter.value) {
+      params.status = statusFilter.value;
+    }
+
+    const response = await api.getAssignments(courseId, params);
+    
+    if (response.code === 200 && response.data) {
+      assignments.value = response.data.items.map(item => ({
+        id: item.id,
+        title: item.title,
+        type: item.type,
+        description: item.description,
+        startTime: formatTime(item.start_time),
+        deadline: formatTime(item.deadline),
+        status: getAssignmentStatus(item.start_time, item.deadline),
+        fullScore: item.full_score,
+        submitted: item.submitted,
+        total: item.total
+      }));
+      total.value = response.data.total;
+    } else {
+      throw new Error(response.message || '获取作业列表失败');
+    }
   } catch (error) {
     console.error('加载作业列表失败:', error);
-    ElMessage.error('加载作业列表失败');
+    ElMessage.error(`加载失败: ${error.message}`);
+  } finally {
+    loading.value = false;
   }
 };
+
+// 格式化时间
+const formatTime = (time) => {
+  if (!time) return '';
+  return new Date(time).toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+// 计算作业状态
+const getAssignmentStatus = (startTime, deadline) => {
+  const now = new Date().getTime();
+  const start = new Date(startTime).getTime();
+  const end = new Date(deadline).getTime();
+
+  if (now < start) return '未开始';
+  if (now > end) return '已截止';
+  return '进行中';
+};
+
+// 筛选后的作业/考试列表
+const filteredAssignments = computed(() => {
+  if (!searchText.value) {
+    return assignments.value;
+  }
+  
+  const searchQuery = searchText.value.toLowerCase();
+  return assignments.value.filter(item => 
+    item.title.toLowerCase().includes(searchQuery) || 
+    item.description.toLowerCase().includes(searchQuery)
+  );
+});
 
 // 监听筛选条件变化
 watch([typeFilter, statusFilter], () => {
@@ -262,19 +281,6 @@ const handleSizeChange = (size) => {
   currentPage.value = 1;
   loadAssignments();
 };
-
-// 筛选后的作业/考试列表
-const filteredAssignments = computed(() => {
-  if (!searchText.value) {
-    return assignments.value;
-  }
-  
-  const searchQuery = searchText.value.toLowerCase();
-  return assignments.value.filter(item => 
-    item.title.toLowerCase().includes(searchQuery) || 
-    item.description.toLowerCase().includes(searchQuery)
-  );
-});
 
 // 表单数据
 const dialogVisible = ref(false);
@@ -406,14 +412,28 @@ const handleDelete = (item) => {
       type: 'warning',
     }
   )
-    .then(() => {
-      // 从模拟数据中删除
-      const index = mockAssignments.findIndex(a => a.id === item.id);
-      if (index !== -1) {
-        mockAssignments.splice(index, 1);
-        loadAssignments(); // 重新加载列表
+    .then(async () => {
+      try {
+        loading.value = true;
+        const courseId = localStorage.getItem('currentCourseId');
+        if (!courseId) {
+          ElMessage.error('未找到课程信息');
+          return;
+        }
+        
+        const response = await api.deleteAssignment(courseId, item.id);
+        if (response.code === 200) {
+          ElMessage.success('删除成功');
+          loadAssignments(); // 重新加载列表
+        } else {
+          throw new Error(response.message || '删除失败');
+        }
+      } catch (error) {
+        console.error('删除失败:', error);
+        ElMessage.error(`删除失败: ${error.message || '未知错误'}`);
+      } finally {
+        loading.value = false;
       }
-      ElMessage.success('删除成功');
     })
     .catch(() => {
       // 取消删除操作
@@ -430,6 +450,7 @@ const handleSubmit = async () => {
   formRef.value.validate(async (valid) => {
     if (valid) {
       try {
+        loading.value = true;
         const courseId = localStorage.getItem('currentCourseId');
         if (!courseId) {
           ElMessage.error('未找到课程信息');
@@ -446,46 +467,38 @@ const handleSubmit = async () => {
           full_score: formData.value.fullScore
         };
 
-        // 模拟API保存
-        setTimeout(() => {
-          if (isEditing.value) {
-            // 更新已有作业
-            const index = mockAssignments.findIndex(item => item.id === formData.value.id);
-            if (index !== -1) {
-              mockAssignments[index] = {
-                ...mockAssignments[index],
-                title: saveData.title,
-                type: saveData.type,
-                description: saveData.description,
-                startTime: saveData.start_time,
-                deadline: saveData.deadline,
-                fullScore: saveData.full_score
-              };
-            }
-          } else {
-            // 添加新作业
-            const newItem = {
-              id: Date.now(),
+        let response;
+        if (isEditing.value) {
+          // 目前API不支持更新，暂时只是前端更新
+          const index = assignments.value.findIndex(item => item.id === formData.value.id);
+          if (index !== -1) {
+            assignments.value[index] = {
+              ...assignments.value[index],
               title: saveData.title,
               type: saveData.type,
               description: saveData.description,
-              startTime: saveData.start_time,
-              deadline: saveData.deadline,
-              status: '未开始',
-              fullScore: saveData.full_score,
-              submitted: 0,
-              total: 24
+              startTime: formatTime(saveData.start_time),
+              deadline: formatTime(saveData.deadline),
+              fullScore: saveData.full_score
             };
-            mockAssignments.push(newItem);
           }
-          
-          ElMessage.success(isEditing.value ? '更新成功' : '添加成功');
-          dialogVisible.value = false;
-          loadAssignments(); // 重新加载列表
-        }, 300);
+          ElMessage.success('更新成功');
+        } else {
+          // 创建新作业
+          response = await api.createAssignment(courseId, saveData);
+          if (response.code === 200) {
+            ElMessage.success('添加成功');
+            loadAssignments(); // 重新加载列表
+          } else {
+            throw new Error(response.message || '保存失败');
+          }
+        }
+        dialogVisible.value = false;
       } catch (error) {
         console.error('保存失败:', error);
-        ElMessage.error('保存失败');
+        ElMessage.error(`保存失败: ${error.message || '未知错误'}`);
+      } finally {
+        loading.value = false;
       }
     } else {
       return false;

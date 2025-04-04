@@ -1,19 +1,3 @@
-// // src/api/index.js
-// import axios from 'axios';
-
-// const api = {
-//     login: async (loginForm) => {
-//         try {
-//             const response = await axios.post('/api/login', loginForm); // 调用登录接口
-//             return response.data; // 返回接口响应数据
-//         } catch (error) {
-//             throw new Error('登录失败'); // 抛出错误
-//         }
-//     },
-// };
-
-// export default api;
-// src/api/index.js
 import axios from 'axios';
 
 // 环境配置
@@ -22,8 +6,11 @@ export const ApiEnv = {
     PRODUCTION: 'production'
 };
 
+// 强制清除可能存在的本地环境配置
+localStorage.removeItem('api_environment');
+
 // 当前环境
-const currentEnv = localStorage.getItem('api_environment') || ApiEnv.PRODUCTION;
+const currentEnv = ApiEnv.PRODUCTION; // 强制使用生产环境
 
 // 获取API基础URL
 const getBaseUrl = () => {
@@ -328,7 +315,100 @@ const mockApi = {
                 });
             }, 300);
         });
-    }
+    },
+
+    // 人脸识别考勤（模拟实现）
+    checkAttendance: async (imageData) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                // 生成动态的日期时间字符串
+                const now = new Date();
+                const dateStr = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}`;
+                const timeStr = `${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}`;
+
+                // 返回标准化的响应格式
+                resolve({
+                    code: 200,
+                    message: `测试模式：已生成考勤记录，出席人数：${Math.floor(Math.random() * 5) + 1}，缺席人数：${Math.floor(Math.random() * 3) + 1}`,
+                    data: {
+                        file_path: `attendance_records/attendance_${dateStr}_${timeStr}.txt`,
+                        attendance_records: [
+                            {
+                                id: 1,
+                                name: "张三",
+                                present: 1,
+                                confidence: 0.85
+                            },
+                            {
+                                id: 2,
+                                name: "李四",
+                                present: 1,
+                                confidence: 0.78
+                            },
+                            {
+                                id: 3,
+                                name: "王五",
+                                present: 0,
+                                confidence: 0.45
+                            }
+                        ],
+                        stats: {
+                            total: 3,
+                            present: 2,
+                            absent: 1
+                        }
+                    }
+                });
+            }, 500);
+        });
+    },
+
+    // 获取课程学生列表（模拟实现）
+    getCourseStudents: async (courseId) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    code: 200,
+                    message: "获取成功",
+                    data: {
+                        total: 3,
+                        items: [
+                            {
+                                student_id: "S000001",
+                                name: "张三",
+                                email: "zhangsan@example.com",
+                                phone: "13800138001",
+                                staff_id: "ST001",
+                                image: "/teacher/image/song.png",
+                                class_name: "计算机科学与技术1班",
+                                class_system: "计算机系"
+                            },
+                            {
+                                student_id: "S000002",
+                                name: "李四",
+                                email: "lisi@example.com",
+                                phone: "13800138002",
+                                staff_id: "ST002",
+                                image: "/teacher/image/song.png",
+                                class_name: "软件工程1班",
+                                class_system: "软件工程系"
+                            },
+                            {
+                                student_id: "S000003",
+                                name: "王五",
+                                email: "wangwu@example.com",
+                                phone: "13800138003",
+                                staff_id: "ST003",
+                                image: "/teacher/image/song.png",
+                                class_name: "人工智能1班",
+                                class_system: "人工智能系"
+                            }
+                        ]
+                    }
+                });
+            }, 300);
+        });
+    },
 };
 
 // 生产环境API
@@ -576,9 +656,9 @@ const productionApi = {
     // 获取教师课程列表
     getTeacherCourses: async () => {
         try {
-            const response = await request.get('/api/course/courses/', {
+            const response = await request.get('/api/courses/', {
                 params: {
-                    role: 'teacher'  // 添加角色参数来过滤教师的课程
+                    role: 'teacher'
                 }
             });
             return response;
@@ -591,8 +671,13 @@ const productionApi = {
     // 获取课程学生列表
     getCourseStudents: async (courseId) => {
         try {
-            const response = await request.get(`/api/course/courses/${courseId}/students/`);
-            return response;
+            const response = await request.get(`/api/courses/${courseId}/students/`);
+            if (response.code === 200) {
+                return response;
+            } else {
+                console.error('获取课程学生列表失败:', response.message);
+                throw new Error(response.message || '获取学生列表失败');
+            }
         } catch (error) {
             console.error('获取课程学生列表失败:', error);
             throw error;
@@ -635,6 +720,17 @@ const productionApi = {
         }
     },
 
+    // 删除作业或考试
+    deleteAssignment: async (courseId, assignmentId) => {
+        try {
+            const response = await request.delete(`/api/advanced/courses/${courseId}/assignments/${assignmentId}/`);
+            return response;
+        } catch (error) {
+            console.error('删除作业或考试失败:', error);
+            throw error;
+        }
+    },
+
     // 人脸识别考勤
     checkAttendance: async (imageData) => {
         try {
@@ -657,18 +753,40 @@ const productionApi = {
 
             console.log('服务器原始响应:', response);
 
-            // 如果响应是错误状态，抛出错误
-            if (response.status === 'error') {
-                throw new Error(response.message || '考勤失败');
+            // 如果是标准格式的API响应（包含code字段）
+            if (response.code !== undefined) {
+                if (response.code === 200 && response.data) {
+                    // 返回规范化的格式
+                    return {
+                        status: 'success',
+                        message: response.message,
+                        file_path: response.data.file_path,
+                        attendance_records: response.data.attendance_records || []
+                    };
+                } else {
+                    // 返回错误格式
+                    return {
+                        status: 'error',
+                        message: response.message || '点名失败',
+                        file_path: undefined,
+                        attendance_records: []
+                    };
+                }
             }
-
-            // 返回规范化的响应格式
-            return {
-                status: response.status || 'error',
-                message: response.message || '未知响应',
-                file_path: response.file_path,
-                attendance_records: response.attendance_records || []
-            };
+            // 如果是旧版API格式（直接包含status字段）
+            else if (response.status) {
+                return response; // 直接返回
+            }
+            // 未知格式，尝试适配
+            else {
+                console.warn('未知的API响应格式:', response);
+                return {
+                    status: 'success',
+                    message: response.message || '点名完成',
+                    file_path: response.file_path,
+                    attendance_records: response.attendance_records || []
+                };
+            }
         } catch (error) {
             console.error('人脸识别考勤失败:', error);
             // 返回统一的错误响应格式

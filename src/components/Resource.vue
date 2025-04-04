@@ -315,7 +315,9 @@ const handleDownload = async (file) => {
     
     if (response instanceof Blob) {
       // 处理文件流
-      const url = window.URL.createObjectURL(response)
+      const mimeType = file.type === 'video' ? 'video/mp4' : 'application/octet-stream'
+      const blob = new Blob([response], { type: mimeType })
+      const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
       link.download = file.name
@@ -326,7 +328,10 @@ const handleDownload = async (file) => {
       ElMessage.success('下载成功')
     } else if (response.data && response.data.downloadUrl) {
       // 处理下载链接
-      window.open(response.data.downloadUrl, '_blank')
+      const downloadUrl = response.data.downloadUrl.startsWith('http') 
+        ? response.data.downloadUrl 
+        : `${process.env.VUE_APP_API_BASE_URL}${response.data.downloadUrl}`
+      window.open(downloadUrl, '_blank')
       ElMessage.success('下载成功')
     } else {
       throw new Error('下载失败：无效的响应格式')
@@ -344,19 +349,17 @@ const handlePreview = async (file) => {
     
     switch (type) {
       case 'video':
-        // 视频预览
-        window.open(url, '_blank')
+        // 直接在新窗口打开视频URL
+        const videoUrl = url.startsWith('http') ? url : `${process.env.VUE_APP_API_BASE_URL}${url}`
+        window.open(videoUrl, '_blank')
         break
       case 'document':
+      case 'courseware':
         // 文档预览
         window.open(url, '_blank')
         break
-      case 'courseware':
-        // 课件预览
-        window.open(url, '_blank')
-        break
       default:
-        ElMessage.warning('该文件类型暂不支持预览')
+        ElMessage.warning('该文件类型暂不支持预览，请下载后查看')
     }
   } catch (error) {
     console.error('预览失败:', error)
