@@ -48,17 +48,17 @@
           </div>
         </div>
         <div class="assignment-actions">
-          <el-button-group>
-            <el-button type="primary" @click="handleEdit(item)">
-              <el-icon><Edit /></el-icon>编辑
+          <div class="action-buttons">
+            <el-button class="btn-custom" type="info">
+              <el-icon><EditPen /></el-icon>编辑
             </el-button>
-            <el-button type="success" @click="handleCheck(item)">
+            <el-button class="btn-custom" type="primary">
               <el-icon><View /></el-icon>查看提交
             </el-button>
-            <el-button type="danger" @click="handleDelete(item)">
+            <el-button class="btn-custom" type="danger">
               <el-icon><Delete /></el-icon>删除
             </el-button>
-          </el-button-group>
+          </div>
         </div>
         </el-card>
     </div>
@@ -155,7 +155,7 @@ import {
   Timer, 
   ScaleToOriginal, 
   User, 
-  Edit, 
+  EditPen,
   View, 
   Delete, 
   Search, 
@@ -177,52 +177,111 @@ const total = ref(0);
 const assignments = ref([]);
 const loading = ref(false);
 
+// 模拟数据
+const mockAssignments = [
+  {
+    id: 1,
+    title: '计算机组成原理期中考试',
+    type: 'exam',
+    description: '本次考试为闭卷考试，考试时间2小时，满分100分。考试内容包括：计算机系统概述、数据的表示和运算、存储系统、指令系统、中央处理器等。请带好考试用具，不允许使用计算器。',
+    startTime: '2024-03-25 14:00',
+    deadline: '2024-03-25 16:00',
+    fullScore: 100,
+    submitted: 30,
+    total: 35
+  },
+  {
+    id: 2,
+    title: 'CPU设计与实现作业',
+    type: 'homework',
+    description: '请使用Verilog语言设计一个简单的单周期CPU，要求实现基本的算术运算、数据传送和控制指令。需提交设计报告和源代码。',
+    startTime: '2024-03-20 08:00',
+    deadline: '2024-03-27 23:59',
+    fullScore: 100,
+    submitted: 25,
+    total: 35
+  },
+  {
+    id: 3,
+    title: '存储器层次结构实验报告',
+    type: 'homework',
+    description: '完成Cache设计实验，分析不同Cache映射方式（直接映射、组相联、全相联）的性能差异，并提交详细的实验报告。要求包含实验数据和性能分析。',
+    startTime: '2024-03-15 00:00',
+    deadline: '2024-03-22 23:59',
+    fullScore: 100,
+    submitted: 32,
+    total: 35
+  },
+  {
+    id: 4,
+    title: '流水线CPU设计报告',
+    type: 'homework',
+    description: '基于MIPS架构设计一个五级流水线CPU，需要解决数据相关、控制相关等问题。提交设计文档、源代码和仿真结果。',
+    startTime: '2024-03-28 00:00',
+    deadline: '2024-04-04 23:59',
+    fullScore: 100,
+    submitted: 0,
+    total: 35
+  },
+  {
+    id: 5,
+    title: '指令系统实验',
+    type: 'homework',
+    description: '分析RISC和CISC指令系统的特点，完成指令格式设计和编码实验。需要提交实验报告，包含指令设计方案和编码示例。',
+    startTime: '2024-04-01 00:00',
+    deadline: '2024-04-08 23:59',
+    fullScore: 100,
+    submitted: 15,
+    total: 35
+  },
+  {
+    id: 6,
+    title: '总线与IO系统设计',
+    type: 'homework',
+    description: '设计一个基本的总线系统，实现CPU与内存、IO设备的通信。需要考虑总线仲裁、数据传输等问题，提交设计方案和仿真结果。',
+    startTime: '2024-04-05 00:00',
+    deadline: '2024-04-12 23:59',
+    fullScore: 100,
+    submitted: 8,
+    total: 35
+  }
+];
+
 // 获取作业列表
 const loadAssignments = async () => {
   try {
     loading.value = true;
-    const courseId = localStorage.getItem('currentCourseId');
-    if (!courseId) {
-      ElMessage.error('未找到课程信息');
-      return;
-    }
-
-    // 构建请求参数
-    const params = {
-      page: currentPage.value,
-      size: pageSize.value
-    };
-
-    // 添加筛选条件
-    if (typeFilter.value) {
-      params.type = typeFilter.value;
-    }
-    if (statusFilter.value) {
-      params.status = statusFilter.value;
-    }
-
-    const response = await api.getAssignments(courseId, params);
     
-    if (response.code === 200 && response.data) {
-      assignments.value = response.data.items.map(item => ({
-        id: item.id,
-        title: item.title,
-        type: item.type,
-        description: item.description,
-        startTime: formatTime(item.start_time),
-        deadline: formatTime(item.deadline),
-        status: getAssignmentStatus(item.start_time, item.deadline),
-        fullScore: item.full_score,
-        submitted: item.submitted,
-        total: item.total
-      }));
-      total.value = response.data.total;
-    } else {
-      throw new Error(response.message || '获取作业列表失败');
+    // 模拟API延迟
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // 应用筛选条件
+    let filteredData = [...mockAssignments];
+    
+    if (typeFilter.value) {
+      filteredData = filteredData.filter(item => item.type === typeFilter.value);
     }
+    
+    if (statusFilter.value) {
+      filteredData = filteredData.filter(item => 
+        getAssignmentStatus(item.startTime, item.deadline) === statusFilter.value
+      );
+    }
+    
+    // 计算分页
+    const start = (currentPage.value - 1) * pageSize.value;
+    const end = start + pageSize.value;
+    
+    // 更新总数和当前页数据
+    total.value = filteredData.length;
+    assignments.value = filteredData.slice(start, end).map(item => ({
+      ...item,
+      status: getAssignmentStatus(item.startTime, item.deadline)
+    }));
+    
   } catch (error) {
     console.error('加载作业列表失败:', error);
-    ElMessage.error(`加载失败: ${error.message}`);
+    ElMessage.error('加载失败');
   } finally {
     loading.value = false;
   }
@@ -412,27 +471,13 @@ const handleDelete = (item) => {
       type: 'warning',
     }
   )
-    .then(async () => {
-      try {
-        loading.value = true;
-        const courseId = localStorage.getItem('currentCourseId');
-        if (!courseId) {
-          ElMessage.error('未找到课程信息');
-          return;
-        }
-        
-        const response = await api.deleteAssignment(courseId, item.id);
-        if (response.code === 200) {
-          ElMessage.success('删除成功');
-          loadAssignments(); // 重新加载列表
-        } else {
-          throw new Error(response.message || '删除失败');
-        }
-      } catch (error) {
-        console.error('删除失败:', error);
-        ElMessage.error(`删除失败: ${error.message || '未知错误'}`);
-      } finally {
-        loading.value = false;
+    .then(() => {
+      // 模拟删除操作
+      const index = mockAssignments.findIndex(i => i.id === item.id);
+      if (index !== -1) {
+        mockAssignments.splice(index, 1);
+        ElMessage.success('删除成功');
+        loadAssignments();
       }
     })
     .catch(() => {
@@ -451,57 +496,42 @@ const handleSubmit = async () => {
     if (valid) {
       try {
         loading.value = true;
-        const courseId = localStorage.getItem('currentCourseId');
-        if (!courseId) {
-          ElMessage.error('未找到课程信息');
-          return;
-        }
-
+        
         // 构建保存的数据
         const saveData = {
+          id: isEditing.value ? formData.value.id : mockAssignments.length + 1,
           title: formData.value.title,
           type: formData.value.type,
           description: formData.value.description,
-          start_time: formData.value.timeRange[0],
+          startTime: formData.value.timeRange[0],
           deadline: formData.value.timeRange[1],
-          full_score: formData.value.fullScore
+          fullScore: formData.value.fullScore,
+          submitted: 0,
+          total: 35
         };
 
-        let response;
         if (isEditing.value) {
-          // 目前API不支持更新，暂时只是前端更新
-          const index = assignments.value.findIndex(item => item.id === formData.value.id);
+          // 更新现有作业
+          const index = mockAssignments.findIndex(item => item.id === saveData.id);
           if (index !== -1) {
-            assignments.value[index] = {
-              ...assignments.value[index],
-              title: saveData.title,
-              type: saveData.type,
-              description: saveData.description,
-              startTime: formatTime(saveData.start_time),
-              deadline: formatTime(saveData.deadline),
-              fullScore: saveData.full_score
-            };
+            mockAssignments[index] = saveData;
           }
           ElMessage.success('更新成功');
         } else {
-          // 创建新作业
-          response = await api.createAssignment(courseId, saveData);
-          if (response.code === 200) {
-            ElMessage.success('添加成功');
-            loadAssignments(); // 重新加载列表
-          } else {
-            throw new Error(response.message || '保存失败');
-          }
+          // 添加新作业
+          mockAssignments.push(saveData);
+          ElMessage.success('添加成功');
         }
+        
+        await loadAssignments();
         dialogVisible.value = false;
+        
       } catch (error) {
         console.error('保存失败:', error);
-        ElMessage.error(`保存失败: ${error.message || '未知错误'}`);
+        ElMessage.error('保存失败');
       } finally {
         loading.value = false;
       }
-    } else {
-      return false;
     }
   });
 };
@@ -616,7 +646,39 @@ onMounted(() => {
 .assignment-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 10px;
+  margin-top: 12px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-custom {
+   height: 32px !important;
+  padding: 0 16px;
+  font-size: 14px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  width: 100px;
+  line-height: 1 !important;
+}
+
+:deep(.el-button.btn-custom) {
+  height: 32px !important;
+  line-height: 1 !important;
+}
+
+.btn-custom .el-icon {
+  margin-right: 4px;
+  font-size: 16px;
+}
+
+.action-buttons .el-button + .el-button {
+  margin-left: 0;
 }
 
 .dialog-footer {

@@ -60,7 +60,6 @@ request.interceptors.response.use(
     error => {
         if (error.code === 'ECONNABORTED' && error.message.includes('timeout')) {
             console.log('请求超时：', error.config.url);
-            // 可以在这里添加请求超时的特殊处理
             return Promise.reject({
                 code: 408,
                 message: '请求超时，请检查网络连接或稍后重试',
@@ -81,11 +80,23 @@ request.interceptors.response.use(
                     // 权限不足
                     console.error('权限不足');
                     break;
+                case 404:
+                    console.error('请求的资源不存在:', error.config.url);
+                    break;
                 default:
-                    console.error('请求失败:', data?.message || '未知错误');
+                    console.error('请求失败:', data?.message || `HTTP错误 ${status}`);
             }
+            return Promise.reject({
+                code: status,
+                message: data?.message || `请求失败 (${status})`,
+                data: null
+            });
         }
-        return Promise.reject(error);
+        return Promise.reject({
+            code: 500,
+            message: error.message || '网络错误',
+            data: null
+        });
     }
 );
 
@@ -656,7 +667,7 @@ const productionApi = {
     // 获取教师课程列表
     getTeacherCourses: async () => {
         try {
-            const response = await request.get('/api/courses/', {
+            const response = await request.get('/api/course/courses/', {
                 params: {
                     role: 'teacher'
                 }
@@ -671,7 +682,7 @@ const productionApi = {
     // 获取课程学生列表
     getCourseStudents: async (courseId) => {
         try {
-            const response = await request.get(`/api/courses/${courseId}/students/`);
+            const response = await request.get(`/api/course/courses/${courseId}/students/info/`);
             if (response.code === 200) {
                 return response;
             } else {
@@ -734,14 +745,11 @@ const productionApi = {
     // 人脸识别考勤
     checkAttendance: async (imageData) => {
         try {
-            // 创建FormData对象
             const formData = new FormData();
-            // 确保使用正确的字段名 'image'
             formData.append('image', imageData, 'attendance.jpg');
 
             console.log('发送考勤请求，图像数据大小:', imageData.size, 'bytes');
 
-            // 发送请求到生产环境服务器
             const response = await request({
                 url: '/face_recognition/check_attendance/',
                 method: 'POST',
@@ -753,47 +761,28 @@ const productionApi = {
 
             console.log('服务器原始响应:', response);
 
-            // 如果是标准格式的API响应（包含code字段）
-            if (response.code !== undefined) {
-                if (response.code === 200 && response.data) {
-                    // 返回规范化的格式
-                    return {
-                        status: 'success',
-                        message: response.message,
-                        file_path: response.data.file_path,
-                        attendance_records: response.data.attendance_records || []
-                    };
-                } else {
-                    // 返回错误格式
-                    return {
-                        status: 'error',
-                        message: response.message || '点名失败',
-                        file_path: undefined,
-                        attendance_records: []
-                    };
-                }
-            }
-            // 如果是旧版API格式（直接包含status字段）
-            else if (response.status) {
-                return response; // 直接返回
-            }
-            // 未知格式，尝试适配
-            else {
-                console.warn('未知的API响应格式:', response);
+            // 统一返回格式处理
+            if (response.code === 200) {
                 return {
                     status: 'success',
-                    message: response.message || '点名完成',
-                    file_path: response.file_path,
-                    attendance_records: response.attendance_records || []
+                    message: response.message || '考勤完成',
+                    file_path: response.data.file_path,
+                    attendance_records: response.data.attendance_records || []
+                };
+            } else {
+                return {
+                    status: 'error',
+                    message: response.message || '考勤失败',
+                    file_path: null,
+                    attendance_records: []
                 };
             }
         } catch (error) {
             console.error('人脸识别考勤失败:', error);
-            // 返回统一的错误响应格式
             return {
                 status: 'error',
-                message: error.message || '考勤失败',
-                file_path: undefined,
+                message: error.response?.data?.message || '考勤失败，请检查网络连接',
+                file_path: null,
                 attendance_records: []
             };
         }

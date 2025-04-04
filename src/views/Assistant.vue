@@ -16,7 +16,7 @@
           <div v-for="(message, index) in messages" :key="index" :class="['message', message.type]">
             <div class="avatar">
               <el-avatar :size="40" :src="message.type === 'user' ? userAvatar : assistantAvatar" />
-              <span class="name">{{ message.type === 'user' ? '用户' : '系统' }}</span>
+              <span class="name">{{ message.type === 'user' ? '用户' : '智能助手' }}</span>
             </div>
             <div class="message-content">
               <div class="message-text" :class="{ 'typing': message.isTyping }">
@@ -69,7 +69,6 @@
               @keyup.enter="sendMessage"
               resize="none"
               :maxlength="500"
-              show-word-limit
             />
             <el-button type="primary" @click="sendMessage" :disabled="!inputMessage.trim()" class="send-btn">
               发送
@@ -144,7 +143,7 @@ const inputMessage = ref('');
 const messageContainer = ref(null);
 
 const userAvatar = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
-const assistantAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png';
+const assistantAvatar = require('@/assets/机器人.png');
 
 const messages = ref([
   {
@@ -165,9 +164,9 @@ const features = ref([
 ]);
 
 const chatHistory = ref([
-  { id: 1, title: '课程答疑 - 脑机接口', time: '2024-03-15' },
-  { id: 2, title: '学习计划制定', time: '2024-03-14' },
-  { id: 3, title: '考试复习指导', time: '2024-03-13' }
+  { id: 1, title: '课程答疑 - 脑机接口', time: '2025-03-15' },
+  { id: 2, title: '学习计划制定', time: '2025-03-14' },
+  { id: 3, title: '考试复习指导', time: '2025-03-13' }
 ]);
 
 function getCurrentTime() {
@@ -386,7 +385,8 @@ function loadHistory(history) {
   box-shadow: 0 0 10px rgba(103, 194, 255, 0.1);
   color: #ffffff;
   word-break: break-word;
-  font-size: 14px;
+  font-size: 16px;
+  text-align: left;
 }
 
 .message.assistant .message-text {
@@ -544,9 +544,13 @@ function loadHistory(history) {
   padding: 12px;
   line-height: 1.6;
   font-size: 14px;
-  background: rgba(11, 32, 68, 0.5);
+  background: rgba(11, 32, 68, 0.3);
   border: 1px solid rgba(103, 194, 255, 0.3);
   color: #67C2FF;
+}
+
+:deep(.el-textarea__inner::placeholder) {
+  color: rgba(103, 194, 255, 0.7);
 }
 
 :deep(.el-textarea__inner:focus) {
@@ -554,9 +558,8 @@ function loadHistory(history) {
   border-color: #67C2FF;
 }
 
-:deep(.el-textarea__count) {
-  color: #8CC5FF;
-  background: transparent;
+.chat-input :deep(.el-textarea__count) {
+  visibility: hidden !important;
 }
 
 /* 自定义滚动条样式 */

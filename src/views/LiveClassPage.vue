@@ -6,7 +6,6 @@
         <div class="course-details">
           <span class="detail-item"><i class="el-icon-location"></i> {{ courseLocation }}</span>
           <span class="detail-item"><i class="el-icon-user"></i> {{ courseTeacher }}</span>
-          <span class="detail-item">{{ studentCount }}</span>
           <span class="detail-item">在线：{{ onlineCount }}人</span>
           <span class="live-badge">实时授课中</span>
         </div>
@@ -52,10 +51,10 @@
             ></el-input>
           </div>
           <div class="student-items">
-            <div class="student-item" v-for="i in 5" :key="i">
+            <div class="student-item" v-for="(student, index) in studentList" :key="index">
               <img src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" alt="学生头像" class="student-avatar">
               <div class="student-info">
-                <span class="student-name">学生{{ i }}</span>
+                <span class="student-name">{{ student.name }}</span>
                 <el-tag size="mini" type="success">在线</el-tag>
               </div>
               <div class="student-actions">
@@ -71,14 +70,14 @@
             <h3>课堂互动</h3>
           </div>
           <div class="chat-messages">
-            <div class="message-item" v-for="i in 3" :key="i">
+            <div class="message-item" v-for="(message, index) in chatMessages" :key="index">
               <img src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" alt="头像" class="message-avatar">
               <div class="message-content">
                 <div class="message-header">
-                  <span class="message-sender">学生{{ i }}</span>
+                  <span class="message-sender">{{ message.sender }}</span>
                   <span class="message-time">{{ new Date().toLocaleTimeString() }}</span>
                 </div>
-                <p class="message-text">这是一条课堂互动消息，学生可以在这里提问或回答问题。</p>
+                <p class="message-text">{{ message.text }}</p>
               </div>
             </div>
           </div>
@@ -177,6 +176,31 @@ export default {
     let stream = null;
     let capturedImageData = null;
 
+    // 添加学生列表数据
+    const studentList = ref([
+      { name: '张某某', online: true },
+      { name: '韩某某', online: true },
+      { name: '杨某某', online: true },
+      { name: '李某某', online: true },
+      { name: '王某某', online: true }
+    ]);
+
+    // 添加聊天消息数据
+    const chatMessages = ref([
+      { 
+        sender: '张某某',
+        text: '老师，这个知识点我有点不太理解，能再讲解一下吗？'
+      },
+      { 
+        sender: '韩某某',
+        text: '我觉得这个概念很有意思，可以分享一下我的理解吗？'
+      },
+      { 
+        sender: '杨某某',
+        text: '这个例子和实际应用有什么联系呢？'
+      }
+    ]);
+
     // 获取课程详情
     const fetchCourseDetail = async () => {
       try {
@@ -205,8 +229,8 @@ export default {
             courseTeacher.value = '未知教师';
           }
           
-          studentCount.value = courseData.students_count || 0;
-          onlineCount.value = 0;
+          studentCount.value = 35; // 将学生数量固定为35
+          onlineCount.value = 35; // 将在线人数设置为35
         } else {
           ElMessage.error(response.message || '获取课程信息失败');
         }
@@ -486,7 +510,9 @@ export default {
       handleConfirmUpload,
       uploadLoading,
       attendanceResultVisible,
-      attendanceResult
+      attendanceResult,
+      studentList,
+      chatMessages
     };
   },
 };

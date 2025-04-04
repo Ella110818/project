@@ -43,10 +43,10 @@
             ></el-input>
           </div>
           <div class="student-items">
-            <div class="student-item" v-for="i in 5" :key="i">
+            <div class="student-item" v-for="(name, i) in studentNames" :key="i">
               <img src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" alt="学生头像" class="student-avatar">
               <div class="student-info">
-                <span class="student-name">学生{{ i }}</span>
+                <span class="student-name">{{ name }}</span>
                 <el-tag size="mini" type="success">在线</el-tag>
               </div>
             </div>
@@ -58,11 +58,11 @@
             <h3>课堂互动</h3>
           </div>
           <div class="chat-messages">
-            <div class="message-item" v-for="i in 3" :key="i">
+            <div class="message-item" v-for="(name, i) in studentNames.slice(0, 3)" :key="i">
               <img src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" alt="头像" class="message-avatar">
               <div class="message-content">
                 <div class="message-header">
-                  <span class="message-sender">学生{{ i }}</span>
+                  <span class="message-sender">{{ name }}</span>
                   <span class="message-time">{{ new Date().toLocaleTimeString() }}</span>
                 </div>
                 <p class="message-text">这是一条课堂互动消息，学生可以在这里提问或回答问题。</p>
@@ -98,6 +98,13 @@ export default {
     const courseTeacher = ref('');
     const studentCount = ref(0);
     const chatMessage = ref('');
+    const studentNames = ref([
+      '张某某',
+      '韩某某',
+      '杨某某',
+      '李某某',
+      '王某某'
+    ]);
 
     onMounted(() => {
       // 从localStorage获取课程信息
@@ -113,6 +120,7 @@ export default {
       courseTeacher,
       studentCount,
       chatMessage,
+      studentNames,
     };
   },
 };

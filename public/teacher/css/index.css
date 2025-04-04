@@ -1,19 +1,20 @@
-*{
-   padding:0px;	
-    margin:0px;
+* {
+    padding: 0px;
+    margin: 0px;
 }
-body{
+
+body {
     width: 100%;
     height: 100%;
     overflow: auto;
 }
 
-.public-bg{
+.public-bg {
     /*background: linear-gradient(to right,  #0b1834,#0b3069,#0b1834) ;*/
     border-radius: 10px;
 }
 
-.public-title{
+.public-title {
     width: calc(100% - 20px);
     height: 30px;
     position: relative;
@@ -25,7 +26,8 @@ body{
     line-height: 30px;
     font-size: 21px;
 }
-.public-title1{
+
+.public-title1 {
     width: calc(100% - 20px);
     height: 30px;
     position: relative;
@@ -36,6 +38,7 @@ body{
     line-height: 30px;
     font-size: 21px;
 }
+
 /*.public-title:before{
     width: 4px;
     height: 20px;
@@ -47,40 +50,44 @@ body{
     left: 5px;
 }*/
 
-.content-body{
+.content-body {
     width: 100%;
     height: 100%;
-    background: url(../image/bg.png)no-repeat center;
+    background: url(../image/design2.png)no-repeat center;
     background-size: 100% 100%;
     position: absolute;
 
 }
 
-.header{
+.header {
     height: 70px;
     width: 100%;
-/*    border: 1px solid red;*/
+    /*    border: 1px solid red;*/
 }
-.fl{
+
+.fl {
     float: left;
 }
-.header .header-left{
+
+.header .header-left {
     width: 25%;
     height: 1.05rem;
     color: white;
-/*    border: 1px solid green;*/
+    /*    border: 1px solid green;*/
     text-align: center;
     line-height: 1.05rem;
 }
-.header .header-center{
+
+.header .header-center {
     width: 50%;
     height: 1.05rem;
     /*border: 1px solid red;*/
-/*    background: url("../images/head.gif") no-repeat;
+    /*    background: url("../images/head.gif") no-repeat;
     background-size: 100% 100%;*/
     position: relative;
 }
-.header .header-center .header-title{
+
+.header .header-center .header-title {
     text-align: center;
     color: #ffffff;
     font-size: 30px;
@@ -88,7 +95,8 @@ body{
     margin: 1%;
     margin-left: -10%;
 }
-.header .header-img{
+
+.header .header-img {
     background: url("../image/head\ .gif") no-repeat center center;
     background-size: 100%;
     height: 100%;
@@ -99,12 +107,13 @@ body{
     margin-top: 4%;
 }
 
-.header .header-right{
+.header .header-right {
     width: 25%;
     height: 1.05rem;
     /*border: 1px solid gold;*/
 }
-.header .header-bottom{
+
+.header .header-bottom {
     width: calc(100% - .4rem);
     height: .16rem;
     background: url("../image/header.png") no-repeat;
@@ -113,88 +122,104 @@ body{
     margin-left: .3rem;
     margin-top: 1%;
 }
-.header .header-right{
+
+.header .header-right {
     width: 50%;
     line-height: 40px;
     color: #ffffff;
     margin-left: 75%;
 }
-.header .header-right span{
+
+.header .header-right span {
     color: #ffffff;
     font-weight: bold;
     font-size: 28px;
-    letter-spacing:2px;
+    letter-spacing: 2px;
     padding: 0 20px;
 }
-.content{
+
+.content {
     width: 100%;
     height: calc(100% - 75px);
     position: absolute;
 }
-.content .content-con{
+
+.content .content-con {
     height: 100%;
 }
-.content .content-con .left-body{
+
+.content .content-con .left-body {
     width: 22%;
     height: 100%;
     float: left;
-    margin:0 0.3%;
+    margin: 0 0.3%;
 }
-.left-body .left-top{
+
+.left-body .left-top {
     width: 100%;
     height: 32%;
     background: url(../image/bor1_2.png);
     background-size: 100% 100%;
     margin-top: 2%;
 }
-.left-body .left-top .top-body{
+
+.left-body .left-top .top-body {
     width: 100%;
     height: calc(100% - 30px);
 }
-.left-body .left-top .top-body .top-left{
+
+.left-body .left-top .top-body .top-left {
     float: left;
     width: 50%;
     height: 100%;
 }
- .top-left-title{
+
+.top-left-title {
     width: 100%;
     height: 100%;
     padding: 30px;
     box-sizing: border-box;
 }
- .top-left-title h6{
+
+.top-left-title h6 {
     color: #bad0e2;
 }
-.top-left-title span{
+
+.top-left-title span {
     margin-top: 30px;
     display: inline-block;
     color: #2aa4f1;
 
-/*    height: 80px;
+    /*    height: 80px;
     line-height: 80px;*/
 }
- .top-left-title span b{
+
+.top-left-title span b {
     font-size: 30px;
-     letter-spacing:5px;
+    letter-spacing: 5px;
 }
-.top-left-title img{
+
+.top-left-title img {
     width: 80%;
 }
-.left-body .left-top .top-body .top-right{
+
+.left-body .left-top .top-body .top-right {
     float: left;
     width: 50%;
     height: 100%;
 }
+
 /*.left-body .left-con{
     width: 100%;
     height: 38%;
     margin-top: 1.6%;
 }*/
-.title-nav{
+.title-nav {
     width: 100%;
     height: calc(100% - 30px);
 }
-.left-body .left-bottom{
+
+.left-body .left-bottom {
     width: 100%;
     height: 66%;
     margin-top: 3%;
@@ -203,76 +228,88 @@ body{
 
 }
 
-.center-body{
+.center-body {
     width: 50%;
     height: 100%;
-    margin:0 0.3%;
+    margin: 0 0.3%;
     float: left;
     margin-left: 1%;
     /*border: 1px solid red;*/
 }
-.center-body .center-top{
+
+.center-body .center-top {
     width: 100%;
     height: 56.5%;
     background: url(../image/bor1_5.png);
     background-size: 100% 100%;
 }
-.circle{
+
+.circle {
     width: 7%;
     height: 100%;
     margin-left: 3%;
 }
-.center-body .center-bottom{
+
+.center-body .center-bottom {
     width: 100%;
     height: 38%;
     margin-top: 3.5%;
     background: url(../image/bor1_2.png);
     background-size: 100% 100%;
 }
-.right-body{
+
+.right-body {
     width: 25%;
     height: 100%;
     float: right;
-    margin:0 0.3%;
+    margin: 0 0.3%;
 }
 
-.right-body .right-top{
+.right-body .right-top {
     width: 100%;
     height: 30%;
     background: url(../image/bor1_4.png);
     background-size: 100% 100%;
 }
-.right-body .right-top1{
+
+.right-body .right-top1 {
     width: 100%;
     height: 60%;
     background: url(../image/bor1_3.png);
     background-size: 100% 100%;
 }
-.title-nav .top5-ul{
+
+.title-nav .top5-ul {
     width: calc(100% - 20px);
     height: calc(100% - 30px);
     padding: 10px;
 }
-.title-nav .top5-ul ul{
+
+.title-nav .top5-ul ul {
     width: 100%;
     height: 100%;
 }
-.title-nav .top5-ul ul,li{
+
+.title-nav .top5-ul ul,
+li {
     list-style: none;
 }
-.title-nav .top5-ul ul>li{
+
+.title-nav .top5-ul ul>li {
     width: 100%;
     height: 20%;
     color: #ffffff;
     line-height: 68px;
     justify-content: center;
 }
-.title-nav .top5-ul ul li span{
+
+.title-nav .top5-ul ul li span {
     margin-left: 3%;
     font-size: 14px;
 }
-.title-nav .top5-ul ul li span:nth-child(1){
-    color:  #EB6841;
+
+.title-nav .top5-ul ul li span:nth-child(1) {
+    color: #EB6841;
     font-style: oblique;
     /*width: 10%;*/
     /*#20a8fe
@@ -285,162 +322,197 @@ body{
     font-size: 20px;
 }
 
-.title-nav .top5-ul ul li span:nth-child(2){
+.title-nav .top5-ul ul li span:nth-child(2) {
     width: 10%;
     display: inline-block;
     text-align: center;
 
     height: 30px;
     line-height: 30px;
-/*    height: 100%;*/
+    /*    height: 100%;*/
     /*line-height: 100%;*/
     vertical-align: center;
     border-radius: 5px;
     color: #ffffff;
 }
-.title-nav .top5-ul ul li:nth-child(1) span:nth-child(2),.title-nav .top5-ul ul li:nth-child(2) span:nth-child(2)
-,.title-nav .top5-ul ul li:nth-child(3) span:nth-child(2){
+
+.title-nav .top5-ul ul li:nth-child(1) span:nth-child(2),
+.title-nav .top5-ul ul li:nth-child(2) span:nth-child(2),
+.title-nav .top5-ul ul li:nth-child(3) span:nth-child(2) {
     background: #d89346;
 }
-.title-nav .top5-ul ul li:nth-child(4) span:nth-child(2)
-,.title-nav .top5-ul ul li:nth-child(5) span:nth-child(2){
+
+.title-nav .top5-ul ul li:nth-child(4) span:nth-child(2),
+.title-nav .top5-ul ul li:nth-child(5) span:nth-child(2) {
     background: #1db5ea;
 }
-.title-nav .top5-ul ul li span:nth-child(3){
+
+.title-nav .top5-ul ul li span:nth-child(3) {
     /*width: 15%;*/
     display: inline-block;
     text-align: center;
 }
-.title-nav .top5-ul ul li span:nth-child(4){
+
+.title-nav .top5-ul ul li span:nth-child(4) {
     /*width: 15%;*/
     display: inline-block;
     text-align: center;
 }
-.title-nav .top5-ul ul li span:nth-child(5){
+
+.title-nav .top5-ul ul li span:nth-child(5) {
     /*width: 20%;*/
     display: inline-block;
     text-align: center;
 }
-.title-nav .top5-ul ul li span:nth-child(6){
+
+.title-nav .top5-ul ul li span:nth-child(6) {
     display: inline-block;
     text-align: center;
 }
-.right-body .right-con{
+
+.right-body .right-con {
     width: 100%;
     height: 24%;
     margin-top: 2%;
     background: url(../image/bor1_3.png);
     background-size: 100% 100%;
 }
-.right-body .right-bottom{
+
+.right-body .right-bottom {
     width: 100%;
     height: 43%;
     margin-top: 2%;
     background: url(../image/bor1_6.png);
     background-size: 100% 100%;
 }
-.right-body .right-bottom1{
+
+.right-body .right-bottom1 {
     width: 100%;
     height: 38%;
     margin-top: 2%;
     background: url(../image/bor1_6.png);
     background-size: 100% 100%;
 }
-.level{
-    display:flex;
+
+.level {
+    display: flex;
     justify-content: space-around;
-     align-items: center;
-     padding: 10px;
+    align-items: center;
+    padding: 10px;
 }
+
 ul {
-    list-style-type: none; /* 移除默认的列表样式 */
+    list-style-type: none;
+    /* 移除默认的列表样式 */
     padding: 0;
 }
 
 li {
     margin: 10px 0;
 }
+
 .foldable-section {
     width: 100%;
     overflow: hidden;
     transition: transform 0.5s ease-in-out;
     margin-top: 3%;
-  }
-  .folded {
+}
+
+.folded {
     transform: translateX(-100%);
-  }
-  .unfolded {
+}
+
+.unfolded {
     transform: translateX(0);
-  }
-  button {
+}
+
+button {
     margin-right: 10px;
-  }
-  .arrow{
+}
+
+.arrow {
     background-color: #ffffff;
 
-  }
-  .arrow img{
-    background-color: #ffffff; 
-  }
-  .student-avatar {
-    opacity: 0; /* 初始状态为透明 */
-    transition: opacity 1s ease-in-out; /* 定义淡入动画 */
-  }
-  
-  .student-avatar.visible {
-    opacity: 1; /* 动画结束状态为不透明 */
-  }
-  
-  .student-avatar:hover {
-    transform: scale(1.1); /* 鼠标悬停时放大 */
-    transition: transform 0.3s ease-in-out; /* 定义缩放动画 */
-  }
-  .photo{
+}
+
+.arrow img {
+    background-color: #ffffff;
+}
+
+.student-avatar {
+    opacity: 0;
+    /* 初始状态为透明 */
+    transition: opacity 1s ease-in-out;
+    /* 定义淡入动画 */
+}
+
+.student-avatar.visible {
+    opacity: 1;
+    /* 动画结束状态为不透明 */
+}
+
+.student-avatar:hover {
+    transform: scale(1.1);
+    /* 鼠标悬停时放大 */
+    transition: transform 0.3s ease-in-out;
+    /* 定义缩放动画 */
+}
+
+.photo {
     width: 50%;
 }
-.photo-box{
+
+.photo-box {
     margin-top: 3%;
     height: 100%;
 }
+
 .information {
     max-width: 400px;
     color: #ffffff;
     font-size: 16px;
     margin-top: 4%;
 }
+
 .information p {
     margin: 5px 0;
     color: #ffffff;
     margin-top: 2.5%;
     margin-left: 10%;
 }
+
 .table-container {
     width: 100%;
-    max-height: 200px; /* 可视区域高度 */
+    max-height: 200px;
+    /* 可视区域高度 */
     overflow: hidden;
     position: relative;
-  }
-  table {
+}
+
+table {
     width: 100%;
     border-collapse: collapse;
-  }
-  th {
+}
+
+th {
     color: #2997e4;
     text-align: left;
     padding: 8px;
     font-size: 17px;
-  }
-  
-    td {
+}
+
+td {
     text-align: left;
     padding: 8px;
     color: #ffffff;
     font-size: 17px;
-  }
-  /* 弹幕容器样式 */
+}
+
+/* 弹幕容器样式 */
 #barrage-container {
     width: 100%;
-    height: calc(100% - 50px); /* 减去标题的高度 */
+    height: calc(100% - 50px);
+    /* 减去标题的高度 */
     overflow: hidden;
     position: relative;
     display: flex;
@@ -461,7 +533,8 @@ li {
     gap: 10px;
     padding: 10px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    margin-top: auto; /* 将输入区域推到底部 */
+    margin-top: auto;
+    /* 将输入区域推到底部 */
 }
 
 #barrage-input {
@@ -517,23 +590,28 @@ li {
         transform: translateX(0);
         opacity: 0;
     }
+
     10% {
         opacity: 1;
     }
+
     90% {
         opacity: 1;
     }
+
     to {
         transform: translateX(-100vw);
         opacity: 0;
     }
 }
+
 .course-selector {
     margin: 15px;
     display: flex;
     gap: 10px;
     align-items: center;
 }
+
 .data-select {
     margin-left: 12%;
     margin-top: 3%;
@@ -546,10 +624,17 @@ li {
     cursor: pointer;
     transition: all 0.3s ease;
 }
+
 .data-select:hover {
     background-color: rgba(74, 144, 226, 0.2);
 }
+
 .data-select option {
     background-color: #fff;
     color: #333;
+}
+
+.student-avatar1 {
+    width: 100%;
+    height: 10%;
 }

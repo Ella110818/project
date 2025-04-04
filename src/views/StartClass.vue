@@ -62,7 +62,7 @@ export default {
         {
           id: 1,
           title: '专注·困惑·分心',
-          imageUrl: require('@/assets/background2.png')
+          imageUrl: require('@/assets/background3.png')
         },
         {
           id: 2,

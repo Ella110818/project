@@ -36,18 +36,16 @@
           <div class="user">
             <img class="avatar" :src="scope.row.avatar" />
             <div class="user-info">
-              <p class="user-name">{{ scope.row.username }}</p>
+              <p class="user-name">{{ scope.row.staff_id }}</p>
             </div>
           </div>
         </template>
       </el-table-column>
       <el-table-column label="学号" prop="mobile" width="150" align="center" />
       <el-table-column label="邮箱" prop="email" width="200" align="center" />
-      <el-table-column label="操作" width="130" align="center">
+      <el-table-column label="手机号" width="130" align="center">
         <template #default="scope">
-          <el-button type="primary" :icon="Edit" circle @click="handleEdit(scope.row)"/>
-          <span class="operation-divider"></span>
-          <el-button type="danger" :icon="Delete" circle @click="handleDelete(scope.row)"/>
+          {{ scope.row.phone || '暂无' }}
         </template>
       </el-table-column>
     </el-table>
@@ -134,15 +132,19 @@ const fetchStudents = async (courseId) => {
     console.log(`课程 ${courseId} 的响应数据:`, response);
 
     if (response.code === 200) {
+      console.log('API返回的原始数据:', response.data.items);
       const students = response.data.items.map(item => ({
         id: item.student_id,
-        username: item.name || item.student_id,
+        username: item.staff_id || item.student_id,
         mobile: item.student_id,
         email: item.email,
+        phone: item.phone,
         className: item.class_name,
         classSystem: item.class_system,
-        avatar: item.image || '/teacher/image/song.png'
+        avatar: '/teacher/image/song.png',
+        staff_id: item.staff_id
       }));
+      console.log('处理后的学生列表:', students);
       return students;
     } else {
       console.warn(`获取课程 ${courseId} 的学生列表失败:`, response.message);
