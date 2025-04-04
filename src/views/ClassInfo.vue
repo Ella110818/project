@@ -277,7 +277,7 @@ const pageSize = ref(10);
 const gradeList = ref([
   {
     index: 1,
-    name: '张三',
+    name: '张某某',
     studentId: '2021001',
     classScore: 28,
     rainScore: 18,
@@ -286,7 +286,7 @@ const gradeList = ref([
   },
   {
     index: 2,
-    name: '李四',
+    name: '李某某',
     studentId: '2021002',
     classScore: 26,
     rainScore: 15,
@@ -295,7 +295,7 @@ const gradeList = ref([
   },
   {
     index: 3,
-    name: '王五',
+    name: '王某某',
     studentId: '2021003',
     classScore: 22,
     rainScore: 19,
@@ -304,7 +304,7 @@ const gradeList = ref([
   },
   {
     index: 4,
-    name: '赵六',
+    name: '赵某某',
     studentId: '2021004',
     classScore: 29,
     rainScore: 16,
@@ -313,7 +313,7 @@ const gradeList = ref([
   },
   {
     index: 5,
-    name: '钱七',
+    name: '钱某某',
     studentId: '2021005',
     classScore: 25,
     rainScore: 17,

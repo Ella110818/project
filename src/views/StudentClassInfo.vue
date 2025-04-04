@@ -17,8 +17,8 @@
             <el-icon><User /></el-icon>
           </div>
           <div class="stat-info">
-            <div class="stat-value">{{ classInfo.teacherName || '教师姓名' }}</div>
-            <div class="stat-label">任课教师</div>
+            <div class="stat-value">松葭逸</div>
+            <div class="stat-label">上课学生</div>
           </div>
         </div>
 
@@ -296,7 +296,7 @@ const searchText = ref('')
 
 // 学生基本信息
 const studentAvatar = ref(require('@/assets/touxiang.jpg')) // 使用已存在的头像图片
-const studentName = ref('朱嘉怡')
+const username = ref('松葭逸')
 const studentId = ref('202301001129')
 const studentDepartment = ref('计算机与信息技术学院')
 const studentMajor = ref('计算机科学与技术')
@@ -570,6 +570,15 @@ const currentCourseName = ref('');
 
 // 组件挂载时加载数据
 onMounted(() => {
+  // 从localStorage获取用户信息
+  try {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
+    username.value = userInfo.username || '学生姓名'
+  } catch (error) {
+    console.error('获取用户信息失败:', error)
+    username.value = '学生姓名'
+  }
+  
   // 从localStorage获取课程名称
   currentCourseName.value = localStorage.getItem('currentCourseName') || '课程名称';
   
@@ -656,23 +665,7 @@ const loadClassInfo = async (retry = 0) => {
       classInfo.value = {
         className: courseData.title,
         location: courseData.location,
-        teacherName: ''  // 先设为空，稍后获取教师信息
-      }
-      
-      // 获取教师信息
-      if (courseData.teacher) {
-        try {
-          console.log('开始获取教师信息:', courseData.teacher)
-          const teacherResponse = await api.getUserMessages(courseData.teacher)
-          if (teacherResponse.code === 200 && teacherResponse.data) {
-            classInfo.value.teacherName = teacherResponse.data.name || teacherResponse.data.username
-            console.log('教师信息获取成功:', classInfo.value.teacherName)
-          }
-        } catch (teacherError) {
-          console.error('获取教师信息失败:', teacherError)
-          // 获取教师信息失败时使用教师ID
-          classInfo.value.teacherName = courseData.teacher
-        }
+        studentName: ''  // 先设为空，稍后获取学生信息
       }
       
       // 保存课程名称到本地存储
@@ -705,7 +698,7 @@ const loadClassInfo = async (retry = 0) => {
     if (!classInfo.value.className) {
       classInfo.value = {
         className: currentCourseName.value || '课程名称',
-        teacherName: '未知',
+        studentName: '未知',
         location: '未知'
       }
     }
