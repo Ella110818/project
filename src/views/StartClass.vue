@@ -25,7 +25,7 @@
       </div>
 
       <div class="course-container">
-        <el-row :gutter="60">
+        <el-row :gutter="60" justify="center">
           <el-col 
             v-for="course in courses" 
             :key="course.id"
@@ -33,6 +33,7 @@
             :sm="12"
             :md="8"
             :lg="6"
+            class="course-col"
           >
             <CourseCard1 :course="course" @view-course="handleViewCourse" />
           </el-col>
@@ -207,31 +208,62 @@ export default {
 
 .course-container {
   width: 100%;
-  max-width: 1400px;
-  padding: 20px 0;
+  max-width: 1600px;
+  padding: 40px 60px;
   box-sizing: border-box;
   margin-top: 20px;
   position: relative;
   z-index: 1;
+  display: flex;
+  justify-content: center;
 }
 
 :deep(.el-row) {
   width: 100%;
-  margin: 0 !important;
+  margin: 0 auto !important;
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 60px;
-  padding: 0 20px;
   box-sizing: border-box;
 }
 
 :deep(.el-col) {
-  padding: 0;
   display: flex;
   justify-content: center;
   box-sizing: border-box;
-  margin-bottom: 20px;
+  margin-bottom: 40px;
+  flex: 0 0 auto;
+}
+
+.course-col {
+  display: flex;
+  justify-content: center;
+  padding: 0 10px;
+}
+
+@media screen and (max-width: 1600px) {
+  .course-container {
+    padding: 30px 40px;
+  }
+  
+  :deep(.el-row) {
+    gap: 50px;
+  }
+}
+
+@media screen and (max-width: 1200px) {
+  .course-container {
+    padding: 25px 30px;
+  }
+  
+  :deep(.el-row) {
+    gap: 40px;
+  }
+  
+  :deep(.el-col) {
+    margin-bottom: 35px;
+  }
 }
 
 @media screen and (max-width: 768px) {
@@ -241,16 +273,15 @@ export default {
   
   .carousel-container,
   .course-container {
-    padding: 10px;
+    padding: 20px;
   }
   
   :deep(.el-row) {
-    gap: 20px;
-    padding: 0 10px;
+    gap: 30px;
   }
 
   :deep(.el-col) {
-    margin-bottom: 10px;
+    margin-bottom: 30px;
   }
 }
 

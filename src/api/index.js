@@ -15,7 +15,7 @@ const currentEnv = ApiEnv.PRODUCTION; // 强制使用生产环境
 // 获取API基础URL
 const getBaseUrl = () => {
     return currentEnv === ApiEnv.PRODUCTION
-        ? 'http://47.238.113.163'  // 生产环境地址
+        ? 'https://wstier477.pythonanywhere.com'  // 生产环境地址
         : 'http://localhost:3000';  // 本地开发环境地址
 };
 

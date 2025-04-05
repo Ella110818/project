@@ -3,7 +3,7 @@
     <!-- Logo区域 -->
     <div class="logo-container">
       <i class="el-icon-school"></i>
-      <span class="platform-title">知微课研</span>
+      <span class="platform-title">明瞳智教</span>
       <div class="decoration-container">
         <dv-decoration-2 :dur="2" />
       </div>

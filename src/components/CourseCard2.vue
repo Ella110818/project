@@ -13,9 +13,9 @@
 </template>
 
 <script>
+import kehuan1 from '@/assets/kehuan1.jpg'
 import kehuan2 from '@/assets/kehuan2.jpg'
 import kehuan3 from '@/assets/kehuan3.jpg'
-import kehuan4 from '@/assets/kehuan4.png'
 import shuju from '@/assets/shuju.png'
 
 export default {
@@ -34,7 +34,7 @@ export default {
   },
   data() {
     return {
-      courseImages: [kehuan4, shuju, kehuan2, kehuan3]
+      courseImages: [kehuan1, kehuan2, kehuan3, shuju]
     }
   },
   computed: {
@@ -42,10 +42,20 @@ export default {
       return this.course.location || '线上课程';
     },
     courseImage() {
-      // 使用 course_id 来选择图片，如果没有 course_id 则轮流使用图片
-      const index = typeof this.course.course_id === 'number' ? 
-        Math.abs(this.course.course_id) % this.courseImages.length :
-        Math.floor(Math.random() * this.courseImages.length);
+      if (!this.course.course_id) return this.courseImages[0];
+      
+      // 使用相同的哈希算法
+      const idStr = String(this.course.course_id);
+      let hashCode = 0;
+      
+      // 计算哈希值
+      for (let i = 0; i < idStr.length; i++) {
+        hashCode = ((hashCode << 5) - hashCode) + idStr.charCodeAt(i);
+        hashCode = hashCode & hashCode;
+      }
+      
+      // 使用哈希值选择图片
+      const index = Math.abs(hashCode) % this.courseImages.length;
       console.log('Course ID:', this.course.course_id, 'Selected image index:', index);
       return this.courseImages[index];
     }
