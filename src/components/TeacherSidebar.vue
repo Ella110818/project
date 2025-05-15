@@ -3,7 +3,7 @@
     <!-- Logo区域 -->
     <div class="logo-container">
       <i class="el-icon-school"></i>
-      <span class="platform-title">知微课研</span>
+      <span class="platform-title">明瞳智教</span>
       <div class="decoration-container">
         <dv-decoration-2 :dur="2" />
       </div>
@@ -36,7 +36,11 @@
         <i class="el-icon-user"></i>
         <span>学生管理</span>
       </el-menu-item>
-      <el-menu-item index="5" @click="navigateTo('/assistant')">
+      <el-menu-item index="5" @click="navigateTo('/recordings')">
+        <i class="el-icon-video-camera"></i>
+        <span>课程录像</span>
+      </el-menu-item>
+      <el-menu-item index="6" @click="navigateTo('/assistant')">
         <i class="el-icon-robot"></i>
         <span>智能助手</span>
       </el-menu-item>
@@ -310,6 +314,8 @@ export default {
   flex: 1;
   height: 63px;
   background: transparent !important;
+  display: flex;
+  justify-content: flex-start;
 }
 
 .el-menu-horizontal > .el-menu-item {
@@ -318,18 +324,46 @@ export default {
   font-size: 14px;
   color: #ffffff !important;
   background: transparent !important;
-  display: flex;
+  position: relative;
+  padding: 0;
+  flex: 1;
+  max-width: 150px; /* 限制最大宽度 */
+}
+
+.el-menu-item {
+  position: relative;
+  display: flex !important;
   align-items: center;
+  justify-content: center;
+  width: 100%;
 }
 
 .el-menu-item i {
-  margin-right: 5px;
   font-size: 16px;
   color: #ffffff !important;
+  position: absolute;
+  left: 50%;
+  transform: translateX(calc(-100% - 4px));
 }
 
 .el-menu-item span {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
   line-height: normal;
+}
+
+/* 激活菜单项的样式 */
+.el-menu-item.is-active {
+  color: #00d8ff !important;
+  border-bottom: 2px solid #00d8ff !important;
+  background: rgba(0, 216, 255, 0.1) !important;
+}
+
+.el-menu-item.is-active i,
+.el-menu-item:hover i {
+  color: #00d8ff !important;
 }
 
 .user-dropdown {
@@ -368,17 +402,6 @@ export default {
   border-top: 1px solid #ebeef5;
   margin-top: 5px;
   padding-top: 5px;
-}
-
-/* 激活菜单项的样式 */
-.el-menu-item.is-active {
-  color: #00d8ff !important;
-  border-bottom: 2px solid #00d8ff !important;
-  background: rgba(0, 216, 255, 0.1) !important;
-}
-
-.el-menu-item.is-active i {
-  color: #00d8ff !important;
 }
 
 /* 鼠标悬停效果 */

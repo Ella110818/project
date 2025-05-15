@@ -25,6 +25,8 @@ import StudentLiveClass from '@/views/StudentLiveClass.vue'
 import StudentHtmlDisplay from '../views/StudentHtmlDisplay.vue'
 import TeacherHtmlDisplay from '../views/TeacherHtmlDisplay.vue'
 import TestDatav from '../views/TestDatav.vue'
+import AnimatedBackground from '@/components/AnimatedBackground.vue'
+import RecordingsPage from '@/views/RecordingsPage.vue'
 
 // 教师路由
 const teacherRoutes = [
@@ -55,6 +57,16 @@ const teacherRoutes = [
       requiresAuth: true,
       role: 'teacher'
     }
+  },
+  {
+    path: 'recordings',
+    name: 'recordings',
+    component: RecordingsPage,
+    meta: { 
+      title: '课程录像',
+      requiresAuth: true, 
+      role: 'teacher' 
+    }
   }
 ]
 
@@ -76,6 +88,16 @@ const studentRoutes = [
     component: () => import('@/views/StudentGrades.vue'),
     meta: { requiresAuth: true, role: 'student' }
   },
+  {
+    path: 'recordings',
+    name: 'student-recordings',
+    component: RecordingsPage,
+    meta: { 
+      title: '课程录像',
+      requiresAuth: true, 
+      role: 'student' 
+    }
+  }
 ]
 
 // 共享路由
@@ -185,6 +207,14 @@ const routes = [
     path: '/test-datav',
     name: 'TestDatav',
     component: TestDatav
+  },
+  {
+    path: '/animated-background',
+    name: 'AnimatedBackground',
+    component: AnimatedBackground,
+    meta: {
+      title: '动态背景'
+    }
   },
 ]
 

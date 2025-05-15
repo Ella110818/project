@@ -1,37 +1,38 @@
-$(function(){
-	piechart5();
+$(function () {
+    piechart5();
     //大屏
-    });
-function piechart5(){
+});
+function piechart5() {
     var myChart = echarts.init(document.getElementById('piechart5'));
 
     var option = {
-        tooltip : {
+        tooltip: {
             trigger: 'item',
             formatter: "{a} <br/>{b} : {c} ({d}%)"
         },
-        color:['#8fc31f','#f35833','#00ccff','#ffcc00','#f5e965',],
-        series : [
+        color: ['#8fc31f', '#f35833', '#00ccff', '#ffcc00', '#f5e965', '#db7093'],
+        series: [
             {
                 name: '课堂情绪占比',
                 type: 'pie',
-                radius : '50%',
+                radius: '50%',
                 center: ['49%', '50%'],
-                data:[
-                    {value:435, name:'认真'},
-                    {value:679, name:'困惑'},
-                    {value:848, name:'犯困'},
-                    {value:348, name:'低头'},
-                    {value:679, name:'侧头'}
+                data: [
+                    { value: 435, name: '认真' },
+                    { value: 679, name: '困惑' },
+                    { value: 848, name: '犯困' },
+                    { value: 348, name: '低头' },
+                    { value: 679, name: '侧头' },
+                    { value: 425, name: '分神' }
                 ],
                 itemStyle: {
                     normal: {
-                        label:{ 
-                            show: true, 
-                            formatter: '{b} : {c} ({d}%)' ,
-                            fontSize : 13,    
+                        label: {
+                            show: true,
+                            formatter: '{b} : {c} ({d}%)',
+                            fontSize: 13,
                         },
-                        labelLine :{show:true}
+                        labelLine: { show: true }
                     },
                     emphasis: {
                         shadowBlur: 10,

@@ -1,9 +1,9 @@
-$(function(){
+$(function () {
 
-	leidatu();
+    leidatu();
     //大屏
-    });
-function leidatu(){
+});
+function leidatu() {
     var myChart = echarts.init(document.getElementById('leidatu'));
     option = {
 
@@ -25,25 +25,25 @@ function leidatu(){
         radar: [{
 
             indicator: [{
-                    text: '认真',
-                    max: 100
-                },
-                {
-                    text: '困惑',
-                    max: 100
-                },
-                {
-                    text: '犯困',
-                    max: 100
-                },
-                {
-                    text: '侧脸',
-                    max: 100
-                },
-                {
-                    text: '低头',
-                    max: 100
-                }
+                text: '认真',
+                max: 100
+            },
+            {
+                text: '困惑',
+                max: 100
+            },
+            {
+                text: '犯困',
+                max: 100
+            },
+            {
+                text: '侧脸',
+                max: 100
+            },
+            {
+                text: '低头',
+                max: 100
+            }
             ],
 
             textStyle: {
@@ -85,7 +85,7 @@ function leidatu(){
                     width: 1, // 分隔线线宽
                 }
             }
-        }, ],
+        },],
         series: [{
             name: '雷达图',
             type: 'radar',
@@ -123,18 +123,18 @@ function leidatu(){
                     }
                 },
                 symbolSize: 2.5, // 单个数据标记的大小，可以设置成诸如 10 这样单一的数字，也可以用数组分开表示宽和高，例如 [20, 10] 表示标记宽为20，高为10。
-                 label: {                    // 单个拐点文本的样式设置
-                        normal: {
-                            show: true,             // 单个拐点文本的样式设置。[ default: false ]
-                            position: 'top',        // 标签的位置。[ default: top ]
-                            distance: 2,            // 距离图形元素的距离。当 position 为字符描述值（如 'top'、'insideRight'）时候有效。[ default: 5 ]
-                            color: '#6692e2',          // 文字的颜色。如果设置为 'auto'，则为视觉映射得到的颜色，如系列色。[ default: "#fff" ]
-                            fontSize: 14,           // 文字的字体大小
-                            formatter:function(params) {
-                                return params.value;
-                            }
+                label: {                    // 单个拐点文本的样式设置
+                    normal: {
+                        show: true,             // 单个拐点文本的样式设置。[ default: false ]
+                        position: 'top',        // 标签的位置。[ default: top ]
+                        distance: 2,            // 距离图形元素的距离。当 position 为字符描述值（如 'top'、'insideRight'）时候有效。[ default: 5 ]
+                        color: '#6692e2',          // 文字的颜色。如果设置为 'auto'，则为视觉映射得到的颜色，如系列色。[ default: "#fff" ]
+                        fontSize: 14,           // 文字的字体大小
+                        formatter: function (params) {
+                            return params.value;
                         }
-                    },
+                    }
+                },
                 itemStyle: {
                     normal: { //图形悬浮效果
                         borderColor: '#00c2ff',
@@ -218,12 +218,12 @@ function leidatu(){
                     }
                 }
             }]
-        }, ]
+        },]
     };
 
 
     myChart.setOption(option);
-    window.addEventListener("resize",function(){
-		myChart.resize();
-	});
+    window.addEventListener("resize", function () {
+        myChart.resize();
+    });
 }

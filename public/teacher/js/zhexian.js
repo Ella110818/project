@@ -1,8 +1,8 @@
-$(function(){
+$(function () {
 
 	zhexian();
-    //大屏
-    });
+	//大屏
+});
 function zhexian() {
 	var myChart = echarts.init(document.getElementById('zhexian'));
 
@@ -31,72 +31,73 @@ function zhexian() {
 			}
 		}
 	},
-		{
-			name: '玩手机',
-			type: 'line',
-			smooth: true,
-			symbolSize: 8,
-			data: [127, 74, 120, 99, 130, 355],
-			barWidth: '30%',
-			itemStyle: {
-				normal: {
-					color: '#06c9ff'
-				}
-			}
-		},
-		{
-			name: '低头',
-			type: 'line',
-			smooth: true,
-			symbolSize: 8,
-			data: [127, 74, 120, 99, 130, 355],
-			barWidth: '30%',
-			itemStyle: {
-				normal: {
-					color: '#ff4a03'
-				}
-			}
-		},
-		{
-			name: '侧脸',
-			type: 'line',
-			smooth: true,
-			symbolSize: 8,
-			data: [127, 74, 120, 99, 130, 355],
-			barWidth: '30%',
-			itemStyle: {
-				normal: {
-					color: '#f9f102'
-				}
+	{
+		name: '玩手机',
+		type: 'line',
+		smooth: true,
+		symbolSize: 8,
+		data: [127, 74, 120, 99, 130, 355],
+		barWidth: '30%',
+		itemStyle: {
+			normal: {
+				color: '#06c9ff'
 			}
 		}
+	},
+	{
+		name: '低头',
+		type: 'line',
+		smooth: true,
+		symbolSize: 8,
+		data: [127, 74, 120, 99, 130, 355],
+		barWidth: '30%',
+		itemStyle: {
+			normal: {
+				color: '#ff4a03'
+			}
+		}
+	},
+	{
+		name: '侧脸',
+		type: 'line',
+		smooth: true,
+		symbolSize: 8,
+		data: [127, 74, 120, 99, 130, 355],
+		barWidth: '30%',
+		itemStyle: {
+			normal: {
+				color: '#f9f102'
+			}
+		}
+	}
 	]
 	dataObj = {
 		time: ['20min', '40min', '60min', '80min', '100min', '120min'],
 		data: {
 			value: [{
 				name: '认真',
-				value: [50,40,48,32,20,33]
+				value: [50, 40, 48, 32, 20, 33]
 			}, {
 				name: '困惑',
-				value: [5,10,15,8,2,6]
+				value: [5, 10, 15, 8, 2, 6]
 			}, {
 				name: '犯困',
-				value: [0,1,3,5,2,0]
+				value: [0, 1, 3, 5, 2, 0]
 			}, {
 				name: '低头',
-				value: [10,30,20,25,12,10]
+				value: [10, 30, 20, 25, 12, 10]
 			}, {
 				name: '侧脸',
-				value: [5,7,3,2,5,2]
-			}
-		]
+				value: [5, 7, 3, 2, 5, 2]
+			}, {
+				name: '分神',
+				value: [3, 8, 12, 6, 4, 7]
+			}]
 		}
 	}
 	let dataArr = []
 
 	dataObj.data.value.map(item => {
-		let datachild = []
 		let newArr = {
 			name: item.name,
 			type: 'line',
@@ -106,7 +107,12 @@ function zhexian() {
 			barWidth: '30%',
 			itemStyle: {
 				normal: {
-					color: item.name === '认真' ? '#91ff1c' : item.name === '困惑' ? '#ffff7f' : item.name === '玩手机' ? '#06c9ff': item.name === '低头' ? '#ff4a03':'#f9f102'
+					color: item.name === '认真' ? '#91ff1c' :
+						item.name === '困惑' ? '#ffff7f' :
+							item.name === '犯困' ? '#06c9ff' :
+								item.name === '低头' ? '#ff4a03' :
+									item.name === '分神' ? '#db7093' :
+										'#f9f102'
 				}
 			}
 		}
@@ -189,17 +195,17 @@ function zhexian() {
 		}],
 		series: dataArr
 	};
-    //大屏
+	//大屏
 	/*var myChart = echarts.init(document.getElementById('channel_handle_detail'));
-    myChart.clear();
-    if(data.handleTimeData.length>0){
-        myChart.setOption(option);
-    }else{
-        noDataTip($("#channel_handle_detail"));
-    }*/
+	myChart.clear();
+	if(data.handleTimeData.length>0){
+		myChart.setOption(option);
+	}else{
+		noDataTip($("#channel_handle_detail"));
+	}*/
 	// 使用刚指定的配置项和数据显示图表。
 	myChart.setOption(option);
-	window.addEventListener("resize",function(){
+	window.addEventListener("resize", function () {
 		myChart.resize();
 	});
 }

@@ -36,6 +36,12 @@ import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css';
 import handleResizeObserverLoopError from './utils/resizeObserver';
 import DataVVue3 from '@kjgl77/datav-vue3'
+import axios from 'axios';
+
+// 配置axios默认设置
+axios.defaults.baseURL = '';  // 设置为空字符串，使用相对路径
+axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+axios.defaults.withCredentials = true;  // 启用跨域携带凭证
 
 // 从 @element-plus/icons-vue 导入所有图标
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';

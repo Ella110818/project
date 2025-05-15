@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <animated-background />
     <div class="info-header">
       <div class="info-cards">
         <div class="stat-card">
@@ -244,6 +245,7 @@ import Exam from '@/components/Exam.vue';
 import Group from '@/components/Group.vue';
 import AnnouncementForm from '@/components/AnnouncementForm.vue';
 import Resource from '@/components/Resource.vue';
+import AnimatedBackground from '@/components/AnimatedBackground.vue';
 import { Document, User, Location, Download } from '@element-plus/icons-vue';
 
 const route = useRoute();
@@ -516,7 +518,11 @@ onMounted(() => {
   flex-direction: column;
   min-height: 100vh;
   padding: 20px;
-  background-color: #f5f7fa;
+  background-color: transparent;
+  position: relative;
+  z-index: 1;
+  max-width: 1480px;
+  margin: 0 auto;
 }
 
 .info-header {
@@ -525,6 +531,8 @@ onMounted(() => {
   margin-left: auto;
   margin-right: auto;
   width: 100%;
+  position: relative;
+  z-index: 2;
 }
 
 .info-cards {
@@ -536,7 +544,7 @@ onMounted(() => {
 }
 
 .stat-card {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 12px;
   padding: 20px;
   display: flex;
@@ -547,18 +555,20 @@ onMounted(() => {
   position: relative;
   overflow: hidden;
   height: 100px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .stat-card:nth-child(1) {
-  background: linear-gradient(135deg, #ff9b44, #fc6076);
+  background: linear-gradient(135deg, rgba(106, 174, 234, 0.95), rgba(123, 218, 195, 0.95));
 }
 
 .stat-card:nth-child(2) {
-  background: linear-gradient(135deg, #4CAF50, #2E7D32);
+  background: linear-gradient(135deg, rgba(253, 158, 81, 0.95), rgba(236, 136, 128, 0.95));
 }
 
 .stat-card:nth-child(3) {
-  background: linear-gradient(135deg, #2196F3, #1976D2);
+  background: linear-gradient(135deg, rgba(160, 208, 59, 0.95), rgba(114, 201, 128, 0.95));
 }
 
 .stat-card:hover {
@@ -598,13 +608,19 @@ onMounted(() => {
 }
 
 .custom-tabs {
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.95);
   border-radius: 12px;
   padding: 0;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
   margin: 0 auto;
   width: 100%;
   max-width: 1400px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  position: relative;
+  z-index: 2;
+  box-shadow: 
+    rgba(99, 147, 244, 0.2) 0px 0px 0px 2px,
+    rgba(99, 147, 244, 0.15) 0px 4px 16px;
 }
 
 :deep(.el-tabs__header) {
@@ -685,6 +701,9 @@ onMounted(() => {
   max-width: 1000px;
   margin: 0 auto;
   width: 100%;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .announcement-list {
@@ -756,6 +775,13 @@ onMounted(() => {
 
 .grade-card {
   margin-bottom: 20px;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 12px;
+  box-shadow: 
+    rgba(99, 147, 244, 0.2) 0px 0px 0px 2px,
+    rgba(99, 147, 244, 0.15) 0px 4px 16px;
 }
 .left-card{
   width: 30%;

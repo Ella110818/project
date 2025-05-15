@@ -3,13 +3,15 @@
     <!-- 学生基本信息卡片 -->
     <div class="info-card">
       <div class="photo-section">
-        <div class="photo-placeholder"></div>
+        <div class="photo-placeholder">
+          <img :src="studentInfo.avatar" alt="学生照片" class="student-photo" />
+        </div>
       </div>
       <div class="basic-info">
-        <div class="info-row">姓名</div>
-        <div class="info-row">班级</div>
-        <div class="info-row">学号</div>
-        <div class="info-row">学院</div>
+        <div class="info-row">姓名：{{ studentName }}</div>
+        <div class="info-row">班级：{{ studentClass }}</div>
+        <div class="info-row">学号：{{ studentId }}</div>
+        <div class="info-row">学院：计算机与信息技术学院</div>
       </div>
     </div>
 
@@ -87,11 +89,41 @@
               </div>
               
               <div class="metric-card">
+                <div class="metric-icon sleepy-icon">
+                  <i class="el-icon-moon"></i>
+                </div>
+                <div class="metric-info">
+                  <div class="metric-title">犯困度</div>
+                  <div class="metric-value">{{ studentMetrics.sleepy }}%</div>
+                  <div class="metric-chart">
+                    <div class="chart-bar">
+                      <div class="chart-fill sleepy" :style="{ width: studentMetrics.sleepy + '%' }"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-icon distracted-icon">
+                  <i class="el-icon-mobile"></i>
+                </div>
+                <div class="metric-info">
+                  <div class="metric-title">分神度</div>
+                  <div class="metric-value">{{ studentMetrics.distracted }}%</div>
+                  <div class="metric-chart">
+                    <div class="chart-bar">
+                      <div class="chart-fill distracted" :style="{ width: studentMetrics.distracted + '%' }"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="metric-card">
                 <div class="metric-icon overall-icon">
                   <i class="el-icon-data-analysis"></i>
                 </div>
                 <div class="metric-info">
-                  <div class="metric-title">总体</div>
+                  <div class="metric-title">偏头度</div>
                   <div class="metric-value">{{ studentMetrics.overall }}%</div>
                   <div class="metric-chart">
                     <div class="chart-bar">
@@ -221,7 +253,42 @@
 
         <!-- 总体评价内容 -->
         <div v-if="activeTab === 'overall'">
-          <!-- 总体评价内容 -->
+          <div class="overall-evaluation-section">
+            <div class="evaluation-header-container">
+              <h3 class="section-title">学生总体评价</h3>
+              <div class="evaluation-buttons">
+                <el-button type="primary" @click="generateAIEvaluation">根据deepseek智能给出评价</el-button>
+                <el-button type="success" @click="useTeacherEvaluation">老师给出评价</el-button>
+              </div>
+            </div>
+            
+            <div class="quick-phrases">
+              <h4>快捷评语:</h4>
+              <div class="phrase-tags">
+                <el-tag
+                  v-for="(phrase, index) in quickPhrases"
+                  :key="index"
+                  class="phrase-tag"
+                  @click="insertPhrase(phrase)"
+                >
+                  {{ phrase }}
+                </el-tag>
+              </div>
+            </div>
+            
+            <div class="evaluation-textarea">
+              <el-input
+                v-model="evaluationContent"
+                type="textarea"
+                :rows="8"
+                placeholder="请输入学生总体评价..."
+              />
+            </div>
+            
+            <div class="evaluation-footer">
+              <el-button type="primary" @click="saveEvaluation">保存评价</el-button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -229,16 +296,48 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import { ElMessage } from 'element-plus';
+
+const route = useRoute();
+const studentId = ref('');
+const studentName = ref('');
+const studentClass = ref('');
 
 const currentDate = ref('2024-03-12');
 const activeTab = ref('behavior');
+// 总体评价相关数据
+const evaluationContent = ref('');
+const quickPhrases = ref([
+  '做得很好，继续加油',
+  '继续努力，戒骄戒躁',
+  '注意力集中，学习态度好',
+  '有潜力，需要更加专注',
+  '学习进步明显，继续保持'
+]);
+// 从路由参数中获取学生信息
+const studentInfo = ref({
+  name: route.query.name || '',
+  className: route.query.className || '',
+  studentId: route.params.id || route.query.studentId || '',
+  email: route.query.email || '',
+  phone: route.query.phone || '',
+  avatar: route.query.avatar || '/teacher/image/song.png'
+});
+
+// 初始化学生基本信息
+studentId.value = studentInfo.value.studentId;
+studentName.value = studentInfo.value.name;
+studentClass.value = studentInfo.value.className;
 
 const studentMetrics = ref({
   attention: 85,
   headDown: 30,
   confusion: 45,
-  overall: 75
+  overall: 75,
+  sleepy: 25,
+  distracted: 35
 });
 
 const evaluations = ref({
@@ -262,25 +361,94 @@ const extraCurricularRecords = ref([
 const switchTab = (tab) => {
   activeTab.value = tab;
 };
+// 总体评价相关方法
+const generateAIEvaluation = () => {
+  // 模拟AI生成评价
+  const aiEvaluations = [
+    `${studentInfo.value.name}同学在课堂上表现出色，专注度高达${studentMetrics.value.attention}%，对知识点掌握良好。表现出了较强的学习能力和问题解决能力，建议继续保持这种学习态度。`,
+    `${studentInfo.value.name}同学整体表现不错，专注度为${studentMetrics.value.attention}%，课堂参与度高。在团队合作中表现积极，具有良好的沟通能力和协作精神。需要在细节方面更加注意。`,
+    `${studentInfo.value.name}同学学习态度认真，具有较好的自主学习能力。总体评分为${studentMetrics.value.overall}%，在班级中属于中上水平。建议加强基础知识的巩固，提高解决复杂问题的能力。`
+  ];
+  
+  // 随机选择一个评价
+  const randomIndex = Math.floor(Math.random() * aiEvaluations.length);
+  evaluationContent.value = aiEvaluations[randomIndex];
+  
+  ElMessage.success('已生成智能评价');
+};
+
+const useTeacherEvaluation = () => {
+  // 模拟教师评价
+  evaluationContent.value = `${studentInfo.value.name}同学在课堂上认真听讲，作业完成质量高，对所学知识理解深入。整体表现优秀，望继续保持。`;
+  
+  ElMessage.success('已使用教师评价模板');
+};
+
+const insertPhrase = (phrase) => {
+  if (evaluationContent.value && !evaluationContent.value.endsWith(' ')) {
+    evaluationContent.value += ' ';
+  }
+  evaluationContent.value += phrase;
+};
+
+const saveEvaluation = () => {
+  // 这里可以添加保存评价到后端的代码
+  ElMessage.success('评价保存成功');
+};
+
+
+// 获取学生详细信息的方法
+const fetchStudentDetails = async (id) => {
+  try {
+    // 实际开发中，这里应该调用API获取学生详细信息
+    console.log('正在获取学生ID为', id, '的详细信息');
+    
+    // 这里先使用URL中的query参数
+    studentName.value = route.query.name || '未知';
+    studentId.value = route.query.studentId || '未知';
+    studentClass.value = route.query.className || '未知';
+    
+    // 假设这是从API获取的数据
+    // const response = await api.getStudentDetails(id);
+    // if (response.code === 200) {
+    //   studentName.value = response.data.name;
+    //   studentId.value = response.data.studentId;
+    //   studentClass.value = response.data.className;
+    //   // 其他详细信息...
+    // }
+  } catch (error) {
+    console.error('获取学生详情失败:', error);
+  }
+};
+
+onMounted(() => {
+  const id = route.params.id;
+  if (id) {
+    fetchStudentDetails(id);
+  }
+});
 </script>
 
 <style scoped>
 .student-details {
   padding: 24px;
-  background-color: #EBEFF8;
+  background: linear-gradient(135deg, #f6f8fc 0%, #e9eef7 100%);
   min-height: 100vh;
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .info-card {
-  background: #fff;
-  border-radius: 8px;
+  background: linear-gradient(to right, #ffffff, #f8faff);
+  border-radius: 12px;
   padding: 24px;
   display: flex;
   margin-bottom: 24px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  max-width: 100%;
 }
 
 .info-card:hover {
@@ -291,60 +459,68 @@ const switchTab = (tab) => {
 .photo-section {
   width: 160px;
   margin-right: 40px;
+  flex-shrink: 0;
 }
 
 .photo-placeholder {
   width: 160px;
   height: 200px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%);
-  border-radius: 8px;
+  background: linear-gradient(145deg, #e6eeff 0%, #f5f8ff 100%);
+  border-radius: 12px;
   position: relative;
   overflow: hidden;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 .photo-placeholder::after {
-  content: '照片';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #909399;
-  font-size: 14px;
+  display: none;
+}
+
+.student-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .basic-info {
   flex: 1;
   padding: 10px 0;
+  max-width: calc(100% - 200px);
 }
 
 .info-row {
   height: 48px;
   line-height: 48px;
-  border-bottom: 1px solid #ebeef5;
-  color: #606266;
+  border-bottom: 1px solid rgba(235, 238, 245, 0.8);
+  color: #4a5568;
   font-size: 15px;
   display: flex;
   align-items: center;
   transition: all 0.3s ease;
+  padding: 0 12px;
+  border-radius: 6px;
 }
 
 .info-row:hover {
-  background-color: #f9fafc;
-  padding-left: 10px;
+  background: linear-gradient(to right, #f0f5ff, transparent);
+  transform: translateX(5px);
 }
 
 .evaluation-area {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  width: 100%;
 }
 
 .evaluation-header {
   display: flex;
-  background: linear-gradient(to right, #EBEFF8, #fff);
-  border-bottom: 1px solid #dcdfe6;
+  background: linear-gradient(to right, #f0f5ff, #ffffff);
+  border-bottom: 1px solid #e6eeff;
 }
 
 .header-item {
@@ -352,16 +528,16 @@ const switchTab = (tab) => {
   text-align: center;
   padding: 16px 0;
   font-size: 16px;
-  color: #303133;
-  border-right: 1px solid #dcdfe6;
+  color: #4a5568;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
+  font-weight: 500;
 }
 
 .header-item:hover, .header-item.active {
-  color: #409eff;
-  background-color: rgba(64, 158, 255, 0.04);
+  color: #3182ce;
+  background: linear-gradient(to bottom, rgba(49, 130, 206, 0.08), transparent);
 }
 
 .header-item::after {
@@ -371,9 +547,10 @@ const switchTab = (tab) => {
   left: 50%;
   transform: translateX(-50%);
   width: 0;
-  height: 2px;
-  background-color: #409eff;
+  height: 3px;
+  background: linear-gradient(to right, #3182ce, #63b3ed);
   transition: all 0.3s ease;
+  border-radius: 3px;
 }
 
 .header-item:hover::after, .header-item.active::after {
@@ -412,21 +589,19 @@ const switchTab = (tab) => {
 }
 
 .metrics-dashboard {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
   margin-top: 20px;
 }
 
 .metric-card {
-  flex: 1;
-  min-width: 200px;
-  background: #fff;
-  border-radius: 8px;
+  background: linear-gradient(145deg, #ffffff, #f8faff);
+  border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
-  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .metric-card:hover {
@@ -435,34 +610,44 @@ const switchTab = (tab) => {
 }
 
 .metric-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #f5f7fa;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 16px;
+  transition: all 0.3s ease;
 }
 
 .metric-icon.attention-icon {
-  background-color: rgba(64, 158, 255, 0.1);
-  color: #409eff;
+  background: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%);
+  color: #3182ce;
 }
 
 .metric-icon.head-down-icon {
-  background-color: rgba(230, 162, 60, 0.1);
-  color: #e6a23c;
+  background: linear-gradient(135deg, #fefcbf 0%, #fbd38d 100%);
+  color: #d69e2e;
 }
 
 .metric-icon.confusion-icon {
-  background-color: rgba(245, 108, 108, 0.1);
-  color: #f56c6c;
+  background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+  color: #e53e3e;
+}
+
+.metric-icon.sleepy-icon {
+  background: linear-gradient(135deg, #e6e6ff 0%, #b3b3ff 100%);
+  color: #4040bf;
+}
+
+.metric-icon.distracted-icon {
+  background: linear-gradient(135deg, #ffe6f0 0%, #ffb3d1 100%);
+  color: #db7093;
 }
 
 .metric-icon.overall-icon {
-  background-color: rgba(103, 194, 58, 0.1);
-  color: #67c23a;
+  background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+  color: #38a169;
 }
 
 .metric-info {
@@ -504,19 +689,27 @@ const switchTab = (tab) => {
 }
 
 .chart-fill.attention {
-  background: #409eff;
+  background: linear-gradient(to right, #3182ce, #63b3ed);
 }
 
 .chart-fill.head-down {
-  background: #e6a23c;
+  background: linear-gradient(to right, #d69e2e, #f6ad55);
 }
 
 .chart-fill.confusion {
-  background: #f56c6c;
+  background: linear-gradient(to right, #e53e3e, #fc8181);
+}
+
+.chart-fill.sleepy {
+  background: linear-gradient(to right, #4040bf, #8080ff);
+}
+
+.chart-fill.distracted {
+  background: linear-gradient(to right, #db7093, #ffb6c1);
 }
 
 .chart-fill.overall {
-  background: #67c23a;
+  background: linear-gradient(to right, #38a169, #68d391);
 }
 
 .performance-section {
@@ -568,8 +761,7 @@ const switchTab = (tab) => {
   display: flex;
   border: none;
   border-radius: 0;
-  overflow: hidden;
-  min-height: 500px;
+  overflow: visible;
   width: 100%;
 }
 
@@ -602,72 +794,104 @@ const switchTab = (tab) => {
 .section-content {
   border: 1px solid #ebeef5;
   border-radius: 0 0 4px 4px;
-  padding: 15px;
+  padding: 20px;
   background-color: #fff;
 }
 
 .content-row {
   display: flex;
-  gap: 15px;
+  gap: 20px;
+  min-height: 300px;
 }
 
 .content-cell {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .behavior-box {
-  border: 1px solid #ebeef5;
-  border-radius: 4px;
-  padding: 15px;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  height: 100%;
-}
-
-.behavior-box h4 {
-  margin: 0 0 10px 0;
-  font-size: 15px;
-  color: #303133;
-  text-align: center;
-  padding-bottom: 8px;
-  border-bottom: 1px dashed #ebeef5;
+  flex: 1;
+  border: 1px solid rgba(235, 238, 245, 0.8);
+  border-radius: 12px;
+  padding: 20px;
+  background: linear-gradient(145deg, #ffffff, #f8faff);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
 }
 
 .behavior-item-container {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 10px;
   margin-top: 10px;
-  min-height: 100px;
+}
+
+.behavior-item-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.behavior-item-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.behavior-item-container::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.attendance-item, .activity-item, .discipline-item {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(235, 238, 245, 0.5);
+}
+
+.attendance-item:last-child, 
+.activity-item:last-child, 
+.discipline-item:last-child {
+  margin-bottom: 0;
 }
 
 .attendance-item {
   display: flex;
   justify-content: space-between;
-  padding: 8px 10px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 13px;
-}
-
-.attendance-item:last-child {
-  border-bottom: none;
+  align-items: center;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(235, 238, 245, 0.5);
+  margin-bottom: 10px;
 }
 
 .attendance-item .date {
   color: #606266;
+  font-size: 14px;
+  text-align: left;
+  flex: 1;
+  margin-right: auto;
 }
 
 .attendance-item .status {
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 13px;
+  margin-left: 15px;
+  min-width: 60px;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 .attendance-item .status.normal {
-  background-color: #f0f9eb;
-  color: #67c23a;
+  background: linear-gradient(to right, #c6f6d5, #9ae6b4);
+  color: #276749;
 }
 
 .attendance-item .status.late {
-  background-color: #fdf6ec;
-  color: #e6a23c;
+  background: linear-gradient(to right, #fefcbf, #fbd38d);
+  color: #975a16;
 }
 
 .attendance-item .status.absent {
@@ -720,13 +944,17 @@ const switchTab = (tab) => {
 }
 
 .discipline-type.leave {
-  background-color: #ecf5ff;
-  color: #409eff;
+  background: linear-gradient(to right, #ebf8ff, #bee3f8);
+  color: #2c5282;
+  padding: 4px 10px;
+  border-radius: 15px;
 }
 
 .discipline-type.warning {
-  background-color: #fef0f0;
-  color: #f56c6c;
+  background: linear-gradient(to right, #fed7d7, #feb2b2);
+  color: #c53030;
+  padding: 4px 10px;
+  border-radius: 15px;
 }
 
 .discipline-reason {
@@ -752,7 +980,7 @@ const switchTab = (tab) => {
 
 @media screen and (max-width: 768px) {
   .metrics-dashboard {
-    flex-direction: column;
+    grid-template-columns: repeat(2, 1fr);
   }
   
   .performance-section {
@@ -762,5 +990,75 @@ const switchTab = (tab) => {
   .performance-box {
     margin-bottom: 16px;
   }
+}
+
+@media screen and (max-width: 480px) {
+  .metrics-dashboard {
+    grid-template-columns: 1fr;
+  }
+}
+/* 总体评价样式 */
+.overall-evaluation-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.evaluation-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.section-title {
+  font-size: 18px;
+  color: #303133;
+  font-weight: 500;
+  margin: 0;
+}
+
+.evaluation-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.quick-phrases {
+  margin-bottom: 20px;
+}
+
+.quick-phrases h4 {
+  font-size: 15px;
+  color: #606266;
+  margin-bottom: 10px;
+}
+
+.phrase-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.phrase-tag {
+  cursor: pointer;
+  padding: 8px 12px;
+  transition: all 0.3s ease;
+}
+
+.phrase-tag:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.evaluation-textarea {
+  margin-bottom: 20px;
+}
+
+.evaluation-footer {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

@@ -28,6 +28,7 @@
     "@vue/cli-plugin-router": "~5.0.0",
     "@vue/cli-plugin-vuex": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
+    "copy-webpack-plugin": "^13.0.0",
     "less-loader": "^6.0.0",
     "sass": "^1.85.1",
     "sass-loader": "^16.0.5",

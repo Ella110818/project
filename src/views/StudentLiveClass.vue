@@ -5,7 +5,7 @@
         <h1>{{ courseName }}</h1>
         <div class="course-details">
           <span class="detail-item"><i class="el-icon-location"></i> {{ courseLocation }}</span>
-          <span class="detail-item"><i class="el-icon-user"></i> {{ courseTeacher }}</span>
+          <span class="detail-item"><i class="el-icon-user"></i> 韩教授</span>
           <span class="detail-item"><i class="el-icon-user-solid"></i> {{ studentCount }}人</span>
           <span class="live-badge">实时授课中</span>
         </div>

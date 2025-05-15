@@ -202,7 +202,7 @@ function leidatu(){
                 fontSize: 12,
                 color: '#ade3ff'
             },
-            data: ['王某某', '李某某', '张某某'],
+            data: ['王坤', '李林', '张哲'],
         },
         radar: [{
 
@@ -279,7 +279,7 @@ function leidatu(){
                 }
             },
             data: [{
-                name: '王某某',
+                name: '王坤',
                 value: [85, 65, 55, 90, 82],
                 areaStyle: {
                     normal: { // 单项区域填充样式
@@ -329,7 +329,7 @@ function leidatu(){
                 //     }
                 // }
             }, {
-                name: '李某某',
+                name: '李林',
                 value: [50, 20, 45, 30, 75],
                 symbolSize: 2.5,
                 itemStyle: {
@@ -367,7 +367,7 @@ function leidatu(){
                 //     }
                 // }
             }, {
-                name: '张某某',
+                name: '张哲',
                 value: [37, 80, 12, 50, 25],
                 symbolSize: 2.5,
                 itemStyle: {

@@ -15,7 +15,7 @@ const currentEnv = ApiEnv.PRODUCTION; // 强制使用生产环境
 // 获取API基础URL
 const getBaseUrl = () => {
     return currentEnv === ApiEnv.PRODUCTION
-        ? 'http://47.238.113.163'  // 生产环境地址
+        ? 'http://localhost:8000'  // 修改为本地实际运行的后端地址
         : 'http://localhost:3000';  // 本地开发环境地址
 };
 
@@ -329,7 +329,7 @@ const mockApi = {
     },
 
     // 人脸识别考勤（模拟实现）
-    checkAttendance: async (imageData) => {
+    checkAttendance: async (imageData, courseTimeId = null) => {
         return new Promise((resolve) => {
             setTimeout(() => {
                 // 生成动态的日期时间字符串
@@ -367,7 +367,8 @@ const mockApi = {
                             total: 3,
                             present: 2,
                             absent: 1
-                        }
+                        },
+                        course_time_id: courseTimeId
                     }
                 });
             }, 500);
@@ -420,6 +421,225 @@ const mockApi = {
             }, 300);
         });
     },
+
+    // 开始上课（模拟实现）
+    startClass: async (courseId) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                const now = new Date();
+                const courseTimeId = Date.now();
+                resolve({
+                    code: 200,
+                    message: "课程已成功开始",
+                    data: {
+                        course_time_id: courseTimeId,
+                        begin_time: now.toISOString(),
+                        course_id: courseId,
+                        course_title: "计算机组成原理"
+                    }
+                });
+            }, 300);
+        });
+    },
+
+    // 结束上课（模拟实现）
+    endClass: async (courseTimeId) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                const beginTime = new Date(Date.now() - 3600000); // 假设开始时间是1小时前
+                const endTime = new Date();
+                
+                resolve({
+                    code: 200,
+                    message: "课程已成功结束",
+                    data: {
+                        course_time_id: courseTimeId,
+                        begin_time: beginTime.toISOString(),
+                        end_time: endTime.toISOString(),
+                        duration: 60, // 以分钟为单位，假设60分钟
+                        course_id: "COURSE001",
+                        course_title: "计算机组成原理"
+                    }
+                });
+            }, 300);
+        });
+    },
+
+    // 上传课程录像（模拟实现）
+    uploadCourseRecording: async (courseTimeId, recordingFile) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    code: 200,
+                    message: "课程录像上传成功",
+                    data: {
+                        course_time_id: courseTimeId,
+                        recording_path: `/uploads/recordings/mock_recording_${Date.now()}.mp4`,
+                        course_id: "COURSE001",
+                        course_title: "计算机组成原理"
+                    }
+                });
+            }, 1500); // 模拟上传耗时较长
+        });
+    },
+
+    // 情绪识别视频分析（模拟实现）
+    processEmotionRecognition: async (videoFile, courseTimeId = null) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                const now = new Date();
+                const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+                const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, '');
+                
+                resolve({
+                    code: 200,
+                    message: "视频情绪识别分析完成，识别到 7 名学生",
+                    data: {
+                        video_url: `/media/emotion_analysis/emotion_recognition_${dateStr}_${timeStr}.mp4`,
+                        statistics_url: `/media/emotion_analysis/face_status_${dateStr}_${timeStr}_statistics.json`,
+                        log_url: `/media/emotion_analysis/face_status_${dateStr}_${timeStr}.txt`,
+                        identified_students: ["李乐", "陈文伟", "杨依林", "宋嘉怡", "马莉岚", "谢宛桐", "汤燕"],
+                        summary: {
+                            "李乐": {
+                                total_records: 120,
+                                status_counts: {
+                                    "Focused": 80,
+                                    "Distracted": 30,
+                                    "Confused": 10
+                                },
+                                status_percentages: {
+                                    "Focused": 66.67,
+                                    "Distracted": 25.00,
+                                    "Confused": 8.33
+                                }
+                            },
+                            "陈文伟": {
+                                total_records: 115,
+                                status_counts: {
+                                    "Focused": 65,
+                                    "Distracted": 35,
+                                    "Head Down": 15
+                                },
+                                status_percentages: {
+                                    "Focused": 56.52,
+                                    "Distracted": 30.43,
+                                    "Head Down": 13.04
+                                }
+                            },
+                            "杨依林": {
+                                total_records: 100,
+                                status_counts: {
+                                    "Focused": 70,
+                                    "Turning LEFT": 15,
+                                    "Turning RIGHT": 10,
+                                    "Confused": 5
+                                },
+                                status_percentages: {
+                                    "Focused": 70.00,
+                                    "Turning LEFT": 15.00,
+                                    "Turning RIGHT": 10.00,
+                                    "Confused": 5.00
+                                }
+                            }
+                        }
+                    }
+                });
+            }, 3000); // 模拟处理耗时
+        });
+    },
+
+    // 获取课程时间列表（模拟实现）
+    getCourseTimesList: async (courseId, page = 1, size = 10, withRecording = false, withAnalysis = false) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                // 生成假数据
+                const totalItems = 15;
+                const items = [];
+                
+                for (let i = 0; i < Math.min(size, totalItems - (page - 1) * size); i++) {
+                    const id = (page - 1) * size + i + 1;
+                    const date = new Date();
+                    date.setDate(date.getDate() - id); // 每条记录日期往前推一天
+                    
+                    // 如果请求要求只显示有录像的记录，则所有记录都应该有录像
+                    const hasRecording = withRecording ? true : Math.random() > 0.3;
+                    const hasProcessedRecording = withRecording ? true : Math.random() > 0.5;
+                    const hasEmotionAnalysis = withAnalysis ? true : Math.random() > 0.5;
+                    
+                    items.push({
+                        id: id,
+                        begin_time: new Date(date.setHours(9, 0, 0)).toISOString(),
+                        end_time: new Date(date.setHours(10, 30, 0)).toISOString(),
+                        course_id: courseId,
+                        course_title: "计算机组成原理",
+                        teacher_name: "韩石",
+                        has_recording: hasRecording,
+                        has_processed_recording: hasProcessedRecording,
+                        has_emotion_analysis: hasEmotionAnalysis
+                    });
+                }
+                
+                resolve({
+                    code: 200,
+                    message: "获取成功",
+                    data: {
+                        total: totalItems,
+                        items: items
+                    }
+                });
+            }, 300);
+        });
+    },
+    
+    // 获取录像详情（模拟实现）
+    getRecordingDetail: async (courseTimeId) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                // 生成当前日期和前一天日期的字符串
+                const now = new Date();
+                const yesterday = new Date(now);
+                yesterday.setDate(yesterday.getDate() - 1);
+                
+                const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+                const timeStr = "090000";
+                
+                resolve({
+                    code: 200,
+                    message: "获取成功",
+                    data: {
+                        id: courseTimeId,
+                        begin_time: yesterday.toISOString(),
+                        end_time: now.toISOString(),
+                        course_id: "COURSE001",
+                        course_title: "计算机组成原理",
+                        teacher_name: "韩石",
+                        recording_url: `/media/course_recordings/${dateStr}/recording_${courseTimeId}_${timeStr}.webm`,
+                        processed_recording_url: `/media/processed_recordings/${dateStr}/emotion_recognition_${dateStr}_${timeStr}.mp4`,
+                        emotion_analysis_json: {
+                            "summary": {
+                                "周思捷": {
+                                    "total_records": 2,
+                                    "status_counts": {
+                                        "Distracted": 2
+                                    },
+                                    "status_percentages": {
+                                        "Distracted": 100.0
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }, 300);
+        });
+    },
+    
+    // 获取流式播放URL
+    getStreamUrl: (courseTimeId, type = 'processed') => {
+        // 确保使用完整的服务器URL，而不是相对路径
+        const baseUrl = window.location.origin; // 获取当前站点的完整URL
+        return `${baseUrl}/api/course/course-times/${courseTimeId}/stream/?type=${type}`;
+    }
 };
 
 // 生产环境API
@@ -568,223 +788,167 @@ const productionApi = {
                     console.log('上传进度:', percentCompleted + '%');
                 }
             });
-
-            console.log('上传响应:', response);
             return response;
         } catch (error) {
             console.error('上传课程资源失败:', error);
-            console.error('错误详情:', {
-                message: error.message,
-                response: error.response?.data || error.response,
-                request: error.request
-            });
             throw error;
         }
     },
 
-    // 获取资源详情
-    getResourceDetail: async (resourceId) => {
+    // 开始上课
+    startClass: async (courseId) => {
         try {
-            const response = await request.get(`/api/course/resources/${resourceId}/`)
-            return response
+            const response = await request.post(`/api/course/courses/${courseId}/start/`);
+            return response;
         } catch (error) {
-            console.error('获取资源详情失败:', error)
-            throw error
+            console.error('开始上课失败:', error);
+            throw error;
         }
     },
 
-    // 下载资源
-    downloadResource: async (resourceId) => {
+    // 结束上课
+    endClass: async (courseTimeId) => {
         try {
+            const response = await request.post(`/api/course/course-times/${courseTimeId}/end/`);
+            return response;
+        } catch (error) {
+            console.error('结束上课失败:', error);
+            throw error;
+        }
+    },
+
+    // 上传课程录像
+    uploadCourseRecording: async (courseTimeId, recordingFile) => {
+        try {
+            const formData = new FormData();
+            formData.append('recording', recordingFile);
+
             const response = await request({
-                url: `/api/course/resources/${resourceId}/download/`,
-                method: 'GET',
-                responseType: 'blob',
+                url: `/api/course/course-times/${courseTimeId}/upload-recording/`,
+                method: 'POST',
+                data: formData,
                 headers: {
-                    'Accept': '*/*'
-                }
-            })
-            return response
-        } catch (error) {
-            console.error('下载资源失败:', error)
-            throw error
-        }
-    },
-
-    // 删除资源
-    deleteResource: async (resourceId) => {
-        try {
-            const response = await request({
-                url: `/api/course/resources/${resourceId}/`,
-                method: 'DELETE'
-            })
-            return response
-        } catch (error) {
-            console.error('删除资源失败:', error)
-            throw error
-        }
-    },
-
-    // 获取课程分组列表
-    getCourseGroups: async (courseId) => {
-        try {
-            const response = await request.get(`/api/advanced/courses/${courseId}/groups/`)
-            return response
-        } catch (error) {
-            console.error('获取分组列表失败:', error)
-            throw error
-        }
-    },
-
-    // 创建或更新分组
-    createOrUpdateGroup: async (courseId, data) => {
-        try {
-            const response = await request.post(`/api/advanced/courses/${courseId}/groups/`, {
-                name: data.name,
-                studentIds: data.studentIds
-            })
-            return response
-        } catch (error) {
-            console.error('创建/更新分组失败:', error)
-            throw error
-        }
-    },
-
-    // 自动分组
-    autoCreateGroups: async (courseId, data) => {
-        try {
-            const response = await request.post(`/api/advanced/courses/${courseId}/groups/auto`, {
-                groupCount: data.groupCount,
-                method: data.method
-            })
-            return response
-        } catch (error) {
-            console.error('自动分组失败:', error)
-            throw error
-        }
-    },
-
-    // 获取教师课程列表
-    getTeacherCourses: async () => {
-        try {
-            const response = await request.get('/api/course/courses/', {
-                params: {
-                    role: 'teacher'
+                    'Content-Type': 'multipart/form-data'
+                },
+                timeout: 300000, // 5分钟超时，录像文件可能较大
+                onUploadProgress: (progressEvent) => {
+                    const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    console.log('录像上传进度:', percentCompleted + '%');
                 }
             });
             return response;
         } catch (error) {
-            console.error('获取教师课程列表失败:', error);
+            console.error('上传课程录像失败:', error);
             throw error;
         }
+    },
+
+    // 人脸识别考勤
+    checkAttendance: async (imageFile, courseTimeId = null) => {
+        try {
+            const formData = new FormData();
+            formData.append('image', imageFile);
+            
+            // 如果提供了courseTimeId，添加到表单数据中
+            if (courseTimeId) {
+                formData.append('course_time_id', courseTimeId);
+            }
+            
+            const response = await request({
+                url: '/face_recognition/check_attendance/',
+                method: 'post',
+                data: formData,
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+                timeout: 60000 // 考虑到人脸识别可能需要较长时间，设置60秒超时
+            });
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    // 情绪识别视频分析
+    processEmotionRecognition: async (videoFile, courseTimeId = null) => {
+        try {
+            const formData = new FormData();
+            formData.append('video', videoFile);
+            
+            // 如果提供了courseTimeId，添加到表单数据中
+            if (courseTimeId) {
+                formData.append('course_time_id', courseTimeId);
+            }
+
+            const response = await request({
+                url: '/face_recognition/process_emotion_recognition/',
+                method: 'POST',
+                data: formData,
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+                timeout: 600000, // 10分钟超时，视频处理可能需要较长时间
+                onUploadProgress: (progressEvent) => {
+                    const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    console.log('视频上传进度:', percentCompleted + '%');
+                }
+            });
+            return response;
+        } catch (error) {
+            console.error('情绪识别视频分析失败:', error);
+            throw error;
+        }
+    },
+
+    // 获取课程时间列表
+    getCourseTimesList: async (courseId, page = 1, size = 10, withRecording = false, withAnalysis = false) => {
+        try {
+            let params = { page, size };
+            
+            if (withRecording) {
+                params.with_recording = 'true';
+            }
+            
+            if (withAnalysis) {
+                params.with_analysis = 'true';
+            }
+            
+            const response = await request.get(`/api/course/courses/${courseId}/course-times/`, {
+                params: params
+            });
+            return response;
+        } catch (error) {
+            console.error('获取课程时间列表失败:', error);
+            throw error;
+        }
+    },
+    
+    // 获取录像详情
+    getRecordingDetail: async (courseTimeId) => {
+        try {
+            const response = await request.get(`/api/course/course-times/${courseTimeId}/recording/`);
+            return response;
+        } catch (error) {
+            console.error('获取录像详情失败:', error);
+            throw error;
+        }
+    },
+    
+    // 获取流式播放URL
+    getStreamUrl: (courseTimeId, type = 'processed') => {
+        // 确保使用完整的服务器URL，而不是相对路径
+        const baseUrl = window.location.origin; // 获取当前站点的完整URL
+        return `${baseUrl}/api/course/course-times/${courseTimeId}/stream/?type=${type}`;
     },
 
     // 获取课程学生列表
     getCourseStudents: async (courseId) => {
         try {
             const response = await request.get(`/api/course/courses/${courseId}/students/info/`);
-            if (response.code === 200) {
-                return response;
-            } else {
-                console.error('获取课程学生列表失败:', response.message);
-                throw new Error(response.message || '获取学生列表失败');
-            }
+            return response;
         } catch (error) {
             console.error('获取课程学生列表失败:', error);
             throw error;
-        }
-    },
-
-    // 获取作业和考试列表
-    getAssignments: async (courseId, params = {}) => {
-        try {
-            const response = await request.get(`/api/advanced/courses/${courseId}/assignments/`, {
-                params: {
-                    type: params.type,
-                    status: params.status,
-                    page: params.page || 1,
-                    size: params.size || 10
-                }
-            });
-            return response;
-        } catch (error) {
-            console.error('获取作业和考试列表失败:', error);
-            throw error;
-        }
-    },
-
-    // 发布作业或考试
-    createAssignment: async (courseId, data) => {
-        try {
-            const response = await request.post(`/api/advanced/courses/${courseId}/assignments/`, {
-                title: data.title,
-                type: data.type,
-                description: data.description,
-                start_time: data.start_time,
-                deadline: data.deadline,
-                full_score: data.full_score
-            });
-            return response;
-        } catch (error) {
-            console.error('发布作业或考试失败:', error);
-            throw error;
-        }
-    },
-
-    // 删除作业或考试
-    deleteAssignment: async (courseId, assignmentId) => {
-        try {
-            const response = await request.delete(`/api/advanced/courses/${courseId}/assignments/${assignmentId}/`);
-            return response;
-        } catch (error) {
-            console.error('删除作业或考试失败:', error);
-            throw error;
-        }
-    },
-
-    // 人脸识别考勤
-    checkAttendance: async (imageData) => {
-        try {
-            const formData = new FormData();
-            formData.append('image', imageData, 'attendance.jpg');
-
-            console.log('发送考勤请求，图像数据大小:', imageData.size, 'bytes');
-
-            const response = await request({
-                url: '/face_recognition/check_attendance/',
-                method: 'POST',
-                data: formData,
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-
-            console.log('服务器原始响应:', response);
-
-            // 统一返回格式处理
-            if (response.code === 200) {
-                return {
-                    status: 'success',
-                    message: response.message || '考勤完成',
-                    file_path: response.data.file_path,
-                    attendance_records: response.data.attendance_records || []
-                };
-            } else {
-                return {
-                    status: 'error',
-                    message: response.message || '考勤失败',
-                    file_path: null,
-                    attendance_records: []
-                };
-            }
-        } catch (error) {
-            console.error('人脸识别考勤失败:', error);
-            return {
-                status: 'error',
-                message: error.response?.data?.message || '考勤失败，请检查网络连接',
-                file_path: null,
-                attendance_records: []
-            };
         }
     }
 };

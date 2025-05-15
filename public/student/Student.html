@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title class="title-text">知微课研数据显示屏</title>
+    <title class="title-text">明瞳1智教AI教学平台</title>
     <link rel="stylesheet" href="css/Student.css">
     <style>
         /* 视频播放器样式 */
@@ -22,6 +22,12 @@
         .course-selector {
             padding: 8px;
             margin: 0;
+            margin-top: 35px;
+            margin-left: 30px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-start;
+            align-items: center;
         }
 
         .video-player-container {
@@ -48,17 +54,89 @@
         }
 
         .data-select {
-            padding: 5px 10px;
-            margin-right: 10px;
+            padding: 0 8px;
             border: 1px solid #0e94ea;
             background: transparent;
             color: #fff;
             border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            height: 28px;
+            line-height: 26px;
+            box-sizing: border-box;
+            display: inline-block;
+            min-height: 28px;
+            margin-top: 2px;
+        }
+
+        .data-select:hover {
+            background: #0e94ea;
         }
 
         .data-select option {
             background: #001a2f;
             color: #fff;
+        }
+
+        /* 待办清单样式 */
+        .task-input-container {
+            display: flex;
+            padding: 0;
+            margin: 0;
+            align-items: center;
+            height: 32px;
+            gap: 8px;
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .new-task-input {
+            flex: 1;
+            padding: 0 8px;
+            border: 1px solid #0e94ea;
+            background: transparent;
+            color: #fff;
+            border-radius: 4px;
+            height: 28px;
+            line-height: 28px;
+            box-sizing: border-box;
+            min-height: 28px;
+            display: inline-block;
+            margin-top: 2px;
+        }
+
+        #taskList li {
+            position: relative;
+            padding: 5px;
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            transition: opacity 0.5s;
+        }
+
+        .task-text {
+            flex: 1;
+            margin: 0 10px;
+        }
+
+        .checkbox {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
+
+        .task-complete {
+            opacity: 0.6;
+        }
+
+        .edit-input {
+            flex: 1;
+            margin: 0 10px;
+            padding: 2px 5px;
+            border: 1px solid #0e94ea;
+            background: transparent;
+            color: #fff;
+            border-radius: 3px;
         }
     </style>
 </head>
@@ -70,7 +148,7 @@
             <div class="header-left fl"></div>
             <div class="header-center fl">
                 <div class="header-title">
-                    知微课研数据显示屏
+                    明瞳智教AI教学平台
                 </div>
                 <div class="header-img"></div>
             </div>
@@ -86,7 +164,7 @@
                         <div class="title-nav">
                             <div class="level1">
                                 <div class="photo-box">
-                                    <img src="image/ren1.png" class="photo">
+                                    <img src="image/Song.jpg" class="photo">
                                 </div>
                                 <div class="information">
                                     <p>姓名：宋某某</p>

@@ -17,12 +17,12 @@
             <div class="public-title">课程信息</div>
             <div class="information">
               <p>课程名称：数据结构与算法</p>
-              <p>课程教师：王某某</p>
+              <p>课程教师：韩石</p>
               <p>课程学分：5学分</p>
               <p>课程学时：96学时</p>
               <p>学院：计算机与信息技术学院</p>
-              <p>专业：计算机科学与技术</p>
-              <p>联系电话：123456789</p>
+              <p>专业：基础专业</p>
+              <p>联系电话：12345678</p>
             </div>
           </div>
 
@@ -52,8 +52,33 @@
         <div class="center-body">
           <div class="center-top public-bg">
             <div class="public-title1">课堂情况回放</div>
+            <div class="video-controls">
+              <select v-model="selectedDate" class="date-select">
+                <option value="">选择日期</option>
+                <option value="2024-03-18">2024-03-18</option>
+                <option value="2024-03-19">2024-03-19</option>
+                <option value="2024-03-20">2024-03-20</option>
+                <option value="2024-03-21">2024-03-21</option>
+              </select>
+              <select v-model="selectedCourse" class="course-select">
+                <option value="">选择课程</option>
+                <option value="数据结构与算法">数据结构与算法</option>
+                <option value="计算机组成原理">计算机组成原理</option>
+                <option value="操作系统">操作系统</option>
+              </select>
+              <button class="load-btn" @click="loadVideoPlayback">加载回放</button>
+            </div>
             <div id="barrage-container">
               <div class="barrage-display-area"></div>
+              <div class="video-container">
+                <video ref="videoPlayer" controls width="100%" height="auto" v-if="showVideo">
+                  <source :src="videoUrl" type="video/mp4">
+                  您的浏览器不支持视频播放
+                </video>
+                <div class="video-placeholder" v-else>
+                  <span>请选择日期和课程，然后点击"加载回放"按钮播放视频</span>
+                </div>
+              </div>
               <div class="barrage-input-container">
                 <input type="text" id="barrage-input" placeholder="发送弹幕..." v-model="barrageText" @keyup.enter="sendBarrage">
                 <button @click="sendBarrage">发送</button>
@@ -103,7 +128,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import * as echarts from 'echarts'
 
 export default {
@@ -112,11 +137,19 @@ export default {
   setup() {
     const isFolded = ref(false)
     const barrageText = ref('')
+    const showVideo = ref(false)
+    const videoUrl = ref('')
+    const selectedDate = ref('')
+    const selectedCourse = ref('')
+    const videoPlayer = ref(null)
+    
     const tableData = ref([
-      { name: '张三', class: '计算机1班', rate: '95%' },
-      { name: '李四', class: '计算机1班', rate: '88%' },
-      { name: '王五', class: '计算机2班', rate: '92%' },
-      { name: '赵六', class: '计算机2班', rate: '85%' },
+      { name: '李林', class: '计算机科学与技术2302', rate: '100%' },
+      { name: '吴达', class: '计算机科学与技术2302', rate: '100%' },
+      { name: '汤妍', class: '计算机科学与技术2302', rate: '99%' },
+      { name: '冯丽', class: '计算机科学与技术2305', rate: '95%' },
+      { name: '张朋', class: '计算机科学与技术2301', rate: '90%' },
+      { name: '孙天', class: '计算机科学与技术2302', rate: '88%' },
     ])
 
     let charts = {
@@ -290,6 +323,36 @@ export default {
         barrageItem.remove()
       })
     }
+    
+    // 加载视频回放的方法
+    const loadVideoPlayback = () => {
+      if (selectedDate.value && selectedCourse.value) {
+        showVideo.value = true
+        
+        // 构建正确的视频URL格式
+        const formattedDate = selectedDate.value
+        const formattedCourse = selectedCourse.value === '数据结构与算法' ? 'shujujiegou' : 
+                               selectedCourse.value === '计算机组成原理' ? 'zuocheng' : 
+                               'caozuo'
+        
+        videoUrl.value = `/teacher/videos/${formattedDate}_${formattedCourse}.mp4`
+        
+        console.log('正在加载视频:', videoUrl.value)
+        
+        // 确保视频加载后自动播放
+        nextTick(() => {
+          if (videoPlayer.value) {
+            videoPlayer.value.load()
+            videoPlayer.value.play().catch(error => {
+              console.error('视频播放失败:', error)
+              alert('视频加载失败，请确认视频文件存在且格式正确')
+            })
+          }
+        })
+      } else {
+        alert('请先选择日期和课程')
+      }
+    }
 
     let timeInterval
 
@@ -323,13 +386,19 @@ export default {
       toggleFold,
       barrageText,
       sendBarrage,
-      tableData
+      tableData,
+      showVideo,
+      videoUrl,
+      selectedDate,
+      selectedCourse,
+      videoPlayer,
+      loadVideoPlayback
     }
   }
 }
 </script>
 
-<style>
+<style scoped>
 @import '../assets/css/index.css';
 
 /* 添加折叠动画相关样式 */
@@ -357,5 +426,115 @@ export default {
   width: 100%;
   height: calc(100% - 30px);
   min-height: 200px;
+}
+
+/* 视频控制相关样式 */
+.video-controls {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
+  gap: 15px;
+}
+
+.date-select, .course-select {
+  padding: 6px 12px;
+  border: 1px solid #164e85;
+  border-radius: 4px;
+  background-color: rgba(22, 78, 133, 0.3);
+  color: #fff;
+  outline: none;
+}
+
+.date-select option, .course-select option {
+  background-color: #0b3a6b;
+  color: #fff;
+}
+
+.load-btn {
+  padding: 6px 15px;
+  background-color: #1e88e5;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.load-btn:hover {
+  background-color: #1565c0;
+}
+
+.video-container {
+  width: 100%;
+  height: 400px; /* 设置固定高度 */
+  margin: 10px 0;
+  background-color: #000000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* 防止视频溢出容器 */
+}
+
+.video-placeholder {
+  color: #a7c6e2;
+  font-size: 14px;
+  text-align: center;
+  padding: 20px;
+}
+
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* 保持视频比例并填充容器 */
+  background: #000000;
+}
+
+/* 弹幕相关样式 */
+.barrage-display-area {
+  position: relative;
+  height: 30px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.barrage-item {
+  position: absolute;
+  white-space: nowrap;
+  color: white;
+  font-size: 18px;
+  animation: barrageMove 8s linear;
+  right: -100%;
+}
+
+@keyframes barrageMove {
+  from {
+    right: -100%;
+  }
+  to {
+    right: 100%;
+  }
+}
+
+.barrage-input-container {
+  display: flex;
+  margin-top: 10px;
+}
+
+.barrage-input-container input {
+  flex: 1;
+  padding: 6px 12px;
+  border: 1px solid #164e85;
+  border-radius: 4px 0 0 4px;
+  background-color: rgba(22, 78, 133, 0.3);
+  color: #fff;
+}
+
+.barrage-input-container button {
+  padding: 6px 15px;
+  background-color: #1e88e5;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  color: white;
+  cursor: pointer;
 }
 </style>

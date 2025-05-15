@@ -1,101 +1,119 @@
 <template>
   <div class="page-content">
+    <animated-background />
     <div class="gray-space"></div>
-    <div class="header">
-        <el-button type="primary" style="margin-left: 20px;"  @click="showDialog('add')">新增</el-button>
+    <div class="content-wrapper">
+      <div class="search-section">
+        <el-button type="primary" @click="showDialog('add')">新增</el-button>
         <el-select
-        v-model="selectedCourses"
-        multiple
-        placeholder="所有课程"
-        style="width: 240px; margin-left: 20px;"
-        @change="handleCourseChange"
-        font-color="black"
+          v-model="selectedCourses"
+          multiple
+          placeholder="所有课程"
+          class="course-select"
+          @change="handleCourseChange"
+          font-color="black"
         >
-        <el-option
-          v-for="item in courseOptions"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
+          <el-option
+            v-for="item in courseOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+        <el-input
+          v-model="searchText"
+          class="search-input"
+          placeholder="搜索学生的姓名或学号"
+          :suffix-icon="Search"
+          @input="handleSearchChange"
         />
-      </el-select>
-       <el-input
-      v-model="searchText"
-      style="width: 400px; margin-left: 30px;"
-      placeholder="搜索学生的姓名或学号"
-      :suffix-icon="Search" 
-      @input="handleSearchChange"
-    />
-    </div>
-    <div class="table"> 
-      <el-table :data="tableData" style="width: 100%" :border="false" :cell-style="{ textAlign: 'center' }" v-loading="loading">
-      <el-table-column type="selection" width="50" align="center" />
-      <el-table-column label="班级" prop="className" width="150" align="center" />
-      <el-table-column label="系统" prop="classSystem" width="150" align="center" />
-      <el-table-column label="学生" width="150" align="center">
-        <template #default="scope">
-          <div class="user">
-            <img class="avatar" :src="scope.row.avatar" />
-            <div class="user-info">
-              <p class="user-name">{{ scope.row.staff_id }}</p>
+      </div>
+      <div class="table"> 
+        <el-table :data="tableData" style="width: 100%" :border="false" :cell-style="{ textAlign: 'center' }" v-loading="loading">
+        <el-table-column type="selection" width="50" align="center" />
+        <el-table-column label="班级" prop="className" width="150" align="center" />
+        <el-table-column label="学生" width="150" align="center">
+          <template #default="scope">
+            <div class="user">
+              <img class="avatar" :src="scope.row.avatar" />
+              <div class="user-info">
+                <p class="user-name">{{ scope.row.username }}</p>
+              </div>
             </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="学号" prop="mobile" width="150" align="center" />
+        <el-table-column label="邮箱" prop="email" width="200" align="center" />
+        <el-table-column label="手机号" width="130" align="center">
+          <template #default="scope">
+            {{ scope.row.phone || '暂无' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="120" align="center">
+          <template #default="scope">
+            <el-button
+              type="primary"
+              size="default"
+              class="blue-button"
+              @click="viewStudentDetail(scope.row)"
+            >
+              查看详情
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      </div>
+      
+      <el-dialog
+        v-model="dialogVisible"
+        :title="dialogType === 'add' ? '添加用户' : '编辑用户'"
+        width="30%"
+      >
+        <el-form ref="formRef" :model="formData" :rules="rules" label-width="80px">
+          <el-form-item label="用户名" prop="username">
+            <el-input v-model="formData.username" />
+          </el-form-item>
+          <el-form-item label="学号" prop="studentId">
+            <el-input v-model="formData.studentId" />
+          </el-form-item>
+          <el-form-item label="性别" prop="sex">
+            <el-select v-model="formData.sex">
+              <el-option label="男" :value="1" />
+              <el-option label="女" :value="2" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="班级" prop="className">
+            <el-select v-model="formData.className">
+              <el-option
+                v-for="item in classOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <div class="dialog-footer">
+            <el-button @click="dialogVisible = false">取消</el-button>
+            <el-button type="primary" @click="handleSubmit">提交</el-button>
           </div>
         </template>
-      </el-table-column>
-      <el-table-column label="学号" prop="mobile" width="150" align="center" />
-      <el-table-column label="邮箱" prop="email" width="200" align="center" />
-      <el-table-column label="手机号" width="130" align="center">
-        <template #default="scope">
-          {{ scope.row.phone || '暂无' }}
-        </template>
-      </el-table-column>
-    </el-table>
-
+      </el-dialog>
     </div>
-    
-    <el-dialog
-      v-model="dialogVisible"
-      :title="dialogType === 'add' ? '添加用户' : '编辑用户'"
-      width="30%"
-    >
-      <el-form ref="formRef" :model="formData" :rules="rules" label-width="80px">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="formData.username" />
-        </el-form-item>
-        <el-form-item label="学号" prop="studentId">
-          <el-input v-model="formData.studentId" />
-        </el-form-item>
-        <el-form-item label="性别" prop="sex">
-          <el-select v-model="formData.sex">
-            <el-option label="男" :value="1" />
-            <el-option label="女" :value="2" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="班级" prop="className">
-          <el-select v-model="formData.className">
-            <el-option
-              v-for="item in classOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleSubmit">提交</el-button>
-        </div>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Search, Edit, Delete } from '@element-plus/icons-vue';
+import { Search, Edit, Delete, View } from '@element-plus/icons-vue';
 import api from '@/api';  // 导入 api
+import AnimatedBackground from '@/components/AnimatedBackground.vue';
+import { useRouter } from 'vue-router'; // 导入路由
+
+const router = useRouter(); // 使用路由
 
 const dialogType = ref('add');
 const dialogVisible = ref(false);
@@ -108,7 +126,7 @@ const selectedCourses = ref([]);
 // 获取课程列表
 const fetchCourses = async () => {
   try {
-    const response = await api.getTeacherCourses();
+    const response = await api.getCourses();
     if (response.code === 200) {
       courseOptions.value = response.data.items.map(course => ({
         value: course.course_id,
@@ -135,13 +153,13 @@ const fetchStudents = async (courseId) => {
       console.log('API返回的原始数据:', response.data.items);
       const students = response.data.items.map(item => ({
         id: item.student_id,
-        username: item.staff_id || item.student_id,
+        username: item.username,
         mobile: item.student_id,
         email: item.email,
         phone: item.phone,
         className: item.class_name,
         classSystem: item.class_system,
-        avatar: '/teacher/image/song.png',
+        avatar: item.avatar || '/teacher/image/song.png',
         staff_id: item.staff_id
       }));
       console.log('处理后的学生列表:', students);
@@ -221,6 +239,7 @@ const handleSearchChange = () => {
 // 组件挂载时初始化数据
 onMounted(() => {
   fetchCourses();
+  // 不再使用模拟数据，直接调用API
 });
 
 const formData = reactive({
@@ -323,90 +342,176 @@ const handleSubmit = () => {
     }
   });
 };
+
+// 修改查看详情的方法
+const viewStudentDetail = (student) => {
+  console.log('查看学生详情:', student);
+  // 跳转到详情页，传递学生ID作为参数，使用配置的'/student/:id'路由
+  router.push({
+    path: `/student/${student.id}`,
+    query: {
+      name: student.username,
+      studentId: student.mobile,
+      className: student.className,
+      avatar: student.avatar,
+      email: student.email,
+      phone: student.phone
+    }
+  });
+};
 </script>
 
 <style lang="scss" scoped>
 .page-content {
   width: 100%;
   max-width: 1480px;
-  height: 100vh;
-  background-color: #f5f5f5;
+  min-height: calc(100vh - 24px);
   margin: 0 auto;
   padding: 0 20px;
+  position: relative;
+  background-color: transparent;
+  z-index: 1;
+  isolation: isolate;
+}
 
 .gray-space {
-  height: 12px; // 空隙的高度
-  background-color: #f5f5f5; // 灰色背景
+  height: 12px;
+  background-color: transparent;
 }
-.header {
+
+.content-wrapper {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  box-shadow: 
+    rgba(99, 147, 244, 0.2) 0px 0px 0px 2px,
+    rgba(99, 147, 244, 0.15) 0px 4px 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 2;
+}
+
+.search-section {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   margin-bottom: 20px;
-  margin-left: 0;
-  height: 50px;
-  background-color: white;
-  border-radius: 13px;
-  width: 100%;
-  padding: 0 20px;
+  padding: 10px 20px;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  border: 1px solid rgba(99, 147, 244, 0.2);
+  box-shadow: 0 2px 8px rgba(99, 147, 244, 0.1);
 }
-::v-deep .el-input__suffix .el-input__icon {
-  color: #007bff; /* 设置图标颜色为蓝色 */
-}
-.table{
-  width: 100%;
-  border-radius: 13px;
-  margin-left: 0;
-  margin-right: 0;
-  overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-  
-  ::v-deep(.el-table__header) th {
-    background-color:#E6F2FF !important;
+
+.el-button {
+  margin-right: 20px;
+  border-width: 2px;
+  &.el-button--primary {
+    border-color: rgba(99, 147, 244, 0.8);
+    box-shadow: 0 2px 6px rgba(99, 147, 244, 0.15);
   }
 }
-.table th, .table td { border: 1px solid #ddd; /* 设置单元格边框，以便看到圆角效果 */ }
-.table th:first-child,.table td:first-child{
-  border-top-left-radius:20px;
+
+.course-select {
+  width: 240px;
+  margin-right: 20px;
+  :deep(.el-input__wrapper) {
+    border: 1px solid rgba(99, 147, 244, 0.2);
+    box-shadow: 0 2px 6px rgba(99, 147, 244, 0.08);
+    &:hover {
+      border-color: rgba(99, 147, 244, 0.4);
+    }
+    &.is-focus {
+      border-color: rgba(99, 147, 244, 0.6);
+      box-shadow: 0 0 0 2px rgba(99, 147, 244, 0.1);
+    }
+  }
 }
-.table th:last-child,.table td:last-child{
-  border-top-left-radius:20px;
+
+.search-input {
+  :deep(.el-input__wrapper) {
+    border: 1px solid rgba(99, 147, 244, 0.2);
+    box-shadow: 0 2px 6px rgba(99, 147, 244, 0.08);
+    &:hover {
+      border-color: rgba(99, 147, 244, 0.4);
+    }
+    &.is-focus {
+      border-color: rgba(99, 147, 244, 0.6);
+      box-shadow: 0 0 0 2px rgba(99, 147, 244, 0.1);
+    }
+  }
 }
-    .search-actions {
-      text-align: right;
-      margin-top: 20px;
+
+.table {
+  background-color: white;
+  border-radius: 8px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(99, 147, 244, 0.15);
+  box-shadow: 0 2px 12px rgba(99, 147, 244, 0.08);
+}
+
+:deep(.el-table) {
+  border: none;
+  
+  &::before {
+    display: none;
+  }
+  
+  .el-table__header-wrapper {
+    th.el-table__cell {
+      background-color: #f0f7ff;
+      color: #333;
+      font-weight: 600;
+      border-bottom: 2px solid rgba(99, 147, 244, 0.2);
+      height: 50px;
     }
   }
 
-  .table-actions {
-    margin-bottom: 20px;
+  .el-table__body-wrapper {
+    .el-table__row {
+      td {
+        border-bottom: 1px solid rgba(99, 147, 244, 0.1);
+        height: 60px;
+      }
+      
+      &:hover {
+        td {
+          background-color: rgba(99, 147, 244, 0.05);
+        }
+      }
+    }
   }
+}
 
-  .user {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-  }
+.table-actions {
+  margin-bottom: 20px;
+}
 
-  .user-info {
-    margin-left: 10px;
-  }
+.user {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
 
-  .avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 6px;
-    object-fit: cover;
-    border: 2px solid #ebeef5;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
+.user-info {
+  margin-left: 10px;
+}
 
-  .user-name {
-    font-weight: 500;
-    color: #333;
-    margin: 0;
-  }
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 2px solid #ebeef5;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.user-name {
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+}
 
 ::v-deep(.el-table) {
   width: 100% !important;
@@ -468,5 +573,52 @@ const handleSubmit = () => {
   background-color: #DCDFE6;
   margin: 0 8px;
   vertical-align: middle;
+}
+
+.search-input {
+  width: 400px !important;
+  margin: 0 20px 0 30px !important;
+}
+
+:deep(.el-input) {
+  .el-input__wrapper {
+    border-radius: 8px !important;
+    background-color: white;
+    
+    &:hover {
+      box-shadow: 0 0 0 1px #c0c4cc !important;
+    }
+    
+    &.is-focus {
+      box-shadow: 0 0 0 1px #409eff !important;
+    }
+  }
+}
+
+.blue-button {
+  background-color: #409eff;
+  border-color: #409eff;
+  color: white;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.3s, border-color 0.3s;
+  border: none;
+  
+  &:hover {
+    background-color: #66b1ff;
+    border-color: #66b1ff;
+  }
+}
+
+:deep(.el-button--primary) {
+  background-color: #409eff;
+  border-color: #409eff;
+  
+  &:hover {
+    background-color: #66b1ff;
+    border-color: #66b1ff;
+  }
 }
 </style>

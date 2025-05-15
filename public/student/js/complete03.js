@@ -4,7 +4,7 @@ $(function(){
 function echarts_3() {
     // 基于准备好的dom，初始化echarts实例
     var myChart = echarts.init(document.getElementById('feng03'));
-    var gauge_value=17;
+    var gauge_value=100;
 
 option = {
 title: {

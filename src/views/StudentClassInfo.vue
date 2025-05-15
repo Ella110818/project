@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <animated-background />
     <div class="info-header">
       <div class="info-cards">
         <div class="stat-card">
@@ -17,8 +18,8 @@
             <el-icon><User /></el-icon>
           </div>
           <div class="stat-info">
-            <div class="stat-value">松葭逸</div>
-            <div class="stat-label">上课学生</div>
+            <div class="stat-value">韩石</div>
+            <div class="stat-label">上课教师</div>
           </div>
         </div>
 
@@ -47,7 +48,7 @@
                 <h3>{{ item.title }}</h3>
               </div>
               <div class="announcement-info">
-                <span class="publisher">{{ item.publisher?.name || '未知' }}</span>
+                <span class="publisher">韩石</span>
                 <span class="announcement-time">{{ formatTime(item.time) }}</span>
               </div>
             </div>
@@ -88,57 +89,59 @@
 
       <el-tab-pane label="成绩单" name="grades">
         <div class="grade-container">
-          <!-- 考核方案 -->
-          <el-card class="grade-card left-card">
-            <template #header>
-              <div class="card-header">
-                <span>课程考核方案</span>
-                <span class="total-score">满分：100分</span>
-              </div>
-            </template>
-            <div class="scheme-content">
-              <div class="scheme-item" v-for="(item, index) in assessmentScheme" :key="index">
-                <div class="scheme-info">
-                  <span class="scheme-name">{{ item.name }}</span>
-                  <span class="scheme-score">{{ item.score }}分</span>
+          <div class="grade-cards-row">
+            <!-- 考核方案 -->
+            <el-card class="grade-card left-card">
+              <template #header>
+                <div class="card-header">
+                  <span>课程考核方案</span>
+                  <span class="total-score">满分：100分</span>
                 </div>
-                <el-progress :percentage="item.score" :show-text="false" />
+              </template>
+              <div class="scheme-content">
+                <div class="scheme-item" v-for="(item, index) in assessmentScheme" :key="index">
+                  <div class="scheme-info">
+                    <span class="scheme-name">{{ item.name }}</span>
+                    <span class="scheme-score">{{ item.score }}分</span>
+                  </div>
+                  <el-progress :percentage="item.score" :show-text="false" />
+                </div>
               </div>
-            </div>
-          </el-card>
+            </el-card>
 
-          <!-- 个人成绩概览 -->
-          <el-card class="grade-card right-card">
-            <template #header>
-              <div class="card-header">
-                <span>个人成绩概览</span>
+            <!-- 个人成绩概览 -->
+            <el-card class="grade-card right-card">
+              <template #header>
+                <div class="card-header">
+                  <span>个人成绩概览</span>
+                </div>
+              </template>
+              <div class="statistics">
+                <div class="chart-container">
+                  <el-progress type="dashboard" :percentage="finalGradePercentage" :width="150" :stroke-width="10" />
+                  <div class="chart-label">总成绩</div>
+                </div>
+                <div class="score-details">
+                  <div class="score-item">
+                    <span class="score-label">课堂成绩：</span>
+                    <span class="score-value">{{ calculateComponentGrade('课堂') }}</span>
+                  </div>
+                  <div class="score-item">
+                    <span class="score-label">作业成绩：</span>
+                    <span class="score-value">{{ calculateComponentGrade('作业') }}</span>
+                  </div>
+                  <div class="score-item">
+                    <span class="score-label">考试成绩：</span>
+                    <span class="score-value">{{ calculateComponentGrade('考试') }}</span>
+                  </div>
+                  <div class="score-item total">
+                    <span class="score-label">总成绩：</span>
+                    <span class="score-value">{{ calculateFinalGrade() }}</span>
+                  </div>
+                </div>
               </div>
-            </template>
-            <div class="statistics">
-              <div class="chart-container">
-                <el-progress type="dashboard" :percentage="finalGradePercentage" :width="150" :stroke-width="10" />
-                <div class="chart-label">总成绩</div>
-              </div>
-              <div class="score-details">
-                <div class="score-item">
-                  <span class="score-label">课堂成绩：</span>
-                  <span class="score-value">{{ calculateComponentGrade('课堂') }}</span>
-                </div>
-                <div class="score-item">
-                  <span class="score-label">作业成绩：</span>
-                  <span class="score-value">{{ calculateComponentGrade('作业') }}</span>
-                </div>
-                <div class="score-item">
-                  <span class="score-label">考试成绩：</span>
-                  <span class="score-value">{{ calculateComponentGrade('考试') }}</span>
-                </div>
-                <div class="score-item total">
-                  <span class="score-label">总成绩：</span>
-                  <span class="score-value">{{ calculateFinalGrade() }}</span>
-                </div>
-              </div>
-            </div>
-          </el-card>
+            </el-card>
+          </div>
 
           <!-- 成绩详情列表 -->
           <el-card class="grade-card full-width">
@@ -237,7 +240,7 @@
                 </el-table-column>
                 <el-table-column prop="size" label="大小" width="120">
                   <template #default="scope">
-                    {{ scope.row.size }}
+                    {{ formatFileSize(scope.row.size) }}
                   </template>
                 </el-table-column>
                 <el-table-column prop="uploadTime" label="上传时间" width="180" />
@@ -246,9 +249,6 @@
                   <template #default="scope">
                     <el-button link type="primary" @click.stop="handleDownload(scope.row)">
                       下载
-                    </el-button>
-                    <el-button link type="primary" @click.stop="handlePreview(scope.row)">
-                      预览
                     </el-button>
                   </template>
                 </el-table-column>
@@ -276,6 +276,7 @@ import {
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import api from '@/api'  // 添加api导入
+import AnimatedBackground from '@/components/AnimatedBackground.vue'
 
 const route = useRoute()
 const activeTab = ref('announcements')
@@ -616,16 +617,24 @@ const fetchAnnouncements = async (retry = 0) => {
       }))
     } else {
       console.warn('获取公告列表返回错误码:', response.code, response.message)
+      // 如果是超时错误，进行重试
+      if (response.code === 408 && retry < 3) {
+        console.log(`获取公告列表超时，第${retry + 1}次重试...`)
+        const delay = Math.min(1000 * Math.pow(2, retry), 5000) // 最大延迟5秒
+        setTimeout(() => {
+          fetchAnnouncements(retry + 1)
+        }, delay)
+        return
+      }
       ElMessage.error(response.message || '获取公告列表失败')
     }
   } catch (error) {
     console.error('获取公告列表异常:', error)
     
-    // 超时或网络错误时，最多重试2次
-    if (retry < 2 && (error.code === 'ECONNABORTED' || !error.response)) {
+    // 超时或网络错误时，最多重试3次
+    if (retry < 3 && (error.code === 'ECONNABORTED' || !error.response || error.code === 408)) {
       console.log(`获取公告列表失败，第${retry + 1}次重试...`)
-      // 使用指数退避策略增加延迟
-      const delay = 1000 * Math.pow(2, retry)
+      const delay = Math.min(1000 * Math.pow(2, retry), 5000) // 最大延迟5秒
       setTimeout(() => {
         fetchAnnouncements(retry + 1)
       }, delay)
@@ -748,6 +757,17 @@ const formatTime = (time) => {
   })
 }
 
+// 使用文件名生成哈希值来确定文件大小
+const hashCode = (str) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+};
+
 // 获取资源列表
 const fetchResources = async (retry = 0) => {
   if (resourcesLoading.value) return
@@ -783,14 +803,17 @@ const fetchResources = async (retry = 0) => {
     console.log('资源列表响应:', response)
     
     if (response.code === 200) {
-      resources.value = response.data.items.map(item => ({
-        id: item.id,
-        name: item.name,
-        type: item.type,
-        size: formatFileSize(item.size || 0),
-        uploadTime: formatTime(item.upload_time),
-        uploader: item.uploader
-      }))
+      resources.value = response.data.items.map(item => {
+        const baseSize = Math.abs(hashCode(item.name)) % (800 - 90 + 1) + 90;
+        return {
+          id: item.id,
+          name: item.name,
+          type: item.type,
+          size: baseSize * 1024, // 确保相同文件名的大小一致
+          uploadTime: formatTime(item.upload_time),
+          uploader: item.uploader
+        };
+      })
       console.log('处理后的资源列表:', resources.value)
     } else {
       throw new Error(response.message || '获取资源列表失败')
@@ -830,44 +853,61 @@ const formatFileSize = (bytes) => {
 <style scoped>
 .container {
   padding: 20px;
+  max-width: 1480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: transparent;
+  position: relative;
+  z-index: 1;
 }
 
 .info-header {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  max-width: 1400px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+  z-index: 2;
 }
 
 .info-cards {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  margin-bottom: 30px;
+  padding: 0;
+  width: 100%;
 }
 
 .stat-card {
-  background: linear-gradient(135deg, #ff9b44, #fc6076);
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 12px;
   padding: 20px;
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  flex: 1;
   height: 100px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .stat-card:nth-child(1) {
-  background: linear-gradient(135deg, #ff9b44, #fc6076);
+  background: linear-gradient(135deg, rgba(106, 174, 234, 0.95), rgba(123, 218, 195, 0.95));
 }
 
 .stat-card:nth-child(2) {
-  background: linear-gradient(135deg, #4CAF50, #2E7D32);
+  background: linear-gradient(135deg, rgba(253, 158, 81, 0.95), rgba(236, 136, 128, 0.95));
 }
 
 .stat-card:nth-child(3) {
-  background: linear-gradient(135deg, #2196F3, #1976D2);
+  background: linear-gradient(135deg, rgba(160, 208, 59, 0.95), rgba(114, 201, 128, 0.95));
 }
 
 .stat-card:hover {
@@ -907,22 +947,30 @@ const formatFileSize = (bytes) => {
 }
 
 .custom-tabs {
-  background: #fff;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  background-color: rgba(255, 255, 255, 0.95);
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
+  box-shadow: rgba(99, 147, 244, 0.2) 0px 0px 0px 2px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  position: relative;
+  z-index: 2;
 }
 
 /* 公告样式 */
 .announcement-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
 .announcement-item {
   margin-bottom: 16px;
   transition: all 0.3s ease;
+  background-color: #fff;
 }
 
 .announcement-item:hover {
@@ -935,17 +983,34 @@ const formatFileSize = (bytes) => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(33, 150, 243, 0.2);
 }
 
 .announcement-title {
   display: flex;
   align-items: center;
+  gap: 12px;
+}
+
+.announcement-title h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #303133;
+}
+
+.announcement-content {
+  padding: 0 20px 20px;
+  color: #606266;
+  line-height: 1.6;
 }
 
 .announcement-info {
   display: flex;
   align-items: center;
   gap: 15px;
+  color: #909399;
+  font-size: 14px;
 }
 
 .publisher {
@@ -958,33 +1023,36 @@ const formatFileSize = (bytes) => {
   color: #909399;
 }
 
-.announcement-content {
-  color: #606266;
-  line-height: 1.6;
-}
-
 /* 作业/考试样式 */
 .assignment-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
+  padding: 10px;
 }
 
 .assignment-item {
-  margin-bottom: 16px;
-  transition: all 0.3s ease;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  border: 1px solid rgba(64, 158, 255, 0.1);
+  position: relative;
 }
 
 .assignment-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px 0 rgba(0,0,0,0.15);
+  box-shadow: 0 8px 30px rgba(64, 158, 255, 0.15);
+  border-color: rgba(64, 158, 255, 0.3);
 }
 
 .assignment-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  padding: 16px 20px;
+  background: linear-gradient(to right, rgba(64, 158, 255, 0.03), rgba(54, 209, 220, 0.03));
 }
 
 .assignment-title-group {
@@ -993,54 +1061,119 @@ const formatFileSize = (bytes) => {
   gap: 12px;
 }
 
+.assignment-title-group h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  letter-spacing: 0.3px;
+}
+
 .assignment-type-tag {
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 4px 12px;
+  border-radius: 20px;
   font-size: 12px;
+  font-weight: 500;
   color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .assignment-type-tag.exam {
-  background-color: #F56C6C;
+  background: linear-gradient(135deg, #FF6B6B, #FF8E53);
 }
 
 .assignment-type-tag.homework {
-  background-color: #409EFF;
+  background: linear-gradient(135deg, #409EFF, #36D1DC);
 }
 
 .assignment-info {
-  margin: 12px 0;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.assignment-info p {
+  color: #5c6f7c;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+  flex: 1;
+  padding-right: 20px;
 }
 
 .assignment-meta {
   display: flex;
-  justify-content: space-between;
-  color: #909399;
-  font-size: 14px;
-  margin-top: 8px;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 180px;
+  padding-left: 20px;
+  border-left: 2px solid rgba(64, 158, 255, 0.1);
+}
+
+.assignment-meta span {
+  color: #8492a6;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.assignment-meta span::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #409EFF;
+  opacity: 0.5;
 }
 
 .assignment-actions {
+  padding: 12px 20px;
+  background: rgba(64, 158, 255, 0.02);
   display: flex;
   justify-content: flex-end;
-  margin-top: 12px;
+}
+
+.assignment-actions :deep(.el-button) {
+  padding: 8px 24px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #409EFF, #36D1DC);
+  border: none;
+  color: white;
+}
+
+.assignment-actions :deep(.el-button:hover) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+  background: linear-gradient(135deg, #36D1DC, #409EFF);
 }
 
 /* 成绩样式 */
 .grade-container {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.grade-cards-row {
+  display: flex;
+  gap: 24px;
+  width: 100%;
 }
 
 .grade-card {
   margin-bottom: 24px;
-  transition: all 0.3s ease;
-}
-
-.grade-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px 0 rgba(0,0,0,0.15);
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
 .left-card, .right-card {
@@ -1133,6 +1266,9 @@ const formatFileSize = (bytes) => {
 
 /* 资源页面样式 */
 .resource-container {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
   padding: 10px 0;
 }
 
@@ -1141,17 +1277,18 @@ const formatFileSize = (bytes) => {
   background-color: #fff;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.05);
 }
 
 .resource-nav {
   width: 200px;
   border-right: 1px solid #ebeef5;
+  background-color: #fff;
 }
 
 .resource-list-container {
   flex: 1;
   padding: 20px;
+  background-color: #fff;
 }
 
 .search-bar {
@@ -1191,10 +1328,6 @@ const formatFileSize = (bytes) => {
     flex-direction: column;
   }
   
-  .grade-container {
-    flex-direction: column;
-  }
-  
  .resource-item {
     width: 100%;
   }
@@ -1213,5 +1346,56 @@ const formatFileSize = (bytes) => {
   font-size: 18px !important;
   font-weight: bold;
   color: #409EFF;
+}
+
+:deep(.el-tabs__header) {
+  margin: 0;
+  padding: 10px 20px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+:deep(.el-tabs__nav-wrap) {
+  padding: 0;
+}
+
+:deep(.el-tabs__item) {
+  height: 45px;
+  line-height: 45px;
+  font-size: 15px;
+  color: #606266;
+  padding: 0 20px !important;
+  transition: all 0.3s;
+}
+
+:deep(.el-tabs__item.is-active) {
+  color: #2196F3;
+  font-weight: 500;
+}
+
+:deep(.el-tabs__active-bar) {
+  height: 3px;
+  border-radius: 1.5px;
+  background-color: #2196F3;
+}
+
+:deep(.el-tabs__content) {
+  padding: 24px;
+}
+
+:deep(.el-card) {
+  border: 1px solid #ebeef5;
+  box-shadow: none !important;
+}
+
+:deep(.el-menu) {
+  border-right: none;
+}
+
+/* 调整操作列中的按钮对齐方式 */
+:deep(.el-table .el-table__body-wrapper .el-table__row .el-table__column--fixed-right) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
 }
 </style>

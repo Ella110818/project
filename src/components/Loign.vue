@@ -207,7 +207,7 @@ async function handleLogin() {
   justify-content: center;
   align-items: center;
   height: 100vh;
-   background-image: url('@/assets/back1.png'); /* 设置背景图片 */
+   background-image: url('@/assets/back2.jpg'); /* 使用已存在的背景图片 */
   background-size: cover; /* 背景图片覆盖整个容器 */
   background-position: center; /* 背景图片居中 */
 

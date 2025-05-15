@@ -18,9 +18,9 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue';
+import kehuan1 from '@/assets/kehuan1.jpg'
 import kehuan2 from '@/assets/kehuan2.jpg'
 import kehuan3 from '@/assets/kehuan3.jpg'
-import kehuan4 from '@/assets/kehuan4.png'
 import shuju from '@/assets/shuju.png'
 import api from '@/api';
 
@@ -53,25 +53,30 @@ export default {
         }
       } catch (error) {
         console.error('获取教师信息失败:', error);
-        teacherName.value = props.course.teacherName; // 如果获取失败，显示原始值
+        teacherName.value = props.course.teacherName;
       }
     };
 
-    const courseImages = [shuju, kehuan2, kehuan3, kehuan4];
+    // 使用指定的四张图片
+    const courseImages = [kehuan1, kehuan2, kehuan3, shuju];
     
     const courseImage = computed(() => {
-      // 确保对字符串类型的ID也能正确处理
-      if (!props.course.id) return courseImages[0];
+      if (!props.course.id) return defaultImage.value;
       
-      // 如果ID是字符串类型，使用字符串的长度或字符代码和来计算索引
-      if (typeof props.course.id === 'string') {
-        // 使用字符串的字符代码和来计算一个数字
-        const sum = props.course.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        return courseImages[sum % courseImages.length];
+      // 使用课程ID生成确定性的索引
+      const idStr = String(props.course.id);
+      let hashCode = 0;
+      
+      // 使用简单的哈希算法
+      for (let i = 0; i < idStr.length; i++) {
+        hashCode = ((hashCode << 5) - hashCode) + idStr.charCodeAt(i);
+        hashCode = hashCode & hashCode; // 转换为32位整数
       }
       
-      // 如果ID是数字，按原来的逻辑处理
-      return courseImages[Math.abs(props.course.id) % courseImages.length];
+      // 使用哈希值选择图片
+      const index = Math.abs(hashCode) % courseImages.length;
+      console.log('Course ID:', props.course.id, 'Selected image index:', index);
+      return courseImages[index];
     });
 
     // 处理图片加载错误

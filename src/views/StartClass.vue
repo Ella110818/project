@@ -139,7 +139,15 @@ export default {
           const userRole = localStorage.getItem('userRole');
           
           if (userRole === 'teacher') {
-            this.$router.push(`/live-class/${courseId}`);
+            // 调用开始上课API
+            const startClassRes = await api.startClass(courseId);
+            if (startClassRes.code === 200) {
+              // 保存课程时间ID到localStorage
+              localStorage.setItem('currentCourseTimeId', startClassRes.data.course_time_id);
+              this.$router.push(`/live-class/${courseId}`);
+            } else {
+              this.$message.error(startClassRes.message || '开始上课失败');
+            }
           } else if (userRole === 'student') {
             this.$router.push(`/student-live-class/${courseId}`);
           }
