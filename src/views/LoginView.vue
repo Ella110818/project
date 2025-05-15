@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="illustration">
-      <img src="@/assets/zengqiang2.png" alt="Illustration" />
+      <img src="@/assets/zengqiang.jpg" alt="Illustration" />
     </div>
     <div class="login-form">
       <h2>明瞳智教</h2>
