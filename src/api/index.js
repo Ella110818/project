@@ -22,7 +22,7 @@ const getBaseUrl = () => {
 // 创建axios实例
 const request = axios.create({
     baseURL: getBaseUrl(),
-    timeout: 30000,  // 增加到30秒
+    timeout: 30000,  // 30秒超时
     headers: {
         'Content-Type': 'application/json'
     }
@@ -31,6 +31,11 @@ const request = axios.create({
 // 请求拦截器
 request.interceptors.request.use(
     config => {
+        // 添加基础URL前缀（如果需要）
+        if (!config.url.startsWith('http')) {
+            config.baseURL = getBaseUrl();
+        }
+
         // 从localStorage获取token
         const token = localStorage.getItem('token');
         if (token) {
@@ -648,11 +653,14 @@ const productionApi = {
     login: async (loginData) => {
         try {
             const response = await request({
-                url: '/api/user/login/',
+                url: '/api/user/login/',  // 更新为正确的登录接口路径
                 method: 'post',
                 data: {
                     username: loginData.username,
                     password: loginData.password
+                },
+                headers: {
+                    'Content-Type': 'application/json'
                 }
             });
 
@@ -667,6 +675,9 @@ const productionApi = {
             return response;
         } catch (error) {
             console.error('登录请求失败:', error);
+            if (error.response && error.response.status === 404) {
+                throw new Error('登录接口不存在，请检查API路径配置');
+            }
             throw error;
         }
     },
