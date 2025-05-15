@@ -15,7 +15,7 @@ const currentEnv = ApiEnv.PRODUCTION; // 强制使用生产环境
 // 获取API基础URL
 const getBaseUrl = () => {
     return currentEnv === ApiEnv.PRODUCTION
-        ? '/api'  // 使用相对路径，让请求经过代理
+        ? 'https://www.wsqzwky234.cn'  // 使用完整的服务器地址
         : 'http://localhost:3000';  // 本地开发环境地址
 };
 
@@ -653,7 +653,7 @@ const productionApi = {
     login: async (loginData) => {
         try {
             const response = await request({
-                url: '/user/login/',  // 移除重复的/api前缀
+                url: '/api/user/login/',  // 添加/api前缀
                 method: 'post',
                 data: {
                     username: loginData.username,
