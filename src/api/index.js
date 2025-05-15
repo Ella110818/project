@@ -15,7 +15,7 @@ const currentEnv = ApiEnv.PRODUCTION; // 强制使用生产环境
 // 获取API基础URL
 const getBaseUrl = () => {
     return currentEnv === ApiEnv.PRODUCTION
-        ? 'https://www.wsqzwky234.cn/'  // 修改为本地实际运行的后端地址
+        ? '/api'  // 使用相对路径，让请求经过代理
         : 'http://localhost:3000';  // 本地开发环境地址
 };
 
