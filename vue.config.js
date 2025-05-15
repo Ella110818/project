@@ -38,8 +38,9 @@ module.exports = defineConfig({
         target: 'https://www.wsqzwky234.cn',
         changeOrigin: true,
         ws: true,
-        logLevel: 'debug',
-        pathRewrite: { '^/api': '/api' }
+        pathRewrite: {
+          '^/api': ''
+        }
       }
     }
   }
