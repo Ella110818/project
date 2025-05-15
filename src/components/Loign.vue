@@ -190,7 +190,7 @@ async function handleLogin() {
   loading.value = true
   try {
     // 调用 Vuex 的登录方法
-    await store.dispatch('/login', loginForm.value)
+    await store.dispatch('user/login', loginForm.value)
     // 登录成功后跳转到首页
     router.push('/')
   } catch (error) {
