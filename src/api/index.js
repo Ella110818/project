@@ -15,7 +15,7 @@ const currentEnv = ApiEnv.PRODUCTION; // 强制使用生产环境
 // 获取API基础URL
 const getBaseUrl = () => {
     return currentEnv === ApiEnv.PRODUCTION
-        ? 'http://localhost:8000'  // 修改为本地实际运行的后端地址
+        ? 'https://www.wsqzwky234.cn/'  // 修改为本地实际运行的后端地址
         : 'http://localhost:3000';  // 本地开发环境地址
 };
 
@@ -448,7 +448,7 @@ const mockApi = {
             setTimeout(() => {
                 const beginTime = new Date(Date.now() - 3600000); // 假设开始时间是1小时前
                 const endTime = new Date();
-                
+
                 resolve({
                     code: 200,
                     message: "课程已成功结束",
@@ -490,7 +490,7 @@ const mockApi = {
                 const now = new Date();
                 const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
                 const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, '');
-                
+
                 resolve({
                     code: 200,
                     message: "视频情绪识别分析完成，识别到 7 名学生",
@@ -555,17 +555,17 @@ const mockApi = {
                 // 生成假数据
                 const totalItems = 15;
                 const items = [];
-                
+
                 for (let i = 0; i < Math.min(size, totalItems - (page - 1) * size); i++) {
                     const id = (page - 1) * size + i + 1;
                     const date = new Date();
                     date.setDate(date.getDate() - id); // 每条记录日期往前推一天
-                    
+
                     // 如果请求要求只显示有录像的记录，则所有记录都应该有录像
                     const hasRecording = withRecording ? true : Math.random() > 0.3;
                     const hasProcessedRecording = withRecording ? true : Math.random() > 0.5;
                     const hasEmotionAnalysis = withAnalysis ? true : Math.random() > 0.5;
-                    
+
                     items.push({
                         id: id,
                         begin_time: new Date(date.setHours(9, 0, 0)).toISOString(),
@@ -578,7 +578,7 @@ const mockApi = {
                         has_emotion_analysis: hasEmotionAnalysis
                     });
                 }
-                
+
                 resolve({
                     code: 200,
                     message: "获取成功",
@@ -590,7 +590,7 @@ const mockApi = {
             }, 300);
         });
     },
-    
+
     // 获取录像详情（模拟实现）
     getRecordingDetail: async (courseTimeId) => {
         return new Promise((resolve) => {
@@ -599,10 +599,10 @@ const mockApi = {
                 const now = new Date();
                 const yesterday = new Date(now);
                 yesterday.setDate(yesterday.getDate() - 1);
-                
+
                 const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
                 const timeStr = "090000";
-                
+
                 resolve({
                     code: 200,
                     message: "获取成功",
@@ -633,7 +633,7 @@ const mockApi = {
             }, 300);
         });
     },
-    
+
     // 获取流式播放URL
     getStreamUrl: (courseTimeId, type = 'processed') => {
         // 确保使用完整的服务器URL，而不是相对路径
@@ -848,12 +848,12 @@ const productionApi = {
         try {
             const formData = new FormData();
             formData.append('image', imageFile);
-            
+
             // 如果提供了courseTimeId，添加到表单数据中
             if (courseTimeId) {
                 formData.append('course_time_id', courseTimeId);
             }
-            
+
             const response = await request({
                 url: '/face_recognition/check_attendance/',
                 method: 'post',
@@ -874,7 +874,7 @@ const productionApi = {
         try {
             const formData = new FormData();
             formData.append('video', videoFile);
-            
+
             // 如果提供了courseTimeId，添加到表单数据中
             if (courseTimeId) {
                 formData.append('course_time_id', courseTimeId);
@@ -904,15 +904,15 @@ const productionApi = {
     getCourseTimesList: async (courseId, page = 1, size = 10, withRecording = false, withAnalysis = false) => {
         try {
             let params = { page, size };
-            
+
             if (withRecording) {
                 params.with_recording = 'true';
             }
-            
+
             if (withAnalysis) {
                 params.with_analysis = 'true';
             }
-            
+
             const response = await request.get(`/api/course/courses/${courseId}/course-times/`, {
                 params: params
             });
@@ -922,7 +922,7 @@ const productionApi = {
             throw error;
         }
     },
-    
+
     // 获取录像详情
     getRecordingDetail: async (courseTimeId) => {
         try {
@@ -933,7 +933,7 @@ const productionApi = {
             throw error;
         }
     },
-    
+
     // 获取流式播放URL
     getStreamUrl: (courseTimeId, type = 'processed') => {
         // 确保使用完整的服务器URL，而不是相对路径
