@@ -653,7 +653,7 @@ const productionApi = {
     login: async (loginData) => {
         try {
             const response = await request({
-                url: '/api/user/login/',  // 更新为正确的登录接口路径
+                url: '/user/login/',  // 移除重复的/api前缀
                 method: 'post',
                 data: {
                     username: loginData.username,
