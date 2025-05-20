@@ -36,20 +36,8 @@ nav a.router-link-exact-active {
 </template>
 
 <script>
-import Welcome from './components/Welcome.vue';
-// import EnvSwitcher from './components/EnvSwitcher.vue';
-import { ref, onMounted } from 'vue';
-
 export default {
   name: 'App',
-  components: {
-    Welcome
-    // EnvSwitcher
-  },
-  setup() {
-    // 直接不显示环境切换器
-    return {};
-  }
 }
 </script>
 
@@ -59,13 +47,5 @@ html, body {
   padding: 0;
   width: 100%;
   height: 100%;
-  overflow: hidden;
-}
-
-#app {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
 }
 </style>
