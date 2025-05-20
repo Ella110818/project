@@ -6,17 +6,12 @@ export const ApiEnv = {
     PRODUCTION: 'production'
 };
 
-// 强制清除可能存在的本地环境配置
-localStorage.removeItem('api_environment');
-
 // 当前环境
-const currentEnv = ApiEnv.PRODUCTION; // 改为生产环境
+const currentEnv = ApiEnv.PRODUCTION; // 始终为生产环境
 
 // 获取API基础URL
 const getBaseUrl = () => {
-    return currentEnv === ApiEnv.PRODUCTION
-        ? 'https://www.wsqzwky234.cn'  // 使用完整的服务器地址
-        : 'http://localhost:3000';  // 本地开发环境地址
+    return 'https://www.wsqzwky234.cn';  // 只用生产环境地址
 };
 
 // 创建axios实例
@@ -974,14 +969,6 @@ const api = {
     // 获取当前环境
     getCurrentEnvironment() {
         return currentEnv;
-    },
-
-    // 切换环境
-    switchEnvironment(env) {
-        if (env === ApiEnv.LOCAL || env === ApiEnv.PRODUCTION) {
-            localStorage.setItem('api_environment', env);
-            window.location.reload(); // 重新加载页面以应用新环境
-        }
     }
 };
 
