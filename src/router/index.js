@@ -227,10 +227,10 @@ router.beforeEach((to, from, next) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
   const userRole = localStorage.getItem('userRole');
 
-  // 如果已登录且访问登录页，重定向到数据显示屏
+  // 如果已登录且访问登录页，重定向到首页
   if (isAuthenticated && to.path === '/login') {
     if (userRole === 'teacher') {
-      next('/teacher-display');
+      next('/');
     } else if (userRole === 'student') {
       next('/student-display');
     } else {

@@ -131,8 +131,10 @@ const handleLogin = async () => {
       const role = response.data.role;
       if (role === 'student') {
         router.push('/student-display');
+      } else if (role === 'teacher') {
+        router.push('/'); // 跳转到首页，带导航栏
       } else {
-        router.push('/datascreen');  // 其他角色（包括教师）跳转到数据显示屏
+        router.push('/datascreen');
       }
     } else {
       alert(response.message || '登录失败');
