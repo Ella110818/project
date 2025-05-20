@@ -86,6 +86,7 @@ export default {
   background: #fff;
   transition: all 0.3s ease;
   overflow: hidden;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
 .course-card:hover {
@@ -105,6 +106,7 @@ export default {
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
+  display: block;
 }
 
 .course-overlay {
@@ -130,6 +132,7 @@ export default {
   padding: 16px;
   position: relative;
   min-height: 100px;
+  background: #fff;
 }
 
 .course-title {
@@ -159,9 +162,10 @@ export default {
   padding: 8px 30px;
   min-width: 120px;
   font-size: 14px;
-  border-radius: 0;
+  border-radius: 4px;
   background: #0A9CE7;
   border: none;
+  color: #fff;
 }
 
 .el-button:hover {

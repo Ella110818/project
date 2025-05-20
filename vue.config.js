@@ -1,6 +1,7 @@
 const { defineConfig } = require('@vue/cli-service')
 module.exports = defineConfig({
   transpileDependencies: true,
+  publicPath: '/',
   // 添加处理规则，只处理根目录的 index.html
   pages: {
     index: {

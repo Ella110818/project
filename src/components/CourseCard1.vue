@@ -115,6 +115,7 @@ export default {
   background: #fff;
   transition: all 0.3s ease;
   overflow: hidden;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
 .course-card:hover {
@@ -124,7 +125,7 @@ export default {
 
 .course-header {
   width: 100%;
-  height: 180px; /* 增加图片高度以更好地展示科技风格图片 */
+  height: 180px;
   overflow: hidden;
   position: relative;
 }
@@ -134,16 +135,18 @@ export default {
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
+  display: block;
 }
 
 .course-card:hover .course-image {
-  transform: scale(1.05); /* 添加悬停时的图片放大效果 */
+  transform: scale(1.05);
 }
 
 .course-info {
   padding: 16px;
   position: relative;
   min-height: 100px;
+  background: #fff;
 }
 
 .course-title {
@@ -153,7 +156,7 @@ export default {
   margin: 5px;
   line-height: 1.4;
   text-align: left;
-  max-width: calc(100% - 150px); /* 为更宽的按钮留出空间 */
+  max-width: calc(100% - 150px);
 }
 
 .teacher {
@@ -163,7 +166,7 @@ export default {
   margin-top: 8px;
   text-align: left;
   margin-left: 5px;
-  max-width: calc(100% - 150px); /* 为更宽的按钮留出空间 */
+  max-width: calc(100% - 150px);
 }
 
 .el-button {
@@ -171,12 +174,13 @@ export default {
   right: 16px;
   top: 60%;
   transform: translateY(-50%);
-  padding: 8px 30px;  /* 增加内边距 */
-  min-width: 120px;   /* 设置最小宽度 */
+  padding: 8px 30px;
+  min-width: 120px;
   font-size: 14px;
-  border-radius: 0;
-  background:#0A9CE7; 
+  border-radius: 4px;
+  background: #0A9CE7;
   border: none;
+  color: #fff;
 }
 
 .el-button:hover {
