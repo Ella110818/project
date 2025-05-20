@@ -35,7 +35,7 @@ import store from './store';
 import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css';
 import handleResizeObserverLoopError from './utils/resizeObserver';
-import DataVVue3 from '@kjgl77/datav-vue3'
+import { setupDataV } from './plugins/datav';
 import axios from 'axios';
 
 // 配置axios默认设置
@@ -61,7 +61,10 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 }
 
 // 使用 store、router 和 Element Plus
-app.use(store).use(router).use(ElementPlus).use(DataVVue3);
+app.use(store).use(router).use(ElementPlus);
+
+// 设置 DataV
+setupDataV(app);
 
 // 处理 ResizeObserver 错误
 handleResizeObserverLoopError();

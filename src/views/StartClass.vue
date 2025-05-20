@@ -45,6 +45,9 @@
 <script>
 import CourseCard1 from '@/components/CourseCard1.vue';
 import api from '@/api';
+import background3 from '@/assets/background3.png'
+import lunbotuimg from '@/assets/lunbotuimg.png'
+import design from '@/assets/design.png'
 
 export default {
   name: 'StartClass',
@@ -61,18 +64,15 @@ export default {
       carouselItems: [
         {
           id: 1,
-          title: '专注·困惑·分心',
-          imageUrl: require('@/assets/background3.png')
+          imageUrl: background3
         },
         {
           id: 2,
-          title: '智能表情识别',
-          imageUrl: require('@/assets/lunbotuimg.png')
+          imageUrl: lunbotuimg
         },
         {
           id: 3,
-          title: '从表情到策略',
-          imageUrl: require('@/assets/design.png')
+          imageUrl: design
         }
       ]
     };

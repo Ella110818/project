@@ -277,6 +277,7 @@ import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import api from '@/api'  // 添加api导入
 import AnimatedBackground from '@/components/AnimatedBackground.vue'
+import touxiang from '@/assets/touxiang.jpg'
 
 const route = useRoute()
 const activeTab = ref('announcements')
@@ -296,7 +297,7 @@ const currentFolder = ref('')
 const searchText = ref('')
 
 // 学生基本信息
-const studentAvatar = ref(require('@/assets/touxiang.jpg')) // 使用已存在的头像图片
+const studentAvatar = ref(touxiang)
 const username = ref('松葭逸')
 const studentId = ref('202301001129')
 const studentDepartment = ref('计算机与信息技术学院')

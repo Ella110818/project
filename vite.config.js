@@ -39,17 +39,24 @@ export default defineConfig({
     build: {
         outDir: 'dist',
         assetsDir: 'assets',
-        sourcemap: false,
+        sourcemap: true,
         chunkSizeWarningLimit: 1500,
         rollupOptions: {
             output: {
                 manualChunks(id) {
                     if (id.includes('node_modules')) {
+                        if (id.includes('@jiaminghi/data-view')) {
+                            return 'datav'
+                        }
                         return 'vendor'
                     }
                 }
             }
         }
+    },
+    optimizeDeps: {
+        include: ['@jiaminghi/data-view'],
+        exclude: []
     },
     css: {
         preprocessorOptions: {
