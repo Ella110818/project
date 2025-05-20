@@ -26,6 +26,7 @@
     "@types/node": "^22.13.9",
     "@types/web": "^0.0.208",
     "@vitejs/plugin-vue": "^5.0.3",
+    "less": "^4.2.0",
     "sass": "^1.85.1",
     "sass-loader": "^16.0.5",
     "vite": "^5.0.12"
