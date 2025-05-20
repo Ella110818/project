@@ -47,6 +47,9 @@ export default defineConfig({
         sourcemap: false,
         chunkSizeWarningLimit: 1500,
         rollupOptions: {
+            input: {
+                main: fileURLToPath(new URL('./index.html', import.meta.url))
+            },
             output: {
                 manualChunks(id) {
                     if (id.includes('node_modules')) {
@@ -62,6 +65,7 @@ export default defineConfig({
                 additionalData: `@import "@/assets/styles/variables.scss";`
             }
         }
-    }
+    },
+    publicDir: 'public'
 })
 
