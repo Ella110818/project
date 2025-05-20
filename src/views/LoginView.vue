@@ -120,17 +120,19 @@ const handleLogin = async () => {
         localStorage.removeItem('rememberedPassword');
       }
 
-      // 设置认证状态
+      // 设置认证状态和用户信息
       localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('userRole', response.data.role);
+      localStorage.setItem('userId', response.data.userId);
+      localStorage.setItem('username', response.data.username);
+      localStorage.setItem('token', response.data.token);
 
       // 根据角色跳转到不同页面
       const role = response.data.role;
-      if (role === 'teacher') {
-        router.push('/teacher-display');
-      } else if (role === 'student') {
+      if (role === 'student') {
         router.push('/student-display');
       } else {
-        router.push('/');  // 如果角色不明确，跳转到首页
+        router.push('/datascreen');  // 其他角色（包括教师）跳转到数据显示屏
       }
     } else {
       alert(response.message || '登录失败');

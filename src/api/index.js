@@ -10,7 +10,7 @@ export const ApiEnv = {
 localStorage.removeItem('api_environment');
 
 // 当前环境
-const currentEnv = ApiEnv.PRODUCTION; // 强制使用生产环境
+const currentEnv = ApiEnv.LOCAL; // 改为本地环境
 
 // 获取API基础URL
 const getBaseUrl = () => {
@@ -112,7 +112,7 @@ const mockApi = {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 // 模拟教师账号
-                if (loginData.username === '20001' && loginData.password === '123456') {
+                if (loginData.username === '韩石' && loginData.password === '123456') {
                     const token = `mock_token_${Date.now()}`;
                     resolve({
                         code: 200,
@@ -120,7 +120,7 @@ const mockApi = {
                         data: {
                             token: token,
                             userId: '20001',
-                            username: 'teacher_user',
+                            username: '韩石',
                             role: 'teacher',
                             avatar: ''
                         }
@@ -135,7 +135,7 @@ const mockApi = {
                         data: {
                             token: token,
                             userId: '10001',
-                            username: 'test_user',
+                            username: '松葭逸',
                             role: 'student',
                             avatar: ''
                         }

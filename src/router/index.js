@@ -62,10 +62,10 @@ const teacherRoutes = [
     path: 'recordings',
     name: 'recordings',
     component: RecordingsPage,
-    meta: { 
+    meta: {
       title: '课程录像',
-      requiresAuth: true, 
-      role: 'teacher' 
+      requiresAuth: true,
+      role: 'teacher'
     }
   }
 ]
@@ -92,10 +92,10 @@ const studentRoutes = [
     path: 'recordings',
     name: 'student-recordings',
     component: RecordingsPage,
-    meta: { 
+    meta: {
       title: '课程录像',
-      requiresAuth: true, 
-      role: 'student' 
+      requiresAuth: true,
+      role: 'student'
     }
   }
 ]

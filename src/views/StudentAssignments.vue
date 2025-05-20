@@ -98,7 +98,7 @@ export default {
           id: 1,
           title: '第一章作业',
           description: '完成第一章课后习题1-10',
-          deadline: '2024-03-20 23:59',
+          deadline: '2025-03-20 23:59',
           score: 100,
           status: '未提交'
         },
@@ -106,7 +106,7 @@ export default {
           id: 2,
           title: '第二章作业',
           description: '完成第二章编程练习',
-          deadline: '2024-03-25 23:59',
+          deadline: '2025-03-25 23:59',
           score: 100,
           status: '已提交'
         }

@@ -8,7 +8,7 @@ function piechart5() {
     var option = {
         tooltip: {
             trigger: 'item',
-            formatter: "{a} <br/>{b} : {c} ({d}%)"
+            formatter: "{a} <br/>{b}: {d}%"
         },
         color: ['#8fc31f', '#f35833', '#00ccff', '#ffcc00', '#f5e965', '#db7093'],
         series: [
@@ -19,17 +19,17 @@ function piechart5() {
                 center: ['49%', '50%'],
                 data: [
                     { value: 435, name: '认真' },
-                    { value: 679, name: '困惑' },
-                    { value: 848, name: '犯困' },
-                    { value: 348, name: '低头' },
-                    { value: 679, name: '侧头' },
-                    { value: 425, name: '分神' }
+                    { value: 79, name: '困惑' },
+                    { value: 48, name: '犯困' },
+                    { value: 34, name: '低头' },
+                    { value: 69, name: '侧头' },
+                    { value: 75, name: '分神' }
                 ],
                 itemStyle: {
                     normal: {
                         label: {
                             show: true,
-                            formatter: '{b} : {c} ({d}%)',
+                            formatter: '{b}: {d}%',
                             fontSize: 13,
                         },
                         labelLine: { show: true }
