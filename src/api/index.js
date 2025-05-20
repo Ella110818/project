@@ -10,7 +10,7 @@ export const ApiEnv = {
 localStorage.removeItem('api_environment');
 
 // 当前环境
-const currentEnv = ApiEnv.LOCAL; // 改为本地环境
+const currentEnv = ApiEnv.PRODUCTION; // 改为生产环境
 
 // 获取API基础URL
 const getBaseUrl = () => {
