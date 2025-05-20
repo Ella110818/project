@@ -5,8 +5,10 @@
         :src="courseImage" 
         alt="课程图片" 
         class="course-image"
+        loading="lazy"
         @error="handleImageError" 
       />
+      <div class="image-placeholder" v-if="!imageLoaded"></div>
     </div>
     <div class="course-info">
       <h3 class="course-title">{{ course.title }}</h3>
@@ -41,6 +43,7 @@ export default {
   setup(props, { emit }) {
     const teacherName = ref('');
     const defaultImage = ref(shuju);
+    const imageLoaded = ref(false);
 
     // 获取教师信息
     const fetchTeacherInfo = async () => {
@@ -75,7 +78,6 @@ export default {
       
       // 使用哈希值选择图片
       const index = Math.abs(hashCode) % courseImages.length;
-      console.log('Course ID:', props.course.id, 'Selected image index:', index);
       return courseImages[index];
     });
 
@@ -85,15 +87,20 @@ export default {
       e.target.src = defaultImage.value;
     };
 
+    // 处理图片加载完成
+    const handleImageLoad = () => {
+      imageLoaded.value = true;
+    };
+
     onMounted(() => {
       fetchTeacherInfo();
-      // 添加调试日志
-      console.log('课程对象:', props.course);
-      console.log('计算的课程图片:', courseImage.value);
+      // 预加载图片
+      const img = new Image();
+      img.src = courseImage.value;
+      img.onload = handleImageLoad;
     });
 
     const viewCourse = () => {
-      // 触发自定义事件，将课程ID传递给父组件
       emit('view-course', props.course.id);
     };
 
@@ -101,7 +108,8 @@ export default {
       courseImage,
       viewCourse,
       teacherName,
-      handleImageError
+      handleImageError,
+      imageLoaded
     };
   },
 };
@@ -128,6 +136,27 @@ export default {
   height: 180px;
   overflow: hidden;
   position: relative;
+  background: #f5f7fa;
+}
+
+.image-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #f2f2f2 25%, #e6e6e6 37%, #f2f2f2 63%);
+  background-size: 400% 100%;
+  animation: loading 1.4s ease infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
 }
 
 .course-image {
@@ -136,6 +165,7 @@ export default {
   object-fit: cover;
   transition: transform 0.3s ease;
   display: block;
+  will-change: transform;
 }
 
 .course-card:hover .course-image {

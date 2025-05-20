@@ -1,7 +1,15 @@
 <template>
   <el-card class="course-card" shadow="hover">
     <div class="course-header">
-      <img :src="courseImage" alt="课程图片" class="course-image" />
+      <img 
+        :src="courseImage" 
+        alt="课程图片" 
+        class="course-image"
+        loading="lazy"
+        @load="handleImageLoad"
+        @error="handleImageError" 
+      />
+      <div class="image-placeholder" v-if="!imageLoaded"></div>
       <div class="course-overlay"></div>
     </div>
     <div class="course-info">
@@ -34,7 +42,8 @@ export default {
   },
   data() {
     return {
-      courseImages: [kehuan1, kehuan2, kehuan3, shuju]
+      courseImages: [kehuan1, kehuan2, kehuan3, shuju],
+      imageLoaded: false
     }
   },
   computed: {
@@ -44,34 +53,35 @@ export default {
     courseImage() {
       if (!this.course.course_id) return this.courseImages[0];
       
-      // 使用相同的哈希算法
       const idStr = String(this.course.course_id);
       let hashCode = 0;
       
-      // 计算哈希值
       for (let i = 0; i < idStr.length; i++) {
         hashCode = ((hashCode << 5) - hashCode) + idStr.charCodeAt(i);
         hashCode = hashCode & hashCode;
       }
       
-      // 使用哈希值选择图片
       const index = Math.abs(hashCode) % this.courseImages.length;
-      console.log('Course ID:', this.course.course_id, 'Selected image index:', index);
       return this.courseImages[index];
     }
   },
   mounted() {
-    // 调试信息
-    console.log('Course object:', this.course);
-    console.log('Selected image:', this.courseImage);
+    // 预加载图片
+    const img = new Image();
+    img.src = this.courseImage;
+    img.onload = this.handleImageLoad;
   },
   methods: {
+    handleImageLoad() {
+      this.imageLoaded = true;
+    },
+    handleImageError(e) {
+      console.error('课程图片加载失败，使用默认图片');
+      e.target.src = this.courseImages[0];
+    },
     viewCourse() {
-      // 使用 course_id
       localStorage.setItem('currentCourseName', this.course.title);
       localStorage.setItem('currentCourseId', this.course.course_id);
-      
-      // 触发自定义事件，使用 course_id
       this.$emit('view-course', this.course.course_id);
     },
   },
@@ -99,6 +109,27 @@ export default {
   height: 180px;
   overflow: hidden;
   position: relative;
+  background: #f5f7fa;
+}
+
+.image-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #f2f2f2 25%, #e6e6e6 37%, #f2f2f2 63%);
+  background-size: 400% 100%;
+  animation: loading 1.4s ease infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
 }
 
 .course-image {
@@ -107,6 +138,7 @@ export default {
   object-fit: cover;
   transition: transform 0.3s ease;
   display: block;
+  will-change: transform;
 }
 
 .course-overlay {

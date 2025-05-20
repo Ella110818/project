@@ -18,7 +18,7 @@
             <el-icon><User /></el-icon>
           </div>
           <div class="stat-info">
-            <div class="stat-value">{{ classInfo.studentCount }}</div>
+            <div class="stat-value">35</div>
             <div class="stat-label">班级人数</div>
           </div>
         </div>

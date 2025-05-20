@@ -32,33 +32,23 @@ nav a.router-link-exact-active {
 <template>
   <div id="app">
     <router-view></router-view>
-    <EnvSwitcher v-if="showEnvSwitcher" />
   </div>
 </template>
 
 <script>
 import Welcome from './components/Welcome.vue';
-import EnvSwitcher from './components/EnvSwitcher.vue';
+// import EnvSwitcher from './components/EnvSwitcher.vue';
 import { ref, onMounted } from 'vue';
 
 export default {
   name: 'App',
   components: {
-    Welcome,
-    EnvSwitcher
+    Welcome
+    // EnvSwitcher
   },
   setup() {
-    const showEnvSwitcher = ref(false);
-    
-    onMounted(() => {
-      // 判断是否显示环境切换器
-      // 在生产环境可以设置为false，或通过配置控制
-      showEnvSwitcher.value = true;
-    });
-    
-    return {
-      showEnvSwitcher
-    };
+    // 直接不显示环境切换器
+    return {};
   }
 }
 </script>

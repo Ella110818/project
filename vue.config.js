@@ -31,6 +31,48 @@ module.exports = defineConfig({
           }
         ]
       }])
+
+    // 图片压缩配置
+    config.module
+      .rule('images')
+      .test(/\.(png|jpe?g|gif|webp)(\?.*)?$/)
+      .use('url-loader')
+      .loader('url-loader')
+      .options({
+        limit: 4096, // 小于4kb的图片会被base64内联
+        fallback: {
+          loader: 'file-loader',
+          options: {
+            name: 'img/[name].[hash:8].[ext]'
+          }
+        }
+      })
+
+    // 开启资源压缩
+    config.optimization
+      .minimize(true)
+      .splitChunks({
+        chunks: 'all',
+        minSize: 20000,
+        maxSize: 0,
+        minChunks: 1,
+        maxAsyncRequests: 30,
+        maxInitialRequests: 30,
+        automaticNameDelimiter: '~',
+        enforceSizeThreshold: 50000,
+        cacheGroups: {
+          defaultVendors: {
+            test: /[\\/]node_modules[\\/]/,
+            priority: -10,
+            reuseExistingChunk: true
+          },
+          default: {
+            minChunks: 2,
+            priority: -20,
+            reuseExistingChunk: true
+          }
+        }
+      })
   },
   // 添加代理配置
   devServer: {
