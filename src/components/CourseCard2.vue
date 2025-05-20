@@ -82,6 +82,7 @@ export default {
     viewCourse() {
       localStorage.setItem('currentCourseName', this.course.title);
       localStorage.setItem('currentCourseId', this.course.course_id);
+      localStorage.setItem('currentCourseLocation', this.course.location);
       this.$emit('view-course', this.course.course_id);
     },
   },

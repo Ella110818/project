@@ -22,24 +22,19 @@ import vue from '@vitejs/plugin-vue';
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { fileURLToPath, URL } from 'node:url'
+import path from 'path'
 
 export default defineConfig({
     plugins: [vue()],
     resolve: {
         alias: {
-            '@': fileURLToPath(new URL('./src', import.meta.url))
-        }
+            '@': path.resolve(__dirname, './src'),
+        },
     },
     server: {
         port: 3000,
-        proxy: {
-            '/api': {
-                target: 'http://localhost:8080',
-                changeOrigin: true,
-                rewrite: (path) => path.replace(/^\/api/, '')
-            }
-        }
+        open: true,
+        cors: true
     },
     build: {
         outDir: 'dist',
@@ -47,9 +42,6 @@ export default defineConfig({
         sourcemap: false,
         chunkSizeWarningLimit: 1500,
         rollupOptions: {
-            input: {
-                main: fileURLToPath(new URL('./index.html', import.meta.url))
-            },
             output: {
                 manualChunks(id) {
                     if (id.includes('node_modules')) {

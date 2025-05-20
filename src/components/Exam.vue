@@ -49,13 +49,13 @@
         </div>
         <div class="assignment-actions">
           <div class="action-buttons">
-            <el-button class="btn-custom" type="info">
+            <el-button class="btn-custom" type="info" @click="handleEdit(item)">
               <el-icon><EditPen /></el-icon>编辑
             </el-button>
-            <el-button class="btn-custom" type="primary">
+            <el-button class="btn-custom" type="primary" @click="handleCheck(item)">
               <el-icon><View /></el-icon>查看提交
             </el-button>
-            <el-button class="btn-custom" type="danger">
+            <el-button class="btn-custom" type="danger" @click="handleDelete(item)">
               <el-icon><Delete /></el-icon>删除
             </el-button>
           </div>
@@ -184,8 +184,8 @@ const mockAssignments = [
     title: '计算机组成原理期中考试',
     type: 'exam',
     description: '本次考试为闭卷考试，考试时间2小时，满分100分。考试内容包括：计算机系统概述、数据的表示和运算、存储系统、指令系统、中央处理器等。请带好考试用具，不允许使用计算器。',
-    startTime: '2024-03-25 14:00',
-    deadline: '2024-03-25 16:00',
+    startTime: '2025-03-25 14:00',
+    deadline: '2025-03-25 16:00',
     fullScore: 100,
     submitted: 30,
     total: 35
@@ -195,8 +195,8 @@ const mockAssignments = [
     title: 'CPU设计与实现作业',
     type: 'homework',
     description: '请使用Verilog语言设计一个简单的单周期CPU，要求实现基本的算术运算、数据传送和控制指令。需提交设计报告和源代码。',
-    startTime: '2024-03-20 08:00',
-    deadline: '2024-03-27 23:59',
+    startTime: '2025-03-20 08:00',
+    deadline: '2025-03-27 23:59',
     fullScore: 100,
     submitted: 25,
     total: 35
@@ -206,8 +206,8 @@ const mockAssignments = [
     title: '存储器层次结构实验报告',
     type: 'homework',
     description: '完成Cache设计实验，分析不同Cache映射方式（直接映射、组相联、全相联）的性能差异，并提交详细的实验报告。要求包含实验数据和性能分析。',
-    startTime: '2024-03-15 00:00',
-    deadline: '2024-03-22 23:59',
+    startTime: '2025-03-15 00:00',
+    deadline: '2025-03-22 23:59',
     fullScore: 100,
     submitted: 32,
     total: 35
@@ -217,8 +217,8 @@ const mockAssignments = [
     title: '流水线CPU设计报告',
     type: 'homework',
     description: '基于MIPS架构设计一个五级流水线CPU，需要解决数据相关、控制相关等问题。提交设计文档、源代码和仿真结果。',
-    startTime: '2024-03-28 00:00',
-    deadline: '2024-04-04 23:59',
+    startTime: '2025-03-28 00:00',
+    deadline: '2025-04-04 23:59',
     fullScore: 100,
     submitted: 0,
     total: 35
@@ -228,8 +228,8 @@ const mockAssignments = [
     title: '指令系统实验',
     type: 'homework',
     description: '分析RISC和CISC指令系统的特点，完成指令格式设计和编码实验。需要提交实验报告，包含指令设计方案和编码示例。',
-    startTime: '2024-04-01 00:00',
-    deadline: '2024-04-08 23:59',
+    startTime: '2025-04-01 00:00',
+    deadline: '2025-04-08 23:59',
     fullScore: 100,
     submitted: 15,
     total: 35
@@ -239,8 +239,8 @@ const mockAssignments = [
     title: '总线与IO系统设计',
     type: 'homework',
     description: '设计一个基本的总线系统，实现CPU与内存、IO设备的通信。需要考虑总线仲裁、数据传输等问题，提交设计方案和仿真结果。',
-    startTime: '2024-04-05 00:00',
-    deadline: '2024-04-12 23:59',
+    startTime: '2025-04-05 00:00',
+    deadline: '2025-04-12 23:59',
     fullScore: 100,
     submitted: 8,
     total: 35
