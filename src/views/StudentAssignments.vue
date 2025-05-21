@@ -116,7 +116,7 @@ export default {
           id: 1,
           title: '期中考试',
           description: '覆盖第1-5章内容',
-          examTime: '2024-04-15 14:00',
+          examTime: '2025-04-15 14:00',
           duration: 120,
           totalScore: 100,
           status: '未开始'
@@ -125,7 +125,7 @@ export default {
           id: 2,
           title: '第一次单元测试',
           description: '第一章和第二章内容测试',
-          examTime: '2024-03-10 10:00',
+          examTime: '2025-03-10 10:00',
           duration: 60,
           totalScore: 50,
           status: '已完成'

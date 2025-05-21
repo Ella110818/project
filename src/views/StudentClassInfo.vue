@@ -336,7 +336,7 @@ const mockAssignments = [
     title: '第一章作业',
     type: 'homework',
     description: '完成第一章课后习题',
-    deadline: '2024-03-20 23:59',
+    deadline: '2025-03-20 23:59',
     fullScore: 100,
     status: '未提交'
   },
@@ -345,7 +345,7 @@ const mockAssignments = [
     title: '期中考试',
     type: 'exam',
     description: '第1-5章内容考试',
-    deadline: '2024-03-25 14:00',
+    deadline: '2025-03-25 14:00',
     fullScore: 100,
     status: '未开始'
   },
@@ -354,7 +354,7 @@ const mockAssignments = [
     title: '第二章实验报告',
     type: 'homework',
     description: '提交第二章实验报告和源代码',
-    deadline: '2024-03-30 23:59',
+    deadline: '2025-03-30 23:59',
     fullScore: 100,
     status: '已提交'
   }
