@@ -151,12 +151,12 @@ import { ref, nextTick, onMounted } from 'vue';
 import { Check, Picture, Document, Microphone } from '@element-plus/icons-vue';
 import { BorderBox12 as DvBorderBox12, Decoration3 as DvDecoration3, Decoration8 as DvDecoration8 } from '@kjgl77/datav-vue3';
 import axios from 'axios';
+import assistantAvatar from '@/assets/机器人.png';
 
 const inputMessage = ref('');
 const messageContainer = ref(null);
 
 const userAvatar = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
-const assistantAvatar = require('@/assets/机器人.png');
 
 const messages = ref([
   {
