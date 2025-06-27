@@ -18,7 +18,7 @@
             <el-icon><User /></el-icon>
           </div>
           <div class="stat-info">
-            <div class="stat-value">35</div>
+            <div class="stat-value">42</div>
             <div class="stat-label">班级人数</div>
           </div>
         </div>
@@ -28,8 +28,8 @@
             <el-icon><Location /></el-icon>
           </div>
           <div class="stat-info">
-            <div class="stat-value">{{ classInfo.building }}</div>
-            <div class="stat-label">{{ classInfo.roomNumber }}</div>
+            <div class="stat-value">理科楼</div>
+            <div class="stat-label">B204</div>
           </div>
         </div>
       </div>
