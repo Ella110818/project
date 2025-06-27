@@ -28,8 +28,8 @@
             <el-icon><Location /></el-icon>
           </div>
           <div class="stat-info">
-            <div class="stat-value">理科楼</div>
-            <div class="stat-label">B204</div>
+            <div class="stat-value">{{ classInfo.location }}</div>
+            <div class="stat-label">上课地点</div>
           </div>
         </div>
       </div>
