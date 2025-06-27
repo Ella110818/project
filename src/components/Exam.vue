@@ -187,8 +187,8 @@ const mockAssignments = [
     startTime: '2025-03-25 14:00',
     deadline: '2025-03-25 16:00',
     fullScore: 100,
-    submitted: 30,
-    total: 35
+    submitted: 40,
+    total: 42
   },
   {
     id: 2,
@@ -198,8 +198,8 @@ const mockAssignments = [
     startTime: '2025-03-20 08:00',
     deadline: '2025-03-27 23:59',
     fullScore: 100,
-    submitted: 25,
-    total: 35
+    submitted: 32,
+    total: 42
   },
   {
     id: 3,
@@ -210,7 +210,7 @@ const mockAssignments = [
     deadline: '2025-03-22 23:59',
     fullScore: 100,
     submitted: 32,
-    total: 35
+    total: 42
   },
   {
     id: 4,
@@ -221,7 +221,7 @@ const mockAssignments = [
     deadline: '2025-04-04 23:59',
     fullScore: 100,
     submitted: 0,
-    total: 35
+    total: 42
   },
   {
     id: 5,
