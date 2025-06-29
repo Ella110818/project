@@ -28,6 +28,8 @@
             gap: 10px;
             justify-content: flex-start;
             align-items: center;
+            position: relative;
+            z-index: 1000;
         }
 
         .video-player-container {
@@ -67,6 +69,8 @@
             display: inline-block;
             min-height: 28px;
             margin-top: 2px;
+            position: relative;
+            z-index: 1001;
         }
 
         .data-select:hover {
@@ -76,6 +80,7 @@
         .data-select option {
             background: #001a2f;
             color: #fff;
+            z-index: 1002;
         }
 
         /* 待办清单样式 */
