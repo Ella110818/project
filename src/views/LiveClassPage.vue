@@ -55,18 +55,20 @@
           <div v-if="!cameraActive" class="video-placeholder">
             <div class="placeholder-content">
               <div class="title">视频画面</div>
-              <div class="subtitle">
-                <video 
-                  ref="prerecordedVideo"
-                  class="prerecorded-video"
-                  controls
-                  autoplay
-                >
-                  <source src="/teacher/videos/2025-03-18_shujujiegou.mp4" type="video/mp4">
-                  您的浏览器不支持 HTML5 视频播放。
-                </video>
-              </div>
             </div>
+          </div>
+          
+          <!-- 视频播放区域 -->
+          <div v-if="cameraActive" class="video-content">
+            <video 
+              ref="prerecordedVideo"
+              class="prerecorded-video"
+              controls
+              autoplay
+            >
+              <source src="/teacher/videos/2025-03-18_shujujiegou.mp4" type="video/mp4">
+              您的浏览器不支持 HTML5 视频播放。
+            </video>
           </div>
         </div>
 
@@ -1462,7 +1464,6 @@ export default {
   font-size: 20px;
   font-weight: bold;
   color: #333;
-  margin-bottom: 8px;
 }
 
 .placeholder-content .subtitle {
@@ -1790,5 +1791,42 @@ export default {
 .placeholder-content .subtitle {
   width: 100%;
   height: 100%;
+}
+
+.video-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+.prerecorded-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.video-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f9f9f9;
+}
+
+.placeholder-content {
+  text-align: center;
+}
+
+.placeholder-content .title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
 }
 </style> 
