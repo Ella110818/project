@@ -168,11 +168,11 @@ const loading = ref(false)
 
 // 模拟数据
 const mockUnassignedStudents = [
-  { id: 1, name: '张某某', studentId: '202301001', avatar: '' },
-  { id: 2, name: '李某某', studentId: '202301002', avatar: '' },
-  { id: 3, name: '王某某', studentId: '202301003', avatar: '' },
-  { id: 4, name: '赵某某', studentId: '202301004', avatar: '' },
-  { id: 5, name: '钱某某', studentId: '202301005', avatar: '' }
+  { id: 1, name: '杨依林', studentId: '202301001', avatar: '' },
+  { id: 2, name: '汤燕', studentId: '202301002', avatar: '' },
+  { id: 3, name: '问思祺', studentId: '202301003', avatar: '' },
+  { id: 4, name: '宋嘉怡', studentId: '202301004', avatar: '' },
+  { id: 5, name: '马莉岚', studentId: '202301005', avatar: '' }
 ]
 
 const mockGroups = [
@@ -180,16 +180,16 @@ const mockGroups = [
     id: 1, 
     name: '第1组', 
     students: [
-      { id: 6, name: '孙某某', studentId: '202301006', avatar: '' },
-      { id: 7, name: '周某某', studentId: '202301007', avatar: '' }
+      { id: 6, name: '陈文伟', studentId: '202301006', avatar: '' },
+      { id: 7, name: '李乐', studentId: '202301007', avatar: '' }
     ] 
   },
   { 
     id: 2, 
     name: '第2组', 
     students: [
-      { id: 8, name: '吴某某', studentId: '202301008', avatar: '' },
-      { id: 9, name: '郑某某', studentId: '202301009', avatar: '' }
+      { id: 8, name: '谢宛桐', studentId: '202301008', avatar: '' },
+      { id: 9, name: '薛晓洁', studentId: '202301009', avatar: '' }
     ] 
   }
 ]
