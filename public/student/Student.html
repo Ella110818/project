@@ -138,6 +138,48 @@
             color: #fff;
             border-radius: 3px;
         }
+
+        .subtitle {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #videoPlaceholder {
+            font-size: 16px;
+            color: #666;
+        }
+
+        #teacherVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .camera-controls {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        #cameraBtn {
+            padding: 8px 16px;
+            background-color: #409EFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        #cameraBtn:hover {
+            background-color: #66b1ff;
+        }
     </style>
 </head>
 
@@ -260,6 +302,18 @@
                 </div>
             </div>
         </div>
+
+        <div class="subtitle">
+            <video id="teacherVideo" style="width: 100%; height: 100%; display: none;">
+                您的浏览器不支持 HTML5 视频播放。
+            </video>
+            <div id="videoPlaceholder">教师端实时授课视频流将在此处显示</div>
+        </div>
+        <div class="camera-controls">
+            <button id="cameraBtn" onclick="toggleCamera()">
+                <i class="fas fa-video"></i> 开启摄像头
+            </button>
+        </div>
     </div>
 
 </body>
@@ -330,6 +384,40 @@
             pkChart.clear();
             // 重新初始化
             leidatu();
+        }
+    }
+
+    // 摄像头控制
+    let stream = null;
+    const video = document.getElementById('teacherVideo');
+    const placeholder = document.getElementById('videoPlaceholder');
+    const cameraBtn = document.getElementById('cameraBtn');
+
+    async function toggleCamera() {
+        if (!stream) {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                placeholder.style.display = 'none';
+                cameraBtn.innerHTML = '<i class="fas fa-video-slash"></i> 关闭摄像头';
+                video.play();
+            } catch (err) {
+                console.error('摄像头访问错误:', err);
+                alert('无法访问摄像头：' + err.message);
+            }
+        } else {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+            video.srcObject = null;
+            video.style.display = 'none';
+            placeholder.style.display = 'block';
+            cameraBtn.innerHTML = '<i class="fas fa-video"></i> 开启摄像头';
         }
     }
 </script>
