@@ -232,12 +232,12 @@
                         <div class="behavior-item-container">
                           <!-- 其它行为内容区域 -->
                           <div class="discipline-item">
-                            <div class="discipline-date">2024-03-02</div>
+                            <div class="discipline-date">2025-03-02</div>
                             <div class="discipline-type leave">请假</div>
                             <div class="discipline-reason">家中有事请假</div>
                           </div>
                           <div class="discipline-item">
-                            <div class="discipline-date">2024-02-28</div>
+                            <div class="discipline-date">2025-02-28</div>
                             <div class="discipline-type warning">违纪警告</div>
                             <div class="discipline-reason">上课使用手机</div>
                     </div>
