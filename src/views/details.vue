@@ -194,15 +194,15 @@
                         <div class="behavior-item-container">
                           <!-- 出勤内容区域 -->
                           <div class="attendance-item">
-                            <span class="date">2024-03-01</span>
+                            <span class="date">2025-03-01</span>
                             <span class="status normal">正常</span>
                           </div>
                           <div class="attendance-item">
-                            <span class="date">2024-03-05</span>
+                            <span class="date">2025-03-05</span>
                             <span class="status late">迟到</span>
                           </div>
                           <div class="attendance-item">
-                            <span class="date">2024-03-08</span>
+                            <span class="date">2025-03-08</span>
                             <span class="status normal">正常</span>
                           </div>
                         </div>
@@ -215,12 +215,12 @@
                           <!-- 课外活动内容区域 -->
                           <div class="activity-item">
                             <div class="activity-name">校园文化节</div>
-                            <div class="activity-date">2024-02-20</div>
+                            <div class="activity-date">2025-02-20</div>
                             <div class="activity-role">组织者</div>
                           </div>
                           <div class="activity-item">
                             <div class="activity-name">志愿服务活动</div>
-                            <div class="activity-date">2024-03-05</div>
+                            <div class="activity-date">2025-03-05</div>
                             <div class="activity-role">参与者</div>
                           </div>
                         </div>
