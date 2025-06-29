@@ -99,26 +99,16 @@
               class="student-item" 
               v-for="(student, index) in filteredStudentList" 
               :key="index"
-              :class="{'student-detected': detectedStudents.includes(student.name)}"
+              :class="{'student-detected': cameraActive}"
             >
               <img src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" alt="学生头像" class="student-avatar">
               <div class="student-info">
                 <span class="student-name">{{ student.name }}</span>
                 <el-tag 
                   size="mini" 
-                  :type="detectedStudents.includes(student.name) ? 'success' : 'info'"
+                  :type="cameraActive ? 'success' : 'info'"
                 >
-                  {{ detectedStudents.includes(student.name) ? '已检测' : '已到' }}
-                </el-tag>
-                
-                <!-- 如果有情绪数据，显示当前情绪状态 -->
-                <el-tag 
-                  v-if="detectedStudents.includes(student.name) && getStudentEmotion(student.name)" 
-                  size="mini" 
-                  :type="getEmotionTagType(getStudentEmotion(student.name))"
-                  class="ml-5"
-                >
-                  {{ getStudentEmotion(student.name) }}
+                  {{ cameraActive ? '已到' : '未到' }}
                 </el-tag>
               </div>
               <div class="student-actions">
@@ -388,13 +378,13 @@ export default {
     
     // 添加学生列表数据（示例数据）
     const studentList = ref([
-      { name: '李乐', online: true },
-      { name: '陈文伟', online: true },
-      { name: '杨依林', online: true },
-      { name: '宋嘉怡', online: true },
-      { name: '马莉岚', online: true },
-      { name: '谢宛桐', online: true },
-      { name: '汤燕', online: true }
+      { name: '李乐', online: true, present: false },
+      { name: '陈文伟', online: true, present: false },
+      { name: '杨依林', online: true, present: false },
+      { name: '宋嘉怡', online: true, present: false },
+      { name: '马莉岚', online: true, present: false },
+      { name: '谢宛桐', online: true, present: false },
+      { name: '汤燕', online: true, present: false }
     ]);
 
     // 添加聊天消息数据
@@ -655,6 +645,11 @@ export default {
         stopCamera();
       } else {
         await startCamera();
+        // 当视频开始播放时，将所有学生状态改为已到
+        studentList.value = studentList.value.map(student => ({
+          ...student,
+          present: true
+        }));
       }
     };
 
