@@ -660,75 +660,33 @@ export default {
 
     // 截取当前帧
     const captureImage = () => {
+      const video = document.querySelector('.prerecorded-video');
+      if (!video) {
+        ElMessage.warning('视频元素未找到');
+        return;
+      }
+
       if (!cameraActive.value) {
-        ElMessage.warning('请先开启摄像头');
+        ElMessage.warning('请先点击摄像头按钮显示视频');
         return;
       }
 
       try {
-        const video = videoRef.value;
-        if (!video || !video.videoWidth) {
-          console.error('视频元素未就绪:', video);
-          ElMessage.error('摄像头未就绪，请稍后重试');
-          return;
-        }
-
         const canvas = document.createElement('canvas');
-        
-        // 降低图片尺寸以减小文件大小
-        const maxWidth = 800;
-        const maxHeight = 600;
-        let width = video.videoWidth;
-        let height = video.videoHeight;
-        
-        console.log('原始视频尺寸:', width, 'x', height);
-        
-        // 保持宽高比的情况下调整尺寸
-        if (width > maxWidth) {
-          const ratio = maxWidth / width;
-          width = maxWidth;
-          height = Math.round(height * ratio);
-        }
-        if (height > maxHeight) {
-          const ratio = maxHeight / height;
-          height = maxHeight;
-          width = Math.round(width * ratio);
-        }
-        
-        console.log('调整后尺寸:', width, 'x', height);
-        
-        // 确保尺寸为整数
-        width = Math.floor(width);
-        height = Math.floor(height);
-        
-        canvas.width = width;
-        canvas.height = height;
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
         
         const context = canvas.getContext('2d');
         if (!context) {
-          console.error('无法获取 canvas 上下文');
-          ElMessage.error('截图失败：无法创建图像上下文');
+          ElMessage.error('无法创建画布上下文');
           return;
         }
 
-        // 添加白色背景以确保图片格式正确
-        context.fillStyle = '#FFFFFF';
-        context.fillRect(0, 0, width, height);
+        // 绘制当前视频帧到画布
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        // 确保图像清晰
-        context.imageSmoothingEnabled = true;
-        context.imageSmoothingQuality = 'high';
-        context.drawImage(video, 0, 0, width, height);
-        
-        // 将图片转换为 base64 格式，降低质量以减小文件大小
-        const imageBase64 = canvas.toDataURL('image/jpeg', 0.7);
-        console.log('生成的图片大小:', Math.round(imageBase64.length / 1024), 'KB');
-        
-        if (!imageBase64.startsWith('data:image/jpeg;base64,')) {
-          console.error('图片格式不正确');
-          ElMessage.error('截图失败：图片格式不正确');
-          return;
-        }
+        // 将图片转换为 base64 格式
+        const imageBase64 = canvas.toDataURL('image/jpeg', 0.8);
         
         // 保存图片数据并显示预览
         capturedImageData = imageBase64;
