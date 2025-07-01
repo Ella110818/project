@@ -232,7 +232,12 @@ router.beforeEach((to, from, next) => {
     if (userRole === 'teacher') {
       next('/');
     } else if (userRole === 'student') {
-      next('/student-display');
+      // 如果是从课程回放页面来的，不进行重定向
+      if (from.path === '/recordings') {
+        next();
+      } else {
+        next('/student-display');
+      }
     } else {
       next('/datascreen');
     }

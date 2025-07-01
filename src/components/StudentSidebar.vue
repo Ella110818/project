@@ -40,11 +40,7 @@
         <el-menu-item index="4-1" @click="navigateTo('/assignments?type=homework')">作业</el-menu-item>
         <el-menu-item index="4-2" @click="navigateTo('/assignments?type=exam')">考试</el-menu-item>
       </el-sub-menu>
-      <el-menu-item index="5" @click="navigateTo('/recordings')">
-        <i class="el-icon-video-camera"></i>
-        <span>课程回放</span>
-      </el-menu-item>
-      <el-menu-item index="6" @click="navigateTo('/assistant')">
+      <el-menu-item index="5" @click="navigateTo('/assistant')">
         <i class="el-icon-robot"></i>
         <span>智能助手</span>
       </el-menu-item>
