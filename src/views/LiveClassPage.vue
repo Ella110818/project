@@ -32,7 +32,7 @@
       <div class="main-content">
         <div class="video-container">
           <!-- 本地摄像头视频 -->
-          <video ref="videoRef" autoplay playsinline class="camera-video" v-show="cameraActive"></video>
+          <video ref="videoRef" autoplay playsinline class="camera-video" v-show="cameraActive && !processedFrame"></video>
           
           <!-- 处理后的视频帧展示 -->
           <div class="processed-frame-container" v-if="processedFrame && cameraActive">
@@ -55,6 +55,7 @@
           <div v-if="!cameraActive" class="video-placeholder">
             <div class="placeholder-content">
               <div class="title">视频画面</div>
+              <div class="subtitle">教师端实时授课视频流将在此处显示</div>
             </div>
           </div>
         </div>
@@ -86,16 +87,26 @@
               class="student-item" 
               v-for="(student, index) in filteredStudentList" 
               :key="index"
-              :class="{'student-detected': cameraActive}"
+              :class="{'student-detected': detectedStudents.includes(student.name)}"
             >
               <img src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" alt="学生头像" class="student-avatar">
               <div class="student-info">
                 <span class="student-name">{{ student.name }}</span>
                 <el-tag 
                   size="mini" 
-                  :type="cameraActive ? 'success' : 'info'"
+                  :type="detectedStudents.includes(student.name) ? 'success' : 'info'"
                 >
-                  {{ cameraActive ? '已到' : '未到' }}
+                  {{ detectedStudents.includes(student.name) ? '已检测' : '已到' }}
+                </el-tag>
+                
+                <!-- 如果有情绪数据，显示当前情绪状态 -->
+                <el-tag 
+                  v-if="detectedStudents.includes(student.name) && getStudentEmotion(student.name)" 
+                  size="mini" 
+                  :type="getEmotionTagType(getStudentEmotion(student.name))"
+                  class="ml-5"
+                >
+                  {{ getStudentEmotion(student.name) }}
                 </el-tag>
               </div>
               <div class="student-actions">
@@ -365,13 +376,13 @@ export default {
     
     // 添加学生列表数据（示例数据）
     const studentList = ref([
-      { name: '李乐', online: true, present: false },
-      { name: '陈文伟', online: true, present: false },
-      { name: '杨依林', online: true, present: false },
-      { name: '宋嘉怡', online: true, present: false },
-      { name: '马莉岚', online: true, present: false },
-      { name: '谢宛桐', online: true, present: false },
-      { name: '汤燕', online: true, present: false }
+      { name: '李乐', online: true },
+      { name: '陈文伟', online: true },
+      { name: '杨依林', online: true },
+      { name: '宋嘉怡', online: true },
+      { name: '马莉岚', online: true },
+      { name: '谢宛桐', online: true },
+      { name: '汤燕', online: true }
     ]);
 
     // 添加聊天消息数据
@@ -509,85 +520,105 @@ export default {
       };
     };
     
+    // 发送视频帧到WebSocket服务器
+    const sendVideoFrame = () => {
+      if (!websocket || websocket.readyState !== WebSocket.OPEN || !videoRef.value) {
+        return;
+      }
+      
+      try {
+        const video = videoRef.value;
+        const canvas = document.createElement('canvas');
+        // 降低分辨率以减少数据量
+        canvas.width = 480;  // 降低分辨率
+        canvas.height = 360;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // 压缩图像，大幅降低质量以减少数据量
+        const imageData = canvas.toDataURL('image/jpeg', 0.5);
+        const base64Data = imageData.split(',')[1];
+        
+        // 发送到服务器
+        websocket.send(JSON.stringify({
+          type: 'video_frame',
+          data: base64Data
+        }));
+      } catch (error) {
+        console.error('发送视频帧时出错:', error);
+      }
+    };
+    
+    // 重置会话
+    const resetSession = () => {
+      if (websocket && websocket.readyState === WebSocket.OPEN) {
+        websocket.send(JSON.stringify({
+          type: 'reset'
+        }));
+        
+        detectedStudents.value = [];
+        emotionStats.value = null;
+        ElMessage.success('会话已重置');
+      }
+    };
+    
+    // 心跳检测
+    const sendPing = () => {
+      if (websocket && websocket.readyState === WebSocket.OPEN) {
+        websocket.send(JSON.stringify({ type: 'ping' }));
+      }
+    };
+
     // 开启摄像头
     const startCamera = async () => {
       try {
-        // 检查浏览器是否支持 getUserMedia
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          ElMessage.error('您的浏览器不支持访问摄像头，请使用现代浏览器如 Chrome、Firefox 等');
-          return;
-        }
-
-        // 指定视频参数
+        // 指定更低的视频分辨率
         const constraints = {
           video: {
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
+            width: { ideal: 640 },
+            height: { ideal: 480 },
             frameRate: { ideal: 30 }
           },
           audio: false
         };
         
-        // 请求摄像头权限前显示提示
-        ElMessage.info('请在浏览器弹出的权限请求中允许访问摄像头');
-        
         stream = await navigator.mediaDevices.getUserMedia(constraints);
         if (!stream) {
-          ElMessage.error('无法获取摄像头流，请检查摄像头是否正常连接');
+          ElMessage.error('无法获取摄像头流');
           return;
         }
-
-        // 将摄像头流设置到视频元素
+        console.log('摄像头流获取成功:', stream);
         videoRef.value.srcObject = stream;
-        await videoRef.value.play();
         cameraActive.value = true;
-        
-        ElMessage.success('摄像头启动成功');
         
         // 连接 WebSocket
         connectWebSocket();
         
-        // 设置定时器
+        // 设置定时器，提高每秒发送帧数
         if (frameProcessingInterval) {
           clearInterval(frameProcessingInterval);
         }
+        // 每40毫秒发送一帧，约等于25fps
         frameProcessingInterval = setInterval(sendVideoFrame, 40);
         
+        // 设置心跳检测
+        setInterval(sendPing, 30000); // 每30秒发送一次心跳
       } catch (error) {
-        console.error('摄像头启动失败:', error);
-        let errorMessage = '摄像头启动失败: ';
-        
-        // 根据不同错误类型显示不同提示
-        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-          errorMessage += '请允许浏览器访问摄像头';
-        } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
-          errorMessage += '未检测到摄像头设备，请确保摄像头已正确连接';
-        } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
-          errorMessage += '摄像头可能被其他应用程序占用，请关闭其他使用摄像头的程序';
-        } else {
-          errorMessage += error.message || '未知错误';
-        }
-        
-        ElMessage.error(errorMessage);
-        cameraActive.value = false;
+        console.error('摄像头访问错误:', error);
+        ElMessage.error('无法访问摄像头：' + error.message);
       }
     };
 
     // 关闭摄像头
     const stopCamera = () => {
       if (stream) {
-        // 停止所有轨道
-        stream.getTracks().forEach(track => {
-          track.stop();
-        });
+        stream.getTracks().forEach(track => track.stop());
         stream = null;
       }
-      
-      // 清除视频源
       if (videoRef.value) {
         videoRef.value.srcObject = null;
       }
-      
       cameraActive.value = false;
       
       // 关闭 WebSocket
@@ -604,37 +635,6 @@ export default {
       
       // 清除处理后的帧
       processedFrame.value = '';
-      
-      ElMessage.success('摄像头已关闭');
-    };
-
-    // 发送视频帧到服务器
-    const sendVideoFrame = () => {
-      if (!websocket || websocket.readyState !== WebSocket.OPEN || !videoRef.value) {
-        return;
-      }
-      
-      try {
-        const video = videoRef.value;
-        const canvas = document.createElement('canvas');
-        canvas.width = 640;  // 降低分辨率以减少数据量
-        canvas.height = 480;
-        
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        // 压缩图像质量
-        const imageData = canvas.toDataURL('image/jpeg', 0.7);
-        const base64Data = imageData.split(',')[1];
-        
-        // 发送到服务器
-        websocket.send(JSON.stringify({
-          type: 'video_frame',
-          data: base64Data
-        }));
-      } catch (error) {
-        console.error('发送视频帧时出错:', error);
-      }
     };
 
     // 切换摄像头状态
@@ -648,33 +648,75 @@ export default {
 
     // 截取当前帧
     const captureImage = () => {
-      const video = document.querySelector('.prerecorded-video');
-      if (!video) {
-        ElMessage.warning('视频元素未找到');
-        return;
-      }
-
       if (!cameraActive.value) {
-        ElMessage.warning('请先点击摄像头按钮显示视频');
+        ElMessage.warning('请先开启摄像头');
         return;
       }
 
       try {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        
-        const context = canvas.getContext('2d');
-        if (!context) {
-          ElMessage.error('无法创建画布上下文');
+        const video = videoRef.value;
+        if (!video || !video.videoWidth) {
+          console.error('视频元素未就绪:', video);
+          ElMessage.error('摄像头未就绪，请稍后重试');
           return;
         }
 
-        // 绘制当前视频帧到画布
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const canvas = document.createElement('canvas');
         
-        // 将图片转换为 base64 格式
-        const imageBase64 = canvas.toDataURL('image/jpeg', 0.8);
+        // 降低图片尺寸以减小文件大小
+        const maxWidth = 800;
+        const maxHeight = 600;
+        let width = video.videoWidth;
+        let height = video.videoHeight;
+        
+        console.log('原始视频尺寸:', width, 'x', height);
+        
+        // 保持宽高比的情况下调整尺寸
+        if (width > maxWidth) {
+          const ratio = maxWidth / width;
+          width = maxWidth;
+          height = Math.round(height * ratio);
+        }
+        if (height > maxHeight) {
+          const ratio = maxHeight / height;
+          height = maxHeight;
+          width = Math.round(width * ratio);
+        }
+        
+        console.log('调整后尺寸:', width, 'x', height);
+        
+        // 确保尺寸为整数
+        width = Math.floor(width);
+        height = Math.floor(height);
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const context = canvas.getContext('2d');
+        if (!context) {
+          console.error('无法获取 canvas 上下文');
+          ElMessage.error('截图失败：无法创建图像上下文');
+          return;
+        }
+
+        // 添加白色背景以确保图片格式正确
+        context.fillStyle = '#FFFFFF';
+        context.fillRect(0, 0, width, height);
+        
+        // 确保图像清晰
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = 'high';
+        context.drawImage(video, 0, 0, width, height);
+        
+        // 将图片转换为 base64 格式，降低质量以减小文件大小
+        const imageBase64 = canvas.toDataURL('image/jpeg', 0.7);
+        console.log('生成的图片大小:', Math.round(imageBase64.length / 1024), 'KB');
+        
+        if (!imageBase64.startsWith('data:image/jpeg;base64,')) {
+          console.error('图片格式不正确');
+          ElMessage.error('截图失败：图片格式不正确');
+          return;
+        }
         
         // 保存图片数据并显示预览
         capturedImageData = imageBase64;
@@ -696,36 +738,124 @@ export default {
     // 确认上传并开始点名
     const handleConfirmUpload = async () => {
       if (!capturedImageData) {
+        console.error('没有可用的图片数据');
         ElMessage.warning('没有可用的图片数据');
+        return;
+      }
+
+      if (!capturedImageData.startsWith('data:image/jpeg;base64,')) {
+        console.error('图片数据格式不正确');
+        ElMessage.error('图片数据格式不正确');
         return;
       }
 
       uploadLoading.value = true;
       try {
-        // 使用静态数据
-        const mockResult = {
-          message: '已生成考勤记录，检测到7个人脸，识别出7人',
-          attendance_records: [
-            { name: '李乐', present: true },
-            { name: '陈文伟', present: true },
-            { name: '杨依林', present: true },
-            { name: '汤燕', present: true },
-            { name: '问思祺', present: true },
-            { name: '谢宛桐', present: true },
-            { name: '宋嘉怡', present: true }
-          ]
-        };
+        // 将Base64转换为Blob
+        const base64Data = capturedImageData.replace('data:image/jpeg;base64,', '');
+        const byteCharacters = atob(base64Data);
+        const byteArrays = [];
+        
+        for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
+          const slice = byteCharacters.slice(offset, offset + 1024);
+          const byteNumbers = new Array(slice.length);
+          for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          byteArrays.push(byteArray);
+        }
+        
+        const blob = new Blob(byteArrays, { type: 'image/jpeg' });
+        const file = new File([blob], 'attendance.jpg', { type: 'image/jpeg' });
+        
+        console.log('准备上传文件，大小:', file.size, 'bytes');
+        const courseTimeId = localStorage.getItem('currentCourseTimeId');
+        const response = await api.checkAttendance(file);
+        console.log('服务器响应:', response);
+        
+        // 解析考勤记录和消息
+        let attendanceRecords = [];
+        let resultMessage = '';
+        
+        // 根据不同的返回格式处理数据
+        if (response.code === 200 && response.data) {
+          // 标准格式响应 {code, message, data}
+          attendanceRecords = response.data.attendance_records || [];
+          resultMessage = response.message || '点名完成';
+        } else if (response.status === 'success' && response.attendance_records) {
+          // 旧版格式响应 {status, message, attendance_records}
+          attendanceRecords = response.attendance_records;
+          resultMessage = response.message || '点名完成';
+        } else if (response.status === 'error') {
+          // 错误响应
+          if (!response.message.includes('测试模式')) {
+            console.error('点名失败:', response.message);
+            ElMessage.error(response.message || '点名失败');
+            return;
+          }
+          resultMessage = response.message;
+          attendanceRecords = response.attendance_records || [];
+        } else {
+          // 未知格式，尝试从各种可能的位置获取数据
+          console.warn('未知的API响应格式，尝试解析:', response);
+          attendanceRecords = response.attendance_records || 
+                             response.data?.attendance_records || 
+                             [];
+          resultMessage = response.message || 
+                         response.data?.message || 
+                         '点名完成';
+        }
         
         // 更新考勤结果
-        attendanceResult.value = mockResult;
+        attendanceResult.value = {
+          message: resultMessage,
+          attendance_records: Array.isArray(attendanceRecords) ? attendanceRecords.map(record => ({
+            name: record.name || record.staff_id || '未知',
+            present: record.present === 1,
+            confidence: record.confidence || 0
+          })) : []
+        };
         
         // 显示结果
         handleClosePreview();
         attendanceResultVisible.value = true;
-        ElMessage.success(mockResult.message);
+        ElMessage.success(resultMessage);
       } catch (error) {
         console.error('点名失败:', error);
-        ElMessage.error('点名失败：' + error.message);
+        // 处理 403 Forbidden 错误，提供更明确的错误信息
+        if (error.code === 403 || (error.response && error.response.status === 403)) {
+          ElMessage.error('您没有权限执行点名操作，请联系管理员');
+        } else if (error.message && error.message.includes('403')) {
+          ElMessage.error('点名失败：权限不足，请联系管理员');
+        } else {
+          ElMessage.error(error.message || '点名失败，请稍后重试');
+        }
+        
+        // 测试模式下使用模拟数据
+        if (process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost') {
+          console.log('开发环境下使用模拟数据');
+          handleClosePreview();
+          
+          // 创建模拟点名结果
+          const mockResult = {
+            message: '测试模式：已生成考勤记录，出席人数：7，缺席人数：1',
+            attendance_records: [
+              { name: '李乐', present: true, confidence: 0.85 },
+              { name: '陈文伟', present: true, confidence: 0.78 },
+              { name: '杨依林', present: true, confidence: 0.76 },
+              { name: '宋嘉怡', present: true, confidence: 0.45 },
+              { name: '马莉岚', present: true, confidence: 0.45 },
+              { name: '谢宛桐', present: true, confidence: 0.45 },
+              { name: '汤燕', present: true, confidence: 0.45 },
+              { name: '问思祺', present: false, confidence: 0.45 }
+            ]
+          };
+          
+          attendanceResult.value = mockResult;
+          attendanceResultVisible.value = true;
+          ElMessage.success('测试模式：点名完成');
+        }
       } finally {
         uploadLoading.value = false;
       }
@@ -1322,6 +1452,7 @@ export default {
   font-size: 20px;
   font-weight: bold;
   color: #333;
+  margin-bottom: 8px;
 }
 
 .placeholder-content .subtitle {
@@ -1632,59 +1763,5 @@ export default {
 
 .ml-5 {
   margin-left: 5px;
-}
-
-.prerecorded-video {
-  width: 100%;
-  height: 400px;
-  object-fit: contain;
-  background: #000;
-}
-
-.placeholder-content {
-  width: 100%;
-  height: 100%;
-}
-
-.placeholder-content .subtitle {
-  width: 100%;
-  height: 100%;
-}
-
-.video-content {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #000;
-}
-
-.prerecorded-video {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.video-placeholder {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #f9f9f9;
-}
-
-.placeholder-content {
-  text-align: center;
-}
-
-.placeholder-content .title {
-  font-size: 20px;
-  font-weight: bold;
-  color: #333;
 }
 </style> 
