@@ -509,56 +509,6 @@ export default {
       };
     };
     
-    // 发送视频帧到WebSocket服务器
-    const sendVideoFrame = () => {
-      if (!websocket || websocket.readyState !== WebSocket.OPEN || !videoRef.value) {
-        return;
-      }
-      
-      try {
-        const video = videoRef.value;
-        const canvas = document.createElement('canvas');
-        // 降低分辨率以减少数据量
-        canvas.width = 480;  // 降低分辨率
-        canvas.height = 360;
-        
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        // 压缩图像，大幅降低质量以减少数据量
-        const imageData = canvas.toDataURL('image/jpeg', 0.5);
-        const base64Data = imageData.split(',')[1];
-        
-        // 发送到服务器
-        websocket.send(JSON.stringify({
-          type: 'video_frame',
-          data: base64Data
-        }));
-      } catch (error) {
-        console.error('发送视频帧时出错:', error);
-      }
-    };
-    
-    // 重置会话
-    const resetSession = () => {
-      if (websocket && websocket.readyState === WebSocket.OPEN) {
-        websocket.send(JSON.stringify({
-          type: 'reset'
-        }));
-        
-        detectedStudents.value = [];
-        emotionStats.value = null;
-        ElMessage.success('会话已重置');
-      }
-    };
-    
-    // 心跳检测
-    const sendPing = () => {
-      if (websocket && websocket.readyState === WebSocket.OPEN) {
-        websocket.send(JSON.stringify({ type: 'ping' }));
-      }
-    };
-
     // 开启摄像头
     const startCamera = async () => {
       try {
@@ -587,6 +537,7 @@ export default {
           return;
         }
 
+        // 将摄像头流设置到视频元素
         videoRef.value.srcObject = stream;
         await videoRef.value.play();
         cameraActive.value = true;
@@ -625,12 +576,18 @@ export default {
     // 关闭摄像头
     const stopCamera = () => {
       if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+        // 停止所有轨道
+        stream.getTracks().forEach(track => {
+          track.stop();
+        });
         stream = null;
       }
+      
+      // 清除视频源
       if (videoRef.value) {
         videoRef.value.srcObject = null;
       }
+      
       cameraActive.value = false;
       
       // 关闭 WebSocket
@@ -647,6 +604,37 @@ export default {
       
       // 清除处理后的帧
       processedFrame.value = '';
+      
+      ElMessage.success('摄像头已关闭');
+    };
+
+    // 发送视频帧到服务器
+    const sendVideoFrame = () => {
+      if (!websocket || websocket.readyState !== WebSocket.OPEN || !videoRef.value) {
+        return;
+      }
+      
+      try {
+        const video = videoRef.value;
+        const canvas = document.createElement('canvas');
+        canvas.width = 640;  // 降低分辨率以减少数据量
+        canvas.height = 480;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // 压缩图像质量
+        const imageData = canvas.toDataURL('image/jpeg', 0.7);
+        const base64Data = imageData.split(',')[1];
+        
+        // 发送到服务器
+        websocket.send(JSON.stringify({
+          type: 'video_frame',
+          data: base64Data
+        }));
+      } catch (error) {
+        console.error('发送视频帧时出错:', error);
+      }
     };
 
     // 切换摄像头状态
