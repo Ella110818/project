@@ -15,14 +15,14 @@
       <div class="env-switcher-content">
         <h4>API环境切换</h4>
         <el-divider />
-        <el-radio-group v-model="currentEnv" @change="switchEnv">
+        <el-radio-group v-model="currentEnv" @change="handleEnvChange">
           <el-radio-button :label="ApiEnv.LOCAL">本地模拟</el-radio-button>
           <el-radio-button :label="ApiEnv.PRODUCTION">生产环境</el-radio-button>
         </el-radio-group>
         <div class="env-info">
           <p>当前环境: <strong>{{ isLocal ? '本地模拟' : '生产环境' }}</strong></p>
-          <p v-if="isLocal" class="env-note">使用localStorage存储的模拟数据</p>
-          <p v-else class="env-note">连接到: http://127.0.0.1:8000</p>
+          <p v-if="isLocal" class="env-note">使用本地服务器: http://localhost:8000</p>
+          <p v-else class="env-note">连接到: https://www.wsqzwky234.cn</p>
         </div>
       </div>
     </el-popover>
@@ -44,14 +44,14 @@ export default {
     
     const isLocal = computed(() => currentEnv.value === ApiEnv.LOCAL);
     
-    const switchEnv = (env) => {
+    const handleEnvChange = (env) => {
       api.switchEnvironment(env);
     };
     
     return {
       currentEnv,
       isLocal,
-      switchEnv,
+      handleEnvChange,
       ApiEnv
     };
   }

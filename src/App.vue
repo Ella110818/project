@@ -32,12 +32,18 @@ nav a.router-link-exact-active {
 <template>
   <div id="app">
     <router-view></router-view>
+    <EnvSwitcher />
   </div>
 </template>
 
 <script>
+import EnvSwitcher from '@/components/EnvSwitcher.vue'
+
 export default {
   name: 'App',
+  components: {
+    EnvSwitcher
+  }
 }
 </script>
 

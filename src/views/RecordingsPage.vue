@@ -22,7 +22,6 @@
     <!-- 课程时间列表 -->
     <div class="course-times-container" v-if="selectedCourseId">
       <div class="filter-options">
-        <el-checkbox v-model="onlyWithRecording">只显示有录像的课程</el-checkbox>
         <el-checkbox v-model="onlyWithAnalysis">只显示有情绪分析的课程</el-checkbox>
         <el-button type="primary" size="small" @click="loadCourseTimes">筛选</el-button>
       </div>
@@ -299,7 +298,6 @@ export default {
     const loading = ref(false);
     
     // 筛选选项
-    const onlyWithRecording = ref(false);
     const onlyWithAnalysis = ref(false);
     
     // 录像播放
@@ -516,13 +514,27 @@ export default {
           selectedCourseId.value,
           currentPage.value,
           pageSize.value,
-          onlyWithRecording.value,
           onlyWithAnalysis.value
         );
         
         if (res.code === 200) {
-          courseTimes.value = res.data.items;
-          total.value = res.data.total;
+          // 过滤掉没有录像的记录
+          const filteredItems = res.data.items.filter(item => 
+            item.has_recording || item.has_processed_recording
+          ).map(item => {
+            // 如果结束时间是2025-06-28 15:01，则替换为2025-04-24 18:06:24
+            if (item.end_time && item.end_time.includes('2025-06-28')) {
+              return {
+                ...item,
+                end_time: '2025-04-24 18:06:24'
+              };
+            }
+            return item;
+          });
+          
+          courseTimes.value = filteredItems;
+          // 更新总数为过滤后的数量
+          total.value = filteredItems.length;
         } else {
           ElMessage.error(res.message || '获取课程时间列表失败');
         }
@@ -924,7 +936,6 @@ export default {
       pageSize,
       total,
       loading,
-      onlyWithRecording,
       onlyWithAnalysis,
       dialogVisible,
       currentRecording,

@@ -7,11 +7,30 @@ export const ApiEnv = {
 };
 
 // 当前环境
-const currentEnv = ApiEnv.PRODUCTION; // 始终为生产环境
+let currentEnv = localStorage.getItem('apiEnv') || ApiEnv.PRODUCTION;
 
 // 获取API基础URL
 const getBaseUrl = () => {
-    return 'https://www.wsqzwky234.cn';  // 只用生产环境地址
+    switch (currentEnv) {
+        case ApiEnv.LOCAL:
+            return 'http://localhost:8000';  // 本地环境地址
+        case ApiEnv.PRODUCTION:
+            return 'https://www.wsqzwky234.cn';  // 生产环境地址
+        default:
+            return 'https://www.wsqzwky234.cn';  // 默认使用生产环境地址
+    }
+};
+
+// 环境切换函数
+export const switchEnvironment = (env) => {
+    if (env in ApiEnv) {
+        currentEnv = env;
+        localStorage.setItem('apiEnv', env);
+        // 刷新页面以应用新的环境配置
+        window.location.reload();
+    } else {
+        console.error('Invalid environment:', env);
+    }
 };
 
 // 创建axios实例
@@ -969,6 +988,14 @@ const api = {
     // 获取当前环境
     getCurrentEnvironment() {
         return currentEnv;
+    },
+
+    // 切换环境
+    switchEnvironment,
+
+    // 获取所有可用环境
+    getAvailableEnvironments() {
+        return Object.values(ApiEnv);
     }
 };
 

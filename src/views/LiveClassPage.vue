@@ -32,7 +32,7 @@
       <div class="main-content">
         <div class="video-container">
           <!-- 本地摄像头视频 -->
-          <video ref="videoRef" autoplay playsinline class="camera-video" v-show="cameraActive && !processedFrame"></video>
+          <video ref="videoRef" autoplay playsinline class="camera-video" v-show="cameraActive"></video>
           
           <!-- 处理后的视频帧展示 -->
           <div class="processed-frame-container" v-if="processedFrame && cameraActive">
@@ -56,19 +56,6 @@
             <div class="placeholder-content">
               <div class="title">视频画面</div>
             </div>
-          </div>
-          
-          <!-- 视频播放区域 -->
-          <div v-if="cameraActive" class="video-content">
-            <video 
-              ref="prerecordedVideo"
-              class="prerecorded-video"
-              controls
-              autoplay
-            >
-              <source src="/teacher/videos/2025-03-18_shujujiegou.mp4" type="video/mp4">
-              您的浏览器不支持 HTML5 视频播放。
-            </video>
           </div>
         </div>
 
@@ -575,40 +562,63 @@ export default {
     // 开启摄像头
     const startCamera = async () => {
       try {
-        // 指定更低的视频分辨率
+        // 检查浏览器是否支持 getUserMedia
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          ElMessage.error('您的浏览器不支持访问摄像头，请使用现代浏览器如 Chrome、Firefox 等');
+          return;
+        }
+
+        // 指定视频参数
         const constraints = {
           video: {
-            width: { ideal: 640 },
-            height: { ideal: 480 },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
             frameRate: { ideal: 30 }
           },
           audio: false
         };
         
+        // 请求摄像头权限前显示提示
+        ElMessage.info('请在浏览器弹出的权限请求中允许访问摄像头');
+        
         stream = await navigator.mediaDevices.getUserMedia(constraints);
         if (!stream) {
-          ElMessage.error('无法获取摄像头流');
+          ElMessage.error('无法获取摄像头流，请检查摄像头是否正常连接');
           return;
         }
-        console.log('摄像头流获取成功:', stream);
+
         videoRef.value.srcObject = stream;
+        await videoRef.value.play();
         cameraActive.value = true;
+        
+        ElMessage.success('摄像头启动成功');
         
         // 连接 WebSocket
         connectWebSocket();
         
-        // 设置定时器，提高每秒发送帧数
+        // 设置定时器
         if (frameProcessingInterval) {
           clearInterval(frameProcessingInterval);
         }
-        // 每40毫秒发送一帧，约等于25fps
         frameProcessingInterval = setInterval(sendVideoFrame, 40);
         
-        // 设置心跳检测
-        setInterval(sendPing, 30000); // 每30秒发送一次心跳
       } catch (error) {
-        console.error('摄像头访问错误:', error);
-        ElMessage.error('无法访问摄像头：' + error.message);
+        console.error('摄像头启动失败:', error);
+        let errorMessage = '摄像头启动失败: ';
+        
+        // 根据不同错误类型显示不同提示
+        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+          errorMessage += '请允许浏览器访问摄像头';
+        } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+          errorMessage += '未检测到摄像头设备，请确保摄像头已正确连接';
+        } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+          errorMessage += '摄像头可能被其他应用程序占用，请关闭其他使用摄像头的程序';
+        } else {
+          errorMessage += error.message || '未知错误';
+        }
+        
+        ElMessage.error(errorMessage);
+        cameraActive.value = false;
       }
     };
 
@@ -645,11 +655,6 @@ export default {
         stopCamera();
       } else {
         await startCamera();
-        // 当视频开始播放时，将所有学生状态改为已到
-        studentList.value = studentList.value.map(student => ({
-          ...student,
-          present: true
-        }));
       }
     };
 

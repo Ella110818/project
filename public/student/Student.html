@@ -263,15 +263,7 @@
                             <select class="data-select" id="courseSelect">
                                 <option value="">选择课程</option>
                                 <option value="shujujiegou">数据结构与算法</option>
-                                <option value="jisuanjizucheng">计算机组成原理</option>
-                                <option value="caozuoxitong">操作系统</option>
-                                <option value="jisuanjiwangluo">计算机网络</option>
-                                <option value="suanfasheji">算法设计与分析</option>
-                                <option value="rengongzhineng">人工智能导论</option>
-                                <option value="shujuku">数据库系统原理</option>
-                                <option value="bianyiyuanli">编译原理</option>
-                                <option value="ruanjiankaifa">软件工程与项目管理</option>
-                                <option value="wangluoanquan">网络安全技术</option>
+
                             </select>
                             <button class="data-select" onclick="loadPlayback()">加载回放</button>
                         </div>
@@ -339,9 +331,30 @@
 <script>
     //顶部时间
     function getTime() {
-        var nowTime = '2025年04月23日&nbsp;&nbsp;11:57:34&nbsp;&nbsp;星期三&nbsp;&nbsp;';
+        var date = new Date();
+        var year = date.getFullYear();
+        var month = fillZero(date.getMonth() + 1);
+        var day = fillZero(date.getDate());
+        var hours = fillZero(date.getHours());
+        var minutes = fillZero(date.getMinutes());
+        var seconds = fillZero(date.getSeconds());
+        var weekDay = ['日', '一', '二', '三', '四', '五', '六'][date.getDay()];
+
+        var nowTime = year + '年' + month + '月' + day + '日' +
+            '&nbsp;&nbsp;' + hours + ':' + minutes + ':' + seconds +
+            '&nbsp;&nbsp;星期' + weekDay + '&nbsp;&nbsp;';
         $('#time').html(nowTime);
     };
+
+    function fillZero(str) {
+        var realNum;
+        if (str < 10) {
+            realNum = '0' + str;
+        } else {
+            realNum = str;
+        }
+        return realNum;
+    }
     //大屏
     setInterval(getTime, 1000);
 
