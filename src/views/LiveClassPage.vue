@@ -96,7 +96,7 @@
                   size="mini" 
                   :type="detectedStudents.includes(student.name) ? 'success' : 'info'"
                 >
-                  {{ detectedStudents.includes(student.name) ? '已检测' : '已到' }}
+                  {{ detectedStudents.includes(student.name) ? '已检测' : '未到' }}
                 </el-tag>
                 
                 <!-- 如果有情绪数据，显示当前情绪状态 -->

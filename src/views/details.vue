@@ -154,6 +154,8 @@
               </div>
               <div class="box-content">{{ evaluations.homework }}</div>
             </div>
+          </div>
+          <div class="performance-section">
             <div class="performance-box">
               <div class="box-header-container">
               <div class="box-header">考试</div>
@@ -305,7 +307,7 @@ const studentId = ref('');
 const studentName = ref('');
 const studentClass = ref('');
 
-const currentDate = ref('2024-03-12');
+const currentDate = ref('2025-03-12');
 const activeTab = ref('behavior');
 // 总体评价相关数据
 const evaluationContent = ref('');
@@ -713,8 +715,10 @@ onMounted(() => {
 }
 
 .performance-section {
-  display: flex;
-  gap: 24px;
+  display: inline-flex;
+  width: 50%;
+  padding: 12px;
+  box-sizing: border-box;
 }
 
 .performance-box {
@@ -724,6 +728,7 @@ onMounted(() => {
   background: #fff;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
+  width: 100%;
 }
 
 .performance-box:hover {
