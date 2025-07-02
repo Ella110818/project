@@ -549,23 +549,29 @@ const handleDownload = async (file) => {
 
 // 筛选资源
 const filteredResources = computed(() => {
-  let result = resources.value
+  let result = resources.value;
+  
+  // 过滤掉7月1号的文件
+  result = result.filter(item => {
+    const uploadDate = new Date(item.uploadTime);
+    return !(uploadDate.getMonth() === 6 && uploadDate.getDate() === 1); // 6代表7月（月份从0开始）
+  });
   
   // 按分类筛选
   if (activeCategory.value !== 'all') {
-    result = result.filter(item => item.type === activeCategory.value)
+    result = result.filter(item => item.type === activeCategory.value);
   }
   
   // 按搜索文本筛选
   if (searchText.value) {
-    const searchLower = searchText.value.toLowerCase()
+    const searchLower = searchText.value.toLowerCase();
     result = result.filter(item => 
       item.name.toLowerCase().includes(searchLower)
-    )
+    );
   }
   
-  return result
-})
+  return result;
+});
 
 // 在script部分
 const currentCourseName = ref('');
