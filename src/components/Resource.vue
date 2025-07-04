@@ -259,6 +259,12 @@ const fetchResources = async () => {
 const filteredResources = computed(() => {
   let filtered = resources.value
   
+  // 过滤掉7月1号的文件
+  filtered = filtered.filter(item => {
+    const uploadDate = new Date(item.uploadTime)
+    return !(uploadDate.getMonth() === 6 && uploadDate.getDate() === 1) // 6代表7月（月份从0开始）
+  })
+  
   // 按分类筛选
   if (activeCategory.value !== 'all') {
     filtered = filtered.filter(item => item.type === activeCategory.value)
