@@ -127,13 +127,13 @@
           <div class="panel-header">
             <h3>课堂互动</h3>
           </div>
-          <div class="chat-messages">
+          <div class="chat-messages" ref="chatMessagesContainer">
             <div class="message-item" v-for="(message, index) in chatMessages" :key="index">
               <img src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" alt="头像" class="message-avatar">
               <div class="message-content">
                 <div class="message-header">
                   <span class="message-sender">{{ message.sender }}</span>
-                  <span class="message-time">{{ new Date().toLocaleTimeString() }}</span>
+                  <span class="message-time">{{ message.time }}</span>
                 </div>
                 <p class="message-text">{{ message.text }}</p>
               </div>
@@ -145,8 +145,9 @@
               :rows="2" 
               placeholder="输入消息..." 
               v-model="chatMessage"
+              @keyup.enter="sendMessage"
             ></el-input>
-            <el-button type="primary" icon="el-icon-s-promotion">发送</el-button>
+            <el-button type="primary" @click="sendMessage">发送</el-button>
           </div>
         </div>
       </div>
@@ -267,8 +268,8 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import * as echarts from 'echarts';
 import api from '@/api';
@@ -277,8 +278,10 @@ export default {
   name: 'LiveClassPage',
   setup() {
     const router = useRouter();
+    const route = useRoute();
     
     // 基本信息
+    const courseId = ref(null);
     const courseName = ref('');
     const courseLocation = ref('');
     const courseTeacher = ref('');
@@ -309,15 +312,13 @@ export default {
     // 情绪分析相关
     const emotionAnalysisVisible = ref(false);
     const emotionStats = ref(null);
-    const detectedStudents = ref([]);
+    const detectedStudents = ref([]); // 保留这一个声明
     const overallEmotionChart = ref(null);
     const emotionChartInstance = ref(null);
     
     // WebSocket和视频流
     let stream = null;
     let capturedImageData = null;
-    let websocket = null;
-    let frameProcessingInterval = null;
     
     // 录制相关
     const isRecording = ref(false);
@@ -325,7 +326,7 @@ export default {
     const recordedChunks = ref([]);
     const recordingBlob = ref(null);
     const uploadingRecording = ref(false);
-    
+
     // 学生列表过滤
     const filteredStudentList = computed(() => {
       if (!searchQuery.value) return studentList.value;
@@ -386,31 +387,167 @@ export default {
     ]);
 
     // 添加聊天消息数据
-    const chatMessages = ref([
-      { 
-        sender: '李乐',
-        text: '老师，这个知识点我有点不太理解，能再讲解一下吗？'
-      },
-      { 
-        sender: '汤燕',
-        text: '我觉得这个概念很有意思，可以分享一下我的理解吗？'
-      },
-      { 
-        sender: '杨依林',
-        text: '这个例子和实际应用有什么联系呢？'
+    const chatMessages = ref([]);
+    const chatMessagesContainer = ref(null);  // 添加引用
+    
+    // 添加消息ID集合用于去重
+    const receivedMessageIds = new Set();
+    const pollInterval = ref(null);
+    const lastMessageTime = ref(new Date().toISOString());
+    let isLeavingPage = false;
+
+    // 滚动到最新消息
+    const scrollToBottom = () => {
+      if (chatMessagesContainer.value) {
+        setTimeout(() => {
+          chatMessagesContainer.value.scrollTop = chatMessagesContainer.value.scrollHeight;
+        }, 100);
       }
-    ]);
+    };
+
+    // 监听消息列表变化，自动滚动到底部
+    watch(() => chatMessages.value.length, () => {
+      scrollToBottom();
+    });
+
+    // 开始轮询
+    const startPolling = () => {
+      // 清除已存在的轮询
+      if (pollInterval.value) {
+        clearInterval(pollInterval.value);
+      }
+
+      // 开始新的轮询
+      const poll = async () => {
+        if (!courseId.value || isLeavingPage) return;
+
+        try {
+          const response = await api.getChatMessages(courseId.value, lastMessageTime.value);
+          if (response && Array.isArray(response) && response.length > 0) {
+            // 过滤出新消息
+            const newMessages = response.filter(msg => !receivedMessageIds.has(msg.id));
+            
+            if (newMessages.length > 0) {
+              // 更新最后消息时间为最新消息的时间
+              lastMessageTime.value = newMessages[newMessages.length - 1].timestamp;
+              
+              // 添加新消息到列表并记录ID
+              newMessages.forEach(msg => {
+                receivedMessageIds.add(msg.id);
+                chatMessages.value.push({
+                  id: msg.id,
+                  sender: msg.sender_name,
+                  text: msg.text,
+                  time: msg.timestamp,
+                  is_read: msg.is_read
+                });
+              });
+              
+              // 标记新消息为已读
+              const unreadNewMessages = newMessages.filter(msg => !msg.is_read);
+              if (unreadNewMessages.length > 0) {
+                await markAsRead(unreadNewMessages);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('轮询消息失败:', error);
+        }
+      };
+
+      // 每3秒轮询一次
+      pollInterval.value = setInterval(poll, 3000);
+      
+      // 立即执行一次
+      poll();
+    };
+
+    // 修改发送消息方法
+    const sendMessage = async () => {
+      if (!chatMessage.value.trim()) return;
+
+      try {
+        const response = await api.sendChatMessage(courseId.value, chatMessage.value);
+        
+        // 确保不重复添加消息
+        if (!receivedMessageIds.has(response.id)) {
+          receivedMessageIds.add(response.id);
+          chatMessages.value.push({
+            id: response.id,
+            sender: response.sender_name,
+            text: response.text,
+            time: response.timestamp,
+            is_read: true
+          });
+        }
+        
+        // 更新最后消息时间
+        lastMessageTime.value = response.timestamp;
+        
+        // 清空输入框
+        chatMessage.value = '';
+      } catch (error) {
+        console.error('发送消息失败:', error);
+        ElMessage.error('发送消息失败，请重试');
+      }
+    };
+
+    // 标记消息为已读
+    const markAsRead = async (messages) => {
+      try {
+        const messageIds = messages.map(msg => msg.id);
+        await api.markMessagesAsRead(messageIds);
+      } catch (error) {
+        console.error('标记消息已读失败:', error);
+      }
+    };
+
+    // 清理函数
+    const cleanup = () => {
+      if (pollInterval.value) {
+        clearInterval(pollInterval.value);
+        pollInterval.value = null;
+      }
+      chatMessages.value = [];
+      receivedMessageIds.clear();
+      lastMessageTime.value = new Date().toISOString();
+    };
+
+    // 监听路由参数变化
+    watch(() => route.params.id, (newId) => {
+      if (newId && !isLeavingPage) {
+        courseId.value = parseInt(newId);
+        cleanup();
+        startPolling();
+      }
+    }, { immediate: true });
+
+    // 监听路由离开
+    router.beforeEach((to, from, next) => {
+      if (from.path.includes('/live-class')) {
+        isLeavingPage = true;
+        cleanup();
+      }
+      next();
+    });
+
+    // 组件卸载时清理
+    onBeforeUnmount(() => {
+      isLeavingPage = true;
+      cleanup();
+    });
 
     // 获取课程详情
     const fetchCourseDetail = async () => {
       try {
-        const courseId = localStorage.getItem('currentCourseId');
-        if (!courseId) {
+        const id = route.params.id;
+        if (!id) {
           ElMessage.error('课程ID不存在');
           return;
         }
-
-        const response = await api.getCourseDetail(courseId);
+        
+        courseId.value = id;
+        const response = await api.getCourseDetail(id);
         if (response.code === 200) {
           const courseData = response.data;
           courseName.value = courseData.title;
@@ -429,8 +566,8 @@ export default {
             courseTeacher.value = '未知教师';
           }
           
-          studentCount.value = 7; // 将学生数量固定为35
-          onlineCount.value = 7; // 将在线人数设置为35
+          studentCount.value = 7;
+          onlineCount.value = 7;
         } else {
           ElMessage.error(response.message || '获取课程信息失败');
         }
@@ -440,86 +577,6 @@ export default {
       }
     };
 
-    // WebSocket连接和通信
-    const connectWebSocket = () => {
-      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsHost = process.env.VUE_APP_WS_HOST || window.location.hostname;
-      const wsPort = process.env.VUE_APP_WS_PORT || '8765';
-      const wsUrl = `${wsProtocol}//${wsHost}:${wsPort}`;
-      
-      console.log(`正在连接到 WebSocket 服务器: ${wsUrl}`);
-      
-      websocket = new WebSocket(wsUrl);
-      
-      websocket.onopen = () => {
-        console.log('WebSocket 连接已建立');
-        wsConnected.value = true;
-      };
-      
-      websocket.onmessage = (event) => {
-        try {
-          const response = JSON.parse(event.data);
-          
-          // 处理错误
-          if (response.error) {
-            console.error('WebSocket 错误:', response.error);
-            return;
-          }
-          
-          // 处理服务器发送的处理后的帧
-          if (response.processed_frame) {
-            processedFrame.value = response.processed_frame;
-            faceCount.value = response.face_count || 0;
-            
-            // 更新检测到的学生列表
-            if (response.students_detected) {
-              const newDetected = new Set([...detectedStudents.value, ...response.students_detected]);
-              detectedStudents.value = Array.from(newDetected);
-            }
-            
-            // 全局已识别学生列表（服务器端维护）
-            if (response.all_recognized_students) {
-              detectedStudents.value = response.all_recognized_students;
-            }
-            
-            // 更新情绪统计数据（如果有）
-            if (response.emotion_stats) {
-              emotionStats.value = response.emotion_stats;
-              
-              // 如果情绪分析对话框是打开的，则更新图表
-              if (emotionAnalysisVisible.value && emotionChartInstance.value) {
-                updateEmotionChart();
-              }
-            }
-          }
-          
-          // 处理心跳响应
-          if (response.type === 'pong') {
-            console.log('收到服务器心跳响应');
-          }
-        } catch (error) {
-          console.error('处理 WebSocket 消息时出错:', error);
-        }
-      };
-      
-      websocket.onclose = () => {
-        console.log('WebSocket 连接已关闭');
-        wsConnected.value = false;
-        
-        // 尝试重新连接
-        setTimeout(() => {
-          if (cameraActive.value) {
-            connectWebSocket();
-          }
-        }, 5000);
-      };
-      
-      websocket.onerror = (error) => {
-        console.error('WebSocket 错误:', error);
-        wsConnected.value = false;
-      };
-    };
-    
     // 发送视频帧到WebSocket服务器
     const sendVideoFrame = () => {
       if (!websocket || websocket.readyState !== WebSocket.OPEN || !videoRef.value) {
@@ -1130,52 +1187,6 @@ export default {
       }
     };
 
-    // 组件挂载时
-    onMounted(() => {
-      // 获取课程详情
-      fetchCourseDetail();
-      
-      // 监听窗口大小变化，重新渲染图表
-      window.addEventListener('resize', () => {
-        if (emotionChartInstance.value) {
-          emotionChartInstance.value.resize();
-        }
-      });
-    });
-    
-    // 监听情绪分析对话框
-    watch(emotionAnalysisVisible, (newVal) => {
-      if (newVal) {
-        // 等待DOM更新后初始化图表
-        setTimeout(() => {
-          createEmotionChart();
-        }, 300);
-      }
-    });
-
-    // 组件卸载时
-    onUnmounted(() => {
-      // 如果还在录制，停止录制
-      if (isRecording.value && mediaRecorder.value) {
-        try {
-          mediaRecorder.value.stop();
-        } catch (e) {
-          console.error('停止录制失败:', e);
-        }
-      }
-      
-      // 关闭摄像头
-      stopCamera();
-      
-      // 销毁图表实例
-      if (emotionChartInstance.value) {
-        emotionChartInstance.value.dispose();
-      }
-      
-      // 移除窗口大小变化监听
-      window.removeEventListener('resize', () => {});
-    });
-
     // 结束授课
     const endClass = () => {
       // 如果还在录制，先停止录制并上传
@@ -1261,8 +1272,15 @@ export default {
       }
     };
 
+    onMounted(() => {
+      fetchCourseDetail();
+      // 初始化检测到的学生列表
+      detectedStudents.value = [];
+    });
+
     return {
       // 基本信息
+      courseId,
       courseName,
       courseLocation,
       courseTeacher,
@@ -1271,6 +1289,7 @@ export default {
       chatMessage,
       studentList,
       chatMessages,
+      chatMessagesContainer,
       searchQuery,
       filteredStudentList,
       
@@ -1280,7 +1299,6 @@ export default {
       toggleCamera,
       processedFrame,
       faceCount,
-      wsConnected,
       detectedStudents,
       
       // 点名相关
@@ -1311,6 +1329,12 @@ export default {
       startRecording,
       stopRecording,
       uploadingRecording,
+      
+      // 聊天相关
+      sendMessage,
+      scrollToBottom,
+      startPolling,
+      cleanup,
       
       // 其他
       endClass,

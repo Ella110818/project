@@ -1,0 +1,212 @@
+# Chat 模块 API 文档
+
+## REST API 接口
+基础URL: `/api/chat/`
+
+### 获取消息列表
+```
+GET /api/chat/messages/?course_id={course_id}&since={timestamp}
+```
+
+- 功能：获取指定课程的聊天消息列表
+- 参数：
+  - course_id: 课程ID（必填，查询参数）
+  - since: 可选，ISO格式的时间戳，只返回该时间之后的消息
+- 需要认证：是
+- 返回示例：
+```json
+[
+    {
+        "id": 1,
+        "sender": 1,
+        "sender_name": "username",
+        "text": "消息内容",
+        "timestamp": "2025-07-02 14:50:41",
+        "course": 1,
+        "is_read": false
+    }
+]
+```
+
+### 创建消息
+```
+POST /api/chat/messages/
+```
+- 功能：创建新的聊天消息
+- 请求体：
+```json
+{
+    "text": "消息内容",
+    "course": 1  // 课程ID
+}
+```
+- 需要认证：是
+- 返回示例：
+```json
+{
+    "id": 1,
+    "sender": 1,
+    "sender_name": "username",
+    "text": "消息内容",
+    "timestamp": "2025-07-02 14:50:41",
+    "course": 1,
+    "is_read": false
+}
+```
+
+### 获取未读消息数量
+```
+GET /api/chat/messages/unread/?course_id={course_id}
+```
+- 功能：获取指定课程的未读消息数量
+- 参数：
+  - course_id: 课程ID（必填，查询参数）
+- 需要认证：是
+- 返回示例：
+```json
+{
+    "unread_count": 5
+}
+```
+
+### 标记消息为已读
+```
+POST /api/chat/messages/mark_as_read/
+```
+- 功能：将指定消息标记为已读
+- 请求体：
+```json
+{
+    "message_ids": [1, 2, 3]  // 要标记为已读的消息ID列表
+}
+```
+- 需要认证：是
+- 返回示例：
+```json
+{
+    "marked_as_read": 3  // 成功标记为已读的消息数量
+}
+```
+
+## 前端实现示例
+
+### 轮询获取新消息
+```javascript
+// 定期检查新消息
+let lastMessageTime = new Date().toISOString();
+
+const pollInterval = setInterval(async () => {
+    try {
+        const response = await fetch(
+            `/api/chat/messages/?course_id=${courseId}&since=${lastMessageTime}`,
+            {
+                headers: {
+                    'Authorization': 'Bearer your-token-here'
+                }
+            }
+        );
+        const newMessages = await response.json();
+        
+        if (newMessages.length > 0) {
+            // 更新最后消息时间
+            lastMessageTime = newMessages[newMessages.length - 1].timestamp;
+            // 更新消息列表
+            updateMessageList(newMessages);
+        }
+    } catch (error) {
+        console.error('获取新消息失败:', error);
+    }
+}, 3000); // 每3秒检查一次
+
+// 组件卸载时清除轮询
+onUnmount(() => {
+    clearInterval(pollInterval);
+});
+```
+
+### 发送消息
+```javascript
+async function sendMessage(courseId, text) {
+    try {
+        const response = await fetch('/api/chat/messages/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer your-token-here'
+            },
+            body: JSON.stringify({
+                course: courseId,
+                text: text
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('发送消息失败');
+        }
+        
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('发送消息失败:', error);
+        throw error;
+    }
+}
+```
+
+### 获取未读消息数量
+```javascript
+async function checkUnreadMessages(courseId) {
+    try {
+        const response = await fetch(
+            `/api/chat/messages/unread/?course_id=${courseId}`,
+            {
+                headers: {
+                    'Authorization': 'Bearer your-token-here'
+                }
+            }
+        );
+        const { unread_count } = await response.json();
+        updateUnreadBadge(unread_count);
+    } catch (error) {
+        console.error('获取未读消息数量失败:', error);
+    }
+}
+```
+
+### 标记消息为已读
+```javascript
+async function markMessagesAsRead(messageIds) {
+    try {
+        const response = await fetch('/api/chat/messages/mark_as_read/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer your-token-here'
+            },
+            body: JSON.stringify({
+                message_ids: messageIds
+            })
+        });
+        const result = await response.json();
+        return result.marked_as_read;
+    } catch (error) {
+        console.error('标记消息已读失败:', error);
+        throw error;
+    }
+}
+```
+
+## 注意事项
+1. 使用轮询方式获取新消息时，建议根据实际需求调整轮询间隔
+2. 确保在请求时包含正确的认证信息（token）
+3. 建议实现错误重试机制
+4. 考虑实现消息分页加载功能
+5. 可以根据需要调整轮询策略：
+   - 用户不活跃时增加轮询间隔
+   - 页面不可见时暂停轮询
+   - 网络错误时使用指数退避算法
+6. 生产环境部署时记得更换为实际的域名和HTTPS
+7. 建议实现消息发送状态和加载状态的处理
+8. 可以添加消息发送失败重试机制
+9. 如果遇到跨域问题，需要在Django后端配置CORS
+10. 考虑添加消息输入时的防抖/节流处理

@@ -32,9 +32,16 @@ export default defineConfig({
         },
     },
     server: {
-        port: 3000,
+        port: 3006,
         open: true,
-        cors: true
+        cors: true,
+        proxy: {
+            '/api': {
+                target: 'http://localhost:8000',
+                changeOrigin: true,
+                secure: false
+            }
+        }
     },
     build: {
         outDir: 'dist',

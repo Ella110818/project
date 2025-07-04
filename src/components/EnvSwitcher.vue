@@ -45,7 +45,11 @@ export default {
     const isLocal = computed(() => currentEnv.value === ApiEnv.LOCAL);
     
     const handleEnvChange = (env) => {
-      api.switchEnvironment(env);
+      try {
+        api.switchEnvironment(env);
+      } catch (error) {
+        console.error('环境切换失败:', error);
+      }
     };
     
     return {

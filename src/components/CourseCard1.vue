@@ -20,6 +20,7 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import kehuan1 from '@/assets/kehuan1.jpg'
 import kehuan2 from '@/assets/kehuan2.jpg'
 import kehuan3 from '@/assets/kehuan3.jpg'
@@ -41,6 +42,7 @@ export default {
     },
   },
   setup(props, { emit }) {
+    const router = useRouter();
     const teacherName = ref('');
     const defaultImage = ref(shuju);
     const imageLoaded = ref(false);
@@ -101,7 +103,12 @@ export default {
     });
 
     const viewCourse = () => {
-      emit('view-course', props.course.id);
+      const userRole = localStorage.getItem('userRole');
+      if (userRole === 'teacher') {
+        router.push(`/live-class/${props.course.id}`);
+      } else {
+        router.push(`/student-live-class/${props.course.id}`);
+      }
     };
 
     return {

@@ -6,28 +6,36 @@ export const ApiEnv = {
     PRODUCTION: 'production'
 };
 
+// 从localStorage获取环境设置，如果没有则使用本地环境并保存设置
+const getInitialEnvironment = () => {
+    const savedEnv = localStorage.getItem('apiEnv');
+    if (savedEnv && Object.values(ApiEnv).includes(savedEnv)) {
+        return savedEnv;
+    }
+    // 如果没有有效的保存环境，设置为本地环境并保存
+    localStorage.setItem('apiEnv', ApiEnv.LOCAL);
+    return ApiEnv.LOCAL;
+};
+
 // 当前环境
-let currentEnv = localStorage.getItem('apiEnv') || ApiEnv.PRODUCTION;
+let currentEnv = getInitialEnvironment();
 
 // 获取API基础URL
 const getBaseUrl = () => {
-    switch (currentEnv) {
-        case ApiEnv.LOCAL:
-            return 'http://localhost:8000';  // 本地环境地址
-        case ApiEnv.PRODUCTION:
-            return 'https://www.wsqzwky234.cn';  // 生产环境地址
-        default:
-            return 'https://www.wsqzwky234.cn';  // 默认使用生产环境地址
-    }
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    return `${apiUrl}/api`;
 };
 
 // 环境切换函数
 export const switchEnvironment = (env) => {
-    if (env in ApiEnv) {
+    // 检查是否是有效的环境值
+    if (Object.values(ApiEnv).includes(env)) {
         currentEnv = env;
         localStorage.setItem('apiEnv', env);
-        // 刷新页面以应用新的环境配置
-        window.location.reload();
+        console.log('Environment switched to:', env); // 添加日志
+        // 刷新axios实例的baseURL
+        request.defaults.baseURL = getBaseUrl();
+        // 不再刷新页面，只更新配置
     } else {
         console.error('Invalid environment:', env);
     }
@@ -667,7 +675,7 @@ const productionApi = {
     login: async (loginData) => {
         try {
             const response = await request({
-                url: '/api/user/login/',  // 添加/api前缀
+                url: '/user/login/',  // 不需要添加/api前缀，因为baseURL已经包含了
                 method: 'post',
                 data: {
                     username: loginData.username,
@@ -717,7 +725,7 @@ const productionApi = {
     getUserMessages: async (userId) => {
         try {
             const response = await request({
-                url: '/api/user/user/messages/',
+                url: '/user/user/messages/',
                 method: 'get',
                 params: { user_id: userId }
             });
@@ -731,7 +739,7 @@ const productionApi = {
     // 获取课程列表
     getCourses: async (page = 1, size = 10) => {
         try {
-            const response = await request.get('/api/course/courses/', {
+            const response = await request.get('/course/courses/', {
                 params: {
                     page,
                     size
@@ -746,9 +754,10 @@ const productionApi = {
     // 获取课程详情
     getCourseDetail: async (courseId) => {
         try {
-            const response = await request.get(`/api/course/courses/${courseId}/`);
+            const response = await request.get(`/course/courses/${courseId}/`);
             return response;
         } catch (error) {
+            console.error('获取课程详情失败:', error);
             throw error;
         }
     },
@@ -783,7 +792,7 @@ const productionApi = {
     getCourseResources: async (courseId, params) => {
         try {
             console.log('调用获取课程资源API - 课程ID:', courseId, '参数:', params)
-            const response = await request.get(`/api/course/courses/${courseId}/resources/`, {
+            const response = await request.get(`/course/courses/${courseId}/resources/`, {
                 params: params
             })
             console.log('API响应:', response)
@@ -801,7 +810,7 @@ const productionApi = {
             console.log('FormData内容:', Array.from(formData.entries()));
 
             const response = await request({
-                url: `/api/course/courses/${courseId}/resources/`,
+                url: `/course/courses/${courseId}/resources/`,
                 method: 'POST',
                 headers: {
                     'Content-Type': 'multipart/form-data'
@@ -823,7 +832,7 @@ const productionApi = {
     // 开始上课
     startClass: async (courseId) => {
         try {
-            const response = await request.post(`/api/course/courses/${courseId}/start/`);
+            const response = await request.post(`/course/courses/${courseId}/start/`);
             return response;
         } catch (error) {
             console.error('开始上课失败:', error);
@@ -938,7 +947,7 @@ const productionApi = {
                 params.with_analysis = 'true';
             }
 
-            const response = await request.get(`/api/course/courses/${courseId}/course-times/`, {
+            const response = await request.get(`/course/courses/${courseId}/course-times/`, {
                 params: params
             });
             return response;
@@ -969,10 +978,118 @@ const productionApi = {
     // 获取课程学生列表
     getCourseStudents: async (courseId) => {
         try {
-            const response = await request.get(`/api/course/courses/${courseId}/students/info/`);
+            const response = await request.get(`/course/courses/${courseId}/students/info/`);
             return response;
         } catch (error) {
             console.error('获取课程学生列表失败:', error);
+            throw error;
+        }
+    },
+
+    // 获取聊天消息列表
+    getChatMessages: async (courseId) => {
+        try {
+            const response = await request.get('/chat/messages/', {
+                params: { course_id: courseId }
+            });
+            return response;
+        } catch (error) {
+            console.error('获取聊天消息失败:', error);
+            throw error;
+        }
+    },
+
+    // 发送聊天消息
+    sendChatMessage: async (courseId, text) => {
+        try {
+            const response = await request.post('/chat/messages/', {
+                text: text,
+                course: courseId  // 改回使用 course 作为参数名
+            });
+            return response;
+        } catch (error) {
+            console.error('发送聊天消息失败:', error);
+            throw error;
+        }
+    },
+
+    // 获取未读消息数量
+    getUnreadMessageCount: async (courseId) => {
+        try {
+            const response = await request.get(`/chat/messages/unread/`, {
+                params: { course_id: courseId }
+            });
+            return response;
+        } catch (error) {
+            console.error('获取未读消息数量失败:', error);
+            throw error;
+        }
+    },
+
+    // 标记消息为已读
+    markMessagesAsRead: async (messageIds) => {
+        try {
+            const response = await request.post(`/chat/messages/mark_as_read/`, {
+                message_ids: messageIds
+            });
+            return response;
+        } catch (error) {
+            console.error('标记消息为已读失败:', error);
+            throw error;
+        }
+    }
+};
+
+// 聊天消息相关API
+export const chatApi = {
+    // 发送聊天消息
+    sendChatMessage: async (data) => {
+        try {
+            const response = await request.post('/chat/messages/', data);
+            return response;
+        } catch (error) {
+            console.error('发送聊天消息失败:', error);
+            throw error;
+        }
+    },
+
+    // 获取聊天消息列表
+    getChatMessages: async (courseId, since = null) => {
+        try {
+            const params = { course_id: courseId };
+            if (since) {
+                params.since = since;
+            }
+            const response = await request.get('/chat/messages/', { params });
+            return response;
+        } catch (error) {
+            console.error('获取聊天消息失败:', error);
+            throw error;
+        }
+    },
+
+    // 获取未读消息数量
+    getUnreadMessageCount: async (courseId) => {
+        try {
+            const response = await request.get('/chat/messages/unread/', {
+                params: { course_id: courseId }
+            });
+            return response;
+        } catch (error) {
+            console.error('获取未读消息数量失败:', error);
+            throw error;
+        }
+    },
+
+    // 标记消息为已读
+    markMessagesAsRead: async (messageIds) => {
+        try {
+            const response = await request.post('/chat/messages/mark_as_read/', {
+                message_ids: messageIds
+            });
+            return response;
+        } catch (error) {
+            console.error('标记消息已读失败:', error);
             throw error;
         }
     }
