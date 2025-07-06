@@ -58,33 +58,7 @@
       </el-tab-pane>
 
       <el-tab-pane label="作业/考试" name="assignments">
-        <div class="assignment-list">
-          <el-empty v-if="assignments.length === 0" description="暂无作业或考试" />
-          <el-card v-for="item in assignments" :key="item.id" class="assignment-item">
-            <div class="assignment-header">
-              <div class="assignment-title-group">
-                <span class="assignment-type-tag" :class="item.type">{{ item.type === 'exam' ? '考试' : '作业' }}</span>
-                <h3>{{ item.title }}</h3>
-              </div>
-              <el-tag :type="getStatusType(item.status)">{{ item.status }}</el-tag>
-            </div>
-            <div class="assignment-info">
-              <p>{{ item.description }}</p>
-              <div class="assignment-meta">
-                <span>截止时间：{{ item.deadline }}</span>
-                <span>满分：{{ item.fullScore }}分</span>
-              </div>
-            </div>
-            <div class="assignment-actions">
-              <el-button 
-                type="primary" 
-                :disabled="item.status === '已截止'"
-                @click="handleAssignment(item)">
-                {{ getActionButtonText(item.status) }}
-              </el-button>
-            </div>
-          </el-card>
-        </div>
+        <Exam :course-id="route.params.courseId" />
       </el-tab-pane>
 
       <el-tab-pane label="成绩单" name="grades">
@@ -273,11 +247,12 @@ import {
   Files,
   More
 } from '@element-plus/icons-vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import api from '@/api'  // 添加api导入
 import AnimatedBackground from '@/components/AnimatedBackground.vue'
 import touxiang from '@/assets/touxiang.jpg'
+import Exam from '@/components/Exam.vue' // 导入 Exam 组件
 
 const route = useRoute()
 const activeTab = ref('announcements')
@@ -361,7 +336,22 @@ const mockAssignments = [
 ];
 
 // 使用 mockAssignments 作为初始值
-const assignments = ref(mockAssignments);
+const assignments = ref([]);
+const loading = ref(false);
+
+// 获取作业列表
+const fetchAssignments = async () => {
+  try {
+    loading.value = true;
+    const response = await api.getAssignments(route.params.courseId);
+    assignments.value = response.data.items;
+  } catch (error) {
+    ElMessage.error('获取作业列表失败');
+    console.error(error);
+  } finally {
+    loading.value = false;
+  }
+};
 
 // 处理标签页切换
 const handleTabClick = async (tab) => {
@@ -374,38 +364,40 @@ const handleTabClick = async (tab) => {
 
 // 获取状态对应的类型
 const getStatusType = (status) => {
-  const types = {
-    '未开始': 'info',
-    '进行中': 'warning',
-    '已提交': 'success',
-    '已截止': 'danger',
-    '已批改': 'success'
+  switch (status) {
+    case '未开始':
+      return 'info';
+    case '进行中':
+      return 'success';
+    case '已截止':
+      return 'danger';
+    default:
+      return 'info';
   }
-  return types[status] || 'info'
-}
+};
 
 // 获取操作按钮文本
 const getActionButtonText = (status) => {
-  const texts = {
-    '未开始': '查看详情',
-    '进行中': '开始答题',
-    '已提交': '查看详情',
-    '已截止': '查看详情',
-    '已批改': '查看成绩'
+  switch (status) {
+    case '未开始':
+      return '查看详情';
+    case '进行中':
+      return '开始作答';
+    case '已截止':
+      return '查看结果';
+    default:
+      return '查看详情';
   }
-  return texts[status] || '查看详情'
-}
+};
 
-// 修改 handleAssignment 方法
+// 处理作业操作
 const handleAssignment = (item) => {
-  ElMessage.info(`正在打开${item.title}`);
-  // 这里可以根据不同状态执行不同操作
-  if (item.status === '未提交') {
-    ElMessage.info('准备提交作业');
-  } else if (item.status === '已提交') {
-    ElMessage.info('查看已提交的作业');
-  } else if (item.status === '已截止') {
-    ElMessage.warning('作业已截止');
+  // 根据作业状态和类型进行不同的处理
+  if (item.status === '进行中') {
+    router.push(`/course/${route.params.courseId}/assignment/${item.id}`);
+  } else {
+    // 查看作业详情或结果
+    router.push(`/course/${route.params.courseId}/assignment/${item.id}/detail`);
   }
 };
 

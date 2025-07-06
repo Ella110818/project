@@ -23,7 +23,7 @@ let currentEnv = getInitialEnvironment();
 // 获取API基础URL
 const getBaseUrl = () => {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    return `${apiUrl}/api`;
+    return apiUrl;  // 移除 /api 后缀
 };
 
 // 环境切换函数
@@ -1035,6 +1035,40 @@ const productionApi = {
             return response;
         } catch (error) {
             console.error('标记消息为已读失败:', error);
+            throw error;
+        }
+    },
+
+    // 获取公告列表
+    getAnnouncements: async (courseId, params = {}) => {
+        try {
+            const response = await request.get(`/api/advanced/courses/${courseId}/announcements/`, {
+                params: {
+                    page: params.page || 1,
+                    size: params.size || 10
+                }
+            });
+            return response;
+        } catch (error) {
+            console.error('获取公告列表失败:', error);
+            throw error;
+        }
+    },
+
+    // 获取作业/考试列表
+    getAssignments: async (courseId, params = {}) => {
+        try {
+            const response = await request.get(`/api/advanced/courses/${courseId}/assignments/`, {
+                params: {
+                    page: params.page || 1,
+                    size: params.size || 10,
+                    type: params.type,
+                    status: params.status
+                }
+            });
+            return response;
+        } catch (error) {
+            console.error('获取作业/考试列表失败:', error);
             throw error;
         }
     }

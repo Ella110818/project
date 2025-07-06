@@ -66,8 +66,8 @@
     <!-- 分页 -->
     <div class="pagination-container">
       <el-pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
+        :current-page="currentPage"
+        :page-size="pageSize"
         :page-sizes="[10, 20, 50, 100]"
         :total="total"
         @size-change="handleSizeChange"
@@ -163,6 +163,22 @@ import {
   Upload 
 } from '@element-plus/icons-vue';
 
+// 定义组件属性
+const props = defineProps({
+  courseId: {
+    type: [String, Number],
+    required: true,
+    default: undefined
+  }
+});
+
+// 监听 courseId 变化
+watch(() => props.courseId, (newVal) => {
+  if (newVal) {
+    fetchAssignments();
+  }
+}, { immediate: true });
+
 // 搜索和筛选
 const searchText = ref('');
 const typeFilter = ref('');
@@ -177,115 +193,35 @@ const total = ref(0);
 const assignments = ref([]);
 const loading = ref(false);
 
-// 模拟数据
-const mockAssignments = [
-  {
-    id: 1,
-    title: '计算机组成原理期中考试',
-    type: 'exam',
-    description: '本次考试为闭卷考试，考试时间2小时，满分100分。考试内容包括：计算机系统概述、数据的表示和运算、存储系统、指令系统、中央处理器等。请带好考试用具，不允许使用计算器。',
-    startTime: '2025-03-25 14:00',
-    deadline: '2025-03-25 16:00',
-    fullScore: 100,
-    submitted: 40,
-    total: 42
-  },
-  {
-    id: 2,
-    title: 'CPU设计与实现作业',
-    type: 'homework',
-    description: '请使用Verilog语言设计一个简单的单周期CPU，要求实现基本的算术运算、数据传送和控制指令。需提交设计报告和源代码。',
-    startTime: '2025-03-20 08:00',
-    deadline: '2025-03-27 23:59',
-    fullScore: 100,
-    submitted: 32,
-    total: 42
-  },
-  {
-    id: 3,
-    title: '存储器层次结构实验报告',
-    type: 'homework',
-    description: '完成Cache设计实验，分析不同Cache映射方式（直接映射、组相联、全相联）的性能差异，并提交详细的实验报告。要求包含实验数据和性能分析。',
-    startTime: '2025-03-15 00:00',
-    deadline: '2025-03-22 23:59',
-    fullScore: 100,
-    submitted: 32,
-    total: 42
-  },
-  {
-    id: 4,
-    title: '流水线CPU设计报告',
-    type: 'homework',
-    description: '基于MIPS架构设计一个五级流水线CPU，需要解决数据相关、控制相关等问题。提交设计文档、源代码和仿真结果。',
-    startTime: '2025-03-28 00:00',
-    deadline: '2025-04-04 23:59',
-    fullScore: 100,
-    submitted: 0,
-    total: 42
-  },
-  {
-    id: 5,
-    title: '指令系统实验',
-    type: 'homework',
-    description: '分析RISC和CISC指令系统的特点，完成指令格式设计和编码实验。需要提交实验报告，包含指令设计方案和编码示例。',
-    startTime: '2025-04-01 00:00',
-    deadline: '2025-04-08 23:59',
-    fullScore: 100,
-    submitted: 15,
-    total: 35
-  },
-  {
-    id: 6,
-    title: '总线与IO系统设计',
-    type: 'homework',
-    description: '设计一个基本的总线系统，实现CPU与内存、IO设备的通信。需要考虑总线仲裁、数据传输等问题，提交设计方案和仿真结果。',
-    startTime: '2025-04-05 00:00',
-    deadline: '2025-04-12 23:59',
-    fullScore: 100,
-    submitted: 8,
-    total: 35
-  }
-];
-
 // 获取作业列表
-const loadAssignments = async () => {
+const fetchAssignments = async () => {
   try {
     loading.value = true;
-    
-    // 模拟API延迟
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // 应用筛选条件
-    let filteredData = [...mockAssignments];
-    
-    if (typeFilter.value) {
-      filteredData = filteredData.filter(item => item.type === typeFilter.value);
-    }
-    
-    if (statusFilter.value) {
-      filteredData = filteredData.filter(item => 
-        getAssignmentStatus(item.startTime, item.deadline) === statusFilter.value
-      );
-    }
-    
-    // 计算分页
-    const start = (currentPage.value - 1) * pageSize.value;
-    const end = start + pageSize.value;
-    
-    // 更新总数和当前页数据
-    total.value = filteredData.length;
-    assignments.value = filteredData.slice(start, end).map(item => ({
-      ...item,
-      status: getAssignmentStatus(item.startTime, item.deadline)
-    }));
-    
+    const response = await api.getAssignments(props.courseId, {
+      page: currentPage.value,
+      size: pageSize.value,
+      type: typeFilter.value,
+      status: statusFilter.value
+    });
+    assignments.value = response.data.items;
+    total.value = response.data.total;
   } catch (error) {
-    console.error('加载作业列表失败:', error);
-    ElMessage.error('加载失败');
+    ElMessage.error('获取作业列表失败');
+    console.error(error);
   } finally {
     loading.value = false;
   }
 };
+
+// 监听筛选条件变化
+watch([currentPage, pageSize, typeFilter, statusFilter], () => {
+  fetchAssignments();
+});
+
+// 组件挂载时获取数据
+onMounted(() => {
+  fetchAssignments();
+});
 
 // 格式化时间
 const formatTime = (time) => {
@@ -322,24 +258,6 @@ const filteredAssignments = computed(() => {
     item.description.toLowerCase().includes(searchQuery)
   );
 });
-
-// 监听筛选条件变化
-watch([typeFilter, statusFilter], () => {
-  currentPage.value = 1;
-  loadAssignments();
-});
-
-// 处理分页变化
-const handlePageChange = (page) => {
-  currentPage.value = page;
-  loadAssignments();
-};
-
-const handleSizeChange = (size) => {
-  pageSize.value = size;
-  currentPage.value = 1;
-  loadAssignments();
-};
 
 // 表单数据
 const dialogVisible = ref(false);
@@ -490,7 +408,19 @@ const handleExceed = () => {
   ElMessage.warning('最多只能上传5个文件');
 };
 
-// 提交表单
+// 处理分页变化
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  fetchAssignments();
+};
+
+const handleSizeChange = (size) => {
+  pageSize.value = size;
+  currentPage.value = 1;
+  fetchAssignments();
+};
+
+// 处理表单提交
 const handleSubmit = async () => {
   formRef.value.validate(async (valid) => {
     if (valid) {
@@ -499,31 +429,23 @@ const handleSubmit = async () => {
         
         // 构建保存的数据
         const saveData = {
-          id: isEditing.value ? formData.value.id : mockAssignments.length + 1,
           title: formData.value.title,
           type: formData.value.type,
           description: formData.value.description,
           startTime: formData.value.timeRange[0],
           deadline: formData.value.timeRange[1],
-          fullScore: formData.value.fullScore,
-          submitted: 0,
-          total: 35
+          fullScore: formData.value.fullScore
         };
 
         if (isEditing.value) {
-          // 更新现有作业
-          const index = mockAssignments.findIndex(item => item.id === saveData.id);
-          if (index !== -1) {
-            mockAssignments[index] = saveData;
-          }
+          await api.updateAssignment(props.courseId, formData.value.id, saveData);
           ElMessage.success('更新成功');
         } else {
-          // 添加新作业
-          mockAssignments.push(saveData);
+          await api.createAssignment(props.courseId, saveData);
           ElMessage.success('添加成功');
         }
         
-        await loadAssignments();
+        await fetchAssignments();
         dialogVisible.value = false;
         
       } catch (error) {
@@ -538,7 +460,7 @@ const handleSubmit = async () => {
 
 // 组件挂载时加载数据
 onMounted(() => {
-  loadAssignments();
+  fetchAssignments();
 });
 </script>
 
